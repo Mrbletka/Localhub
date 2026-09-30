@@ -1,0 +1,212 @@
+/* Localhub key menu - Textual CSS. Colours come from the active theme. */
+
+Screen {
+    background: $background;
+    layers: base overlay;
+}
+
+/* ---- top bar ----------------------------------------------------------- */
+
+#topbar {
+    dock: top;
+    height: 1;
+    padding: 0 2;
+    background: $surface;
+}
+#brand { width: 1fr; }
+#clock { width: auto; }
+
+/* ---- body -------------------------------------------------------------- */
+
+#body {
+    align: center middle;
+    height: 1fr;
+}
+
+#logo {
+    width: 100%;
+    height: auto;
+    content-align: center middle;
+    margin-bottom: 0;
+}
+
+#tagline {
+    width: 100%;
+    text-align: center;
+    color: $text-muted;
+    text-style: italic;
+    margin-bottom: 1;
+}
+
+/* ---- card -------------------------------------------------------------- */
+
+#card {
+    width: 77;
+    max-width: 100%;
+    height: auto;
+    padding: 1 3;
+    background: $surface;
+    border: round $primary 60%;
+    border-title-color: $text;
+    border-title-style: bold;
+    border-subtitle-color: $text-disabled;
+    transition: offset 50ms;
+}
+#card:focus-within {
+    border: round $primary;
+}
+
+.eyebrow {
+    color: $secondary;
+    text-style: bold;
+    margin-bottom: 0;
+}
+
+#segments {
+    height: 3;
+    width: 100%;
+    align: center middle;
+    margin: 0 0 1 0;
+}
+
+.segment {
+    width: 11;
+    height: 3;
+    padding: 0 2;
+    background: $surface;
+    border: round $panel-lighten-2;
+    text-style: bold;
+    color: $text;
+}
+.segment > .input--placeholder {
+    color: $text-disabled;
+}
+.segment:focus {
+    border: round $secondary;
+    background: $surface;
+    background-tint: $foreground 0%;
+}
+.segment.-complete {
+    border: round $success 70%;
+    color: $success;
+}
+.segment.-complete:focus {
+    border: round $success;
+}
+.segment.-error {
+    border: round $error;
+}
+.segment.-flash {
+    background: $warning 25%;
+}
+
+.dash {
+    width: 3;
+    height: 3;
+    content-align: center middle;
+    color: $text-disabled;
+}
+
+#meter {
+    width: 100%;
+    height: 1;
+    text-align: center;
+}
+
+.status {
+    width: 100%;
+    height: 1;
+    text-align: center;
+    margin-top: 1;
+}
+.status.-idle   { color: $text-muted; }
+.status.-typing { color: $secondary; }
+.status.-ready  { color: $success; }
+.status.-error  { color: $error; text-style: bold; }
+
+#card-rule {
+    color: $panel-lighten-2;
+    margin: 1 0 0 0;
+}
+
+#device {
+    width: 100%;
+    text-align: center;
+    color: $text-muted;
+}
+
+#actions {
+    height: auto;
+    width: 100%;
+    align: right middle;
+    margin-top: 1;
+}
+#actions Button {
+    margin-left: 2;
+    padding: 0 3;
+    min-width: 12;
+}
+
+/* ---- activation modal -------------------------------------------------- */
+
+ActivationScreen {
+    align: center middle;
+    background: $background 75%;
+}
+
+#act-card {
+    width: 60;
+    max-width: 100%;
+    height: auto;
+    padding: 1 3;
+    background: $surface;
+    border: round $secondary;
+}
+ActivationScreen.-success #act-card { border: round $success; }
+ActivationScreen.-failed  #act-card { border: round $error; }
+
+#act-title {
+    text-style: bold;
+    width: 100%;
+    margin-bottom: 0;
+}
+ActivationScreen.-success #act-title { color: $success; }
+ActivationScreen.-failed  #act-title { color: $error; }
+
+#act-key { color: $text-muted; }
+
+.step {
+    height: 1;
+    margin: 0 0 0 0;
+}
+
+#act-progress {
+    width: 100%;
+    margin: 1 0;
+}
+#act-progress Bar {
+    width: 1fr;
+}
+
+#act-result {
+    height: auto;
+    width: 100%;
+    padding: 0 1;
+}
+
+#act-buttons {
+    height: auto;
+    align: right middle;
+    margin-top: 1;
+}
+#act-buttons Button { margin-left: 2; }
+
+/* ---- small terminals --------------------------------------------------- */
+
+Screen.-narrow #card { padding: 1 1; }
+Screen.-narrow .segment { width: 9; padding: 0 1; }
+Screen.-narrow .dash { width: 1; }
+
+Footer {
+    background: $surface;
+}
