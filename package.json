@@ -1,9 +1,0 @@
-{
-  "name": "localhub",
-  "version": "0.1.0",
-  "description": "A local hub for services",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  }
-}
