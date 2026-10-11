@@ -39,12 +39,9 @@ What a `.mcworld` on singleplayer, LAN or Realms **can** and **can't** do. Some 
 ### ❌ Doesn't work (and the fix)
 | In the mockup | Problem | Redesign |
 |---|---|---|
-| "128 settlers online", "12 online" | No internet access from the world (`server-net` is BDS-only) | "**N Mayors in this world**" / "settlers in this world" |
-| Open Colonies / Browse / Join code | No cross-world connections | Colonies **inside the same world** (Realm/LAN). Join code = an invite to someone's colony in this world |
+| Open Colonies / Browse | No cross-world connections | Colonies **inside the same world** (Realm/LAN). Cross-world/online features need a BDS (later) |
 | Top 100 | No global server | **World leaderboard** (Top 10 in this world) + "Personal best" history |
-| Friends tab | No access to the Xbox friends list | "Played with": Mayors you've shared a colony with |
 | Live event timers | No server to push events | **Calendar-driven events**: the schedule ships in the pack, keyed by real-world week |
-| LB/RB switch panel, custom A/X/Y/B hints | Forms only support basic controller navigation | Tabs as buttons; button hints only shown when a controller is detected (best-effort) |
 
 ### ⏱️ Realms sleep
 A Realm doesn't tick when it's empty, and singleplayer doesn't tick when it's closed.
@@ -176,7 +173,7 @@ Danger events are **soft**: they never wipe progress. Worst case is injuries, br
 
 ### 4.8 Multiplayer
 - **Up to 4 Mayors per colony** (co-op, shared resources, each has their own Mayor XP).
-- Colony privacy: **Public** (anyone in world can join) / **Invite** (join code) / **Private**.
+- Colony privacy: **Public** (anyone in the world can join) / **Private** (owner adds Mayors manually).
 - Colonies in one world: visit, **trade post** (swap resources), compete on the world leaderboard.
 - No PvP griefing: other colonies' islands are protected (build/break blocked by script).
 
@@ -191,8 +188,7 @@ Plus colony cosmetics: banners, Rathouse roof colours, settler outfits.
 ```
 WELCOME (camera on your island, menu overlaid)
 ├── PLAY / START ─────────► teleport to island, gameplay HUD
-├── Browse ───────────────► Colonies in this world (Open / Invited / Played with)
-├── Join code ────────────► enter 4-char code
+├── Browse ───────────────► Colonies in this world (Open / Full)
 ├── Guide ────────────────► how-to pages (wood/stone/water, settlers, buildings)
 ├── Wardrobe ─────────────► cosmetics, acorn shop
 ├── Top (world) ──────────► leaderboard: colony value, prestige, derby…
@@ -246,6 +242,11 @@ resource_pack/
 
 ---
 
+## 6.5 Out of scope (for now)
+- **Online/cross-world features** (global online count, global Top 100, cross-world browsing): need a BDS. Maybe later.
+- **Join/invite codes**: removed (old design).
+- **Console/controller UI** (LB/RB tabs, A/X/Y/B glyphs): console version is far future. Design for touch + mouse first.
+
 ## 7. Open questions
 - [ ] Hand gathering: should the Mayor actually break blocks (real Minecraft), or only click/interact?
 - [ ] Free building on your island, or plots only?
@@ -258,4 +259,5 @@ resource_pack/
 ---
 
 ## Changelog
+- **v0.2**: removed online count, invite/join codes, controller hints (old design / console later).
 - **v0.1**: initial brainstorm from welcome-menu mockups + UI kit v0.3.
