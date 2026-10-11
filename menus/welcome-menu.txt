@@ -1,326 +1,360 @@
 ==============================================================
- WELCOME MENU  (the game's MAIN MENU)
+ HEARTHHOLD · MAIN MENU  (welcome menu)
 ==============================================================
  File      : menus/welcome-menu.txt
- Status    : DRAFT v0.2 (design spec)
+ Status    : DRAFT v0.3 (design spec)
  Updated   : 2026-10-11
- Mockups   : menus/welcome-menu_first-join.png   full design, new player
-             menus/welcome-menu_returning.png    full design, colony leader
-             menus/welcome-menu_ui-kit.png       colours, type, parts, icons
+ Mockups   : menus/welcome-menu_returning.png    returning Mayor (main design)
+             menus/welcome-menu_first-join.png   brand-new settler
+             menus/welcome-menu_ui-kit.png       materials, colours, parts, icons
              menus/welcome-menu_fallback.png     plain ActionForm version
              menus/welcome-menu_flow.png         who sees what, where it goes
+             menus/welcome-menu_beta-reference.png   the original beta menu
 --------------------------------------------------------------
 
 
 1. WHAT THIS MENU IS
 --------------------------------------------------------------
-This is not a popup. It is the MAIN MENU of the Colony Simulator:
-the front door of the game.
+The front door of HEARTHHOLD, a multiplayer colony simulator for
+Minecraft Bedrock. Every player sees it after joining, and every
+other menu starts from it and returns to it.
 
-  - It is the first thing every player sees after joining.
-  - It is the HUB every other menu starts from and returns to.
-  - It reopens anytime with the Colony Ledger item.
+  The game in one line:
+    Grow a floating-island colony on three pillars,
+    WOOD · STONE · WATER (lumber, mining, fishing),
+    alone or with up to 4 Mayors, next to other colonies on the
+    same server.
 
-If a player only ever learns one screen, it is this one.
+  Words we use (keep them consistent everywhere):
+    Mayor       a player who owns or co-owns a colony
+    Settler     a colonist (NPC) who works, eats, sleeps, has kids
+    Rathouse    the town hall; its level gates the colony's growth
+    Colony      one floating island + its settlers + its Mayors
+    Coins       the everyday currency, earned by playing
+    Acorns      the rare currency (see open questions)
 
 
-2. DESIGN GOALS
+2. WHAT WE KEPT FROM THE BETA, AND WHAT WE CHANGED
 --------------------------------------------------------------
-  1. ONE OBVIOUS NEXT STEP
-     Every screen has exactly one green primary button, focused
-     by default. Pressing Enter / A / tap always does the
-     sensible thing.
+  KEPT (this is the soul of HEARTHHOLD)
+    + Wood/stone textured logo, the yellow splash text
+    + "Wood · Stone · Water" as the identity of the game
+    + The floating island as the hero picture
+    + Big PLAY with session context and a privacy dropdown
+    + Daily reward + daily quests + timed event banner
+    + Open colonies with slots, privacy and online count
+    + Player level, prestige, XP · coins and acorns
+    + Controller shortcuts in the footer
 
-  2. READ THE COLONY IN 3 SECONDS
-     A returning player knows "is everything OK?" at a glance:
-     4 stats, 3 events, 1 request. Details live one click deeper.
+  CHANGED (to make it more advanced)
+    1. Zones instead of a collage.
+       The beta had ~10 regions of equal weight. Now there are 4
+       zones with one job each: ACT (left) · SEE (centre) ·
+       KNOW (right) · MEET (bottom). See section 4.
+    2. Materials mean something.
+       Wood = do, Stone = go, Night glass = know, Magenta = live,
+       Gold = earn. A player learns it once and reads every
+       future menu instantly. See section 8.
+    3. The island tells the news.
+       Numbered pins on the island match the numbered list in
+       "Since you left". You SEE where things happened.
+    4. The colony panel is docked, not floating with a pointer
+       line over the art, and it leads with ONE action
+       ("2 settlers are idle > Assign").
+    5. The avatar moved INTO the island. You stand at your own
+       Rathouse door with a name tag. The centre of the screen
+       now shows the colony instead of a large idle character.
+    6. "$12,480" became "12,480" with a coin icon. A dollar sign
+       breaks the medieval world.
+    7. Open colonies shrink to one strip when you already have a
+       colony, and become a main option when you don't.
+    8. Same layout, different content for every kind of player
+       (first join, returning, co-Mayor, wanderer). See section 7.
 
-  3. FEELS LIKE MINECRAFT, LOOKS PREMIUM
-     Pixel icons, blocky frames, Minecraft font, but with a
-     clear layout, consistent spacing and a real colour system.
 
-  4. WORKS ON EVERY DEVICE
-     Touch (phone/tablet), controller (console) and mouse +
-     keyboard (PC) are all first class. See section 9.
-
-  5. NEVER IN THE WAY
-     It opens fast and closes in one press. Returning players
-     with nothing new can skip it entirely (section 11).
-
-  6. THE COLONY FEELS ALIVE
-     News, deltas, and a colonist asking for help. The world
-     kept going while you were away.
-
-
-3. HOW IT IS BUILT IN BEDROCK (FEASIBILITY)
+3. DESIGN GOALS
 --------------------------------------------------------------
-Two layers, so the menu can never break:
-
-  LAYER 1: Plain ActionForm (the FALLBACK)  -> _fallback.png
-    The standard Bedrock button menu. Always works, on every
-    device, after every Minecraft update. Built first.
-
-  LAYER 2: Custom skin (the FULL DESIGN)    -> _first-join.png,
-                                               _returning.png
-    A resource-pack JSON UI skin applied to that same
-    ActionForm. A hidden tag in the form title tells the skin
-    "draw this one as the Main Menu". Many Marketplace add-ons
-    use this technique.
-
-  THE RULE: both layers show the same buttons, in the same order,
-  with the same text. The skin only changes the LOOK. If an update
-  breaks the skin, players get the fallback and nothing else breaks.
-
-  Limits to design around:
-    - Everything dynamic (stats, events, names) reaches the screen
-      as TEXT. Data must be short, pre-formatted strings.
-    - Display-only pieces (stat tiles, feed items) travel as extra
-      tagged text or non-clickable "buttons" that the skin places.
-      !! Needs a small technical prototype (a "spike") before we
-         commit to the full layout. Track in tech/json-ui-spike.txt.
-    - Icons are texture files in the resource pack (16x16).
-    - Real-time animation is limited; simple fades and slides are OK.
+  1. ONE OBVIOUS NEXT STEP. One wood hero button (PLAY / START),
+     focused by default. A / Enter / tap always does the right thing.
+  2. READ YOUR COLONY IN 3 SECONDS. Island + alert + 3 numbered
+     events. Details are one click deeper.
+  3. A REASON TO COME BACK EVERY DAY. Daily reward streak, 3 daily
+     quests, a timed event, the next Rathouse upgrade.
+  4. IT FEELS ALIVE. Settlers working on the island, glowing
+     windows at night, a colonist asking for help.
+  5. EVERY DEVICE IS FIRST CLASS. Controller, touch, mouse and
+     keyboard (section 9).
+  6. NEVER BREAKS. A plain fallback menu with the same actions.
 
 
-4. SCREEN: RETURNING LEADER  (variant B)  -> _returning.png
+4. LAYOUT · FOUR ZONES  (-> _returning.png)
 --------------------------------------------------------------
-  +-------------------------------------------------------------+
-  | COLONY simulator            [Day 34 Spring] [Steve Gov] [X] |  TOP BAR
-  +---------------------------+---------------------------------+
-  | [crest] YOUR COLONY       | WHILE YOU WERE AWAY    [2 days] |
-  |         Oakvale           | [+1 settler][+96 food][-40 wood]|
-  |         Year 1 · Day 34   | | + Mira had a baby, Tobin      |
-  | +----------+----------+   | | ~ A trader caravan came, left |
-  | |POPULATION| MOOD     |   | | ! Zombie raid hit east wall   |
-  | |14 /16 bed| Content  |   | :REQUEST · Bram the Builder   : |
-  | +----------+----------+   | :"East wall needs 24 stone"   : |
-  | |FOOD      | SAFETY   |   |          Open Chronicle · 3 new>|
-  | |6 days    | Damaged  |   |                                 |
-  | +----------+----------+   |                                 |
-  | NEXT MILESTONE: Village   |                                 |
-  | [=========-----] 14/20    |                                 |
-  +---------------------------+------+------+------+-----+------+
-  | >  CONTINUE                Enter |Overvw|Chron3|Alrt2|Guide|Set |
-  +---------------------------+------+------+------+-----+------+
-  | TIP  Green Thumb farmers work 25% faster.  Enter Esc  v0.1.0 |
-  +-------------------------------------------------------------+
+  +------------------------------------------------------------------+
+  | HEARTH          "Welcome back,     (coin)12,480+ (acorn)37+ [Oak  |
+  | HOLD [axe][pick][rod]  Mayor!"                    Mayor LV14 P1][gear]
+  | WOOD · STONE · WATER                                             |
+  +----------------------+---------------------+---------------------+
+  | ACT                  | SEE                 | KNOW                |
+  | [EVENT Harvest Week] |                     | YOUR COLONY         |
+  | +------------------+ |    the floating     | Oakridge · Rathouse2|
+  | | > PLAY  [Public] | |    island, live,    | ! 2 idle  [Assign]  |
+  | | Back to Oakridge | |    with zone tags   | Lumber  LV3 ===  6  |
+  | +------------------+ |    and numbered     | Mining  LV2 ==   3  |
+  | [Browse] [Join code] |    event pins       | Fishing LV1 ==== 2  |
+  | [Guide][Wardrobe][Top]|  (1) (2) (3) (zZ)  | 1,240 420 86 +delta |
+  | TODAY                |                     | Next: Rathouse Lv3  |
+  |  Daily reward 3/7 [Claim]                  | SINCE YOU LEFT · 9h |
+  |  Chop 200 logs  ===  |                     | (1) diamond vein    |
+  |  Mine 80 stone [Claim]                     | (2) baby Tobin      |
+  |  Catch 25 fish  ==   +---------------------+---------------------+
+  |                      | MEET  OPEN COLONIES · 12 online  [tabs]  |
+  |                      | [isle] TimberTeam [isle] Birch Bros ...  |
+  +----------------------+-------------------------------------------+
+  | 128 settlers online · v0.0.0     (A)Play (X)Quests (Y)Colonies (B)|
+  +------------------------------------------------------------------+
 
-  Zones:
-    TOP BAR       game logo | day & season | player & role | close
-    COLONY CARD   crest, name, date, 4 stat tiles, next milestone
-    NEWS CARD     time away, resource deltas, max 3 events,
-                  1 colonist request, link to Chronicle
-    ACTION ROW    CONTINUE (primary, focused) + 5 nav tiles
-    FOOTER        rotating tip | control hints | version
-
-  The 4 stat tiles (always these 4, always this order):
-    POPULATION  settlers / beds       blue bar = how full housing is
-    MOOD        word + %              green / yellow / red
-    FOOD        days of food left     yellow under 7, red under 3
-    SAFETY      word (Safe / Damaged / Under attack)
-
-  Nav tiles (always this order, same as the fallback):
-    Overview · Chronicle · Alerts · Guide · Settings
-    Badges: gold = new things to read, red = needs action.
-    Alerts tile with 0 alerts: no badge, still shown (stable layout).
-
-  "Next milestone" = the colony's next growth goal
-  (Camp > Hamlet > Village > Town > City). It gives every session
-  a reason to keep going. -> systems/progression.txt (planned)
+  ACT    (left)    everything you can DO right now
+  SEE    (centre)  your colony as a place, not a table
+  KNOW   (right)   numbers, problems, news
+  MEET   (bottom)  other colonies and friends
+  Controller focus moves in that order: ACT > SEE > KNOW > MEET.
 
 
-5. SCREEN: FIRST JOIN  (variant A)  -> _first-join.png
+5. THE LIVING ISLAND  (centre)
 --------------------------------------------------------------
-  +-------------------------------------------------------------+
-  | COLONY simulator                       [Steve · New]    [X] |
-  |                  THE FRONTIER AWAITS                        |
-  |                  Welcome, Settler.                          |
-  |    Raise a settlement. Lead its people. Write its story.    |
-  |  +-------------------------+  +-------------------------+   |
-  |  | [pixel scene: camp]     |  | [pixel scene: village]  |   |
-  |  | RECOMMENDED             |  |                         |   |
-  |  | Found a Colony          |  | Join a Colony           |   |
-  |  | 1 Place your Town Hall  |  | [crest] Oakvale   OPEN  |   |
-  |  | 2 Welcome 3 settlers    |  | [crest] Ironmere  ASK   |   |
-  |  | 3 Give them first jobs  |  |                         |   |
-  |  | [ START            -> ] |  | [ BROWSE 2 COLONIES  -> ]|  |
-  |  +-------------------------+  +-------------------------+   |
-  |            [How to Play]   [Explore First]                  |
-  | TIP  Your Colony Ledger is in your hotbar...  Enter Esc v.. |
-  +-------------------------------------------------------------+
+  What it shows
+    - Your real colony: Rathouse, houses, farm, quarry, dock,
+      forests, river and waterfall, day or night.
+    - Settlers at their jobs (miners in the quarry, fishers on
+      the dock, lumberjacks in the forest).
+    - You, standing at the Rathouse door with your name tag.
 
-  - Two big choice cards: the decision that matters.
-  - "Found a Colony" is recommended and focused by default.
-  - The 3 steps tell new players exactly what happens next.
-  - "Join a Colony" lists up to 3 colonies with their join rule
-    (OPEN / ASK TO JOIN / CLOSED). With 0 colonies the card says
-    "No colonies yet. Be the first!" and its button is hidden.
-  - Esc / close = Explore First.
+  Markers  (-> _ui-kit.png, "Island markers")
+    Zone tag      "Quarry · 3 miners"      what happens where
+    Numbered pin  (1)(2)(3)                matches "Since you left"
+                  gold = good luck, green = new life, red = danger
+    Idle pin      (zZ) orange              settlers with no job
+    Unknown       "? Unsurveyed forest"    something to explore
+    Name tag      "OakMayor"               where you are
+    Ghost blocks  white outline            what you can build next
+                                           (first join: the Rathouse)
+  Max 3 numbered pins + 4 zone tags, so it never gets cluttered.
+
+  How we could build it in Bedrock (needs a spike, see 11):
+    A) REAL CAMERA (preferred)
+       While the menu is open, the Camera API flies the player's
+       camera to a slow orbit shot of their actual island. The menu
+       panels sit on the left, right and bottom, and the centre stays
+       see-through, so the island is the real world, live.
+       Pins = small floating marker entities placed at the event
+       locations, only visible to that player.
+    B) PICTURE CARD (fallback)
+       A pre-made picture per biome + Rathouse level, with pins at
+       fixed spots. Less magic, but works everywhere.
 
 
-6. OTHER VARIANTS
+6. PANELS IN DETAIL
 --------------------------------------------------------------
-  C) RETURNING MEMBER   same as B, but:
-       - title role is their own, e.g. "Steward Alex"
-       - stats they can't see are shown as "Ask the Governor"
-       - no colony-admin actions
-  D) WANDERER           no colony (left, exiled, or colony fell)
-       - layout like A, cards: "Found a New Colony" / "Join"
-       - if their colony fell: a third, smaller card
-         "The Fall of Oakvale: read its Chronicle"
-  +  ADMIN EXTRA         ops/host get a 6th nav tile: World Admin
-                        (crown icon) -> menus/world-admin.txt
+  TOP BAR
+    Logo        HEARTH in wood, HOLD in stone, + axe/pick/rod
+    Splash      rotating yellow line, Minecraft style. Examples:
+                "Welcome back, Mayor!" · "Wood! Stone! Water!" ·
+                "2× fish this week!" · "Hearth is where the home is!"
+                Personal lines first ("Tobin says hi!")
+    Currencies  coins and acorns with [+] (opens shop.txt)
+    Profile     head, name, LV, PRESTIGE badge, XP bar
+    Settings    gear icon button (top right, always)
+
+  ACT (left)
+    Event       magenta banner: name, effect, countdown
+    PLAY        the wood hero. Line 2 = where you will go.
+                Dropdown: Public / Friends / Private (who can join)
+    Browse      all colonies · Join code: type a friend's code
+    Tiles       Guide · Wardrobe · Top 100 (badges = new things)
+    Today       daily reward streak (7 days, Claim) and 3 daily
+                quests with progress + reward; reset time shown.
+                A finished quest turns its reward into a wood Claim.
+
+  KNOW (right)
+    Colony card crest, name, Rathouse level, day, Mayors (x/4)
+                ONE action alert, the most urgent problem with a
+                button ("2 settlers are idle > Assign")
+                Skills: Lumber / Mining / Fishing, level bar,
+                number of settlers working it
+                Resources: wood, stone, fish + what changed while
+                you were away (green +320)
+                Next upgrade with what is still missing
+    Since you left   time away + 3 numbered events (match the pins)
+
+  MEET (bottom)
+    Tabs        Open · Friends · Nearby
+    Cards       mini island picture (biome), colony name, LV, biome,
+                slots (2/4), privacy (Public / Friends), Join
+    Browse all  (Y)
 
 
-7. COMPONENTS  (-> _ui-kit.png)
+7. WHO SEES WHAT  (same layout, different content)
 --------------------------------------------------------------
-  Every future menu reuses these. Nothing new without a reason.
+                 A FIRST JOIN        B MAYOR (main)   C CO-MAYOR       D WANDERER
+  Splash         A new settler       Welcome back,    Welcome back,    The road
+                 arrives!            Mayor!           Mayor!           calls again!
+  Hero button    START: claim your   PLAY: back to    PLAY: back to    START: found
+                 own island, free    Oakridge         <colony>         a new colony
+  Today          FIRST STEPS quests  daily quests     daily quests     daily quests
+                 (claim island,
+                 build Rathouse,
+                 welcome 3 settlers)
+  Island         empty island, ghost your colony +    shared colony    ruins of the
+                 Rathouse, "Claim    pins             + pins           old colony
+                 it free" tag
+  Right column   HOW HEARTHHOLD      colony card +    same as B, but   "The fall of
+                 WORKS (3 pillars)   since you left   can't delete    <colony>" story
+                 + PLAY YOUR WAY
+  Bottom         open colonies +     open colonies    open colonies    open colonies
+                 tip "joining first                                    (bigger)
+                 is a great way to
+                 learn"
+  Admin extra    + World Admin tile (ops / host only)
 
-  Primary button   green, only 1 per screen, big label + subline
-  Secondary button dark grey, same shape as primary
-  Ghost button     small, icon + text, for side actions
-  Nav tile         square, icon + label, optional badge
-  Badge            red (urgent) or gold (new), top-right corner
-  Pill / chip      small info labels (time away, day, player)
-  Stat tile        label + value + coloured bar
-  Feed item        coloured edge + icon + text + time + symbol
-  Request card     dashed gold frame, colonist face + quote
-  Colony crest     banner shape, colony colour + emblem
-  Choice card      pixel scene + title + body + button (first join)
-  Close button     [X] top-right, always in the same place
-
-  States for every clickable part:
-    default · hover (mouse) · focus (controller/keyboard) ·
-    pressed · disabled
+  -> First join mockup: _first-join.png
 
 
-8. VISUAL STYLE
+8. VISUAL STYLE  (-> _ui-kit.png)
 --------------------------------------------------------------
+  Materials = meaning
+    WOOD   (planks)       DO     PLAY/START, Claim, Assign
+    STONE  (cobblestone)  GO     Browse, Join code, tiles, gear
+    NIGHT  (dark glass)   KNOW   colony, quests, news, colonies
+    LIVE   (magenta)      NOW    events, timers, online counts
+    GOLD                  EARN   rewards, coins, focus ring
+
   Colours
-    Panel       #1C1E23    Raised      #2C3038    Frame   #0A0B0D
-    Text        #F3EFE6    Muted       #A8A397
-    Gold        #F2B84B    brand, focus ring, "new", highlights
-    Green       #3C8527    the primary action (Bedrock's own green)
-    Good        #6CC35A    Neutral     #E8C547
-    Bad         #E5554F    Info        #5BB4E5
+    Ink #0B0818 · Night #16102C · Text #F6EFE2 · Muted #B9B0D0
+    Gold #FFCF4A · Gold dark #B5841C · Good #6CC35A · Bad #EF5350
+    Idle #F39C12 · Water #4FA8FF · Live #E13CA0 · Prestige #8B5CF6
 
-  Type (Minecraft font in-game, the mockups use a look-alike)
-    Display 44 · Title 32 · Heading 26 · Body 15-17 · Caption 13
-    Eyebrow 12, UPPERCASE, wide letter spacing
+  Type
+    Logo + PLAY  chunky pixel display font (mockup: Silkscreen Bold)
+    Everything else  the Minecraft font in-game
+                     (mockup: Pixelify Sans as a stand-in)
+    Section titles   13, gold, UPPERCASE, wide spacing
 
-  Frames
-    2px near-black border, 1px light top edge, darker bottom edge.
-    It's the classic Minecraft "bevel", flattened and modern.
+  Scene
+    Night sky, stars, moon, light rays behind the logo, pink pixel
+    clouds below, small islets floating in the distance.
+    Day version: same layout, blue sky (todo).
 
-  Backdrop
-    The live world stays visible behind the menu, darkened
-    with a vignette. You never feel teleported out of the game.
-
-  Icons
-    16x16 pixel art, 2-3 colours each, readable at 18px.
-    Current set: flag people book compass arrow hall scroll bell
-    gear heart bread shield person sun crown head house tree
-    -> assets/icons.txt (planned)
+  Rules
+    One wood hero per screen. Small wood buttons only for rewards.
+    3px ink frame + inner glow on every panel. 4px grid.
+    Status is always colour + number/symbol + words.
 
 
 9. INTERACTION & DEVICES
 --------------------------------------------------------------
-  Default focus   the primary button (CONTINUE / START)
-  Controller      D-pad/stick moves focus in reading order:
-                  top bar > left column > right column > nav row
-                  A = select · B = close · gold focus ring
-  Keyboard        Enter = select · Esc = close · arrows/Tab move
-  Touch           every target at least 48px tall, no hover-only
-                  info. Control hints in the footer are hidden.
-  Mouse           hover state on everything clickable
-
-  Open / close    150 ms fade + small slide up. A soft "page turn"
-                  sound on open, a click on select.
-  Small screens   phones: stats become a single row of 4,
-                  the news card shows 2 events instead of 3.
-                  (Mockup for phone layout: TODO)
+  Default focus  PLAY / START
+  Controller     A Play · X Quests · Y Colonies · B Close ·
+                 LB/RB jump between zones · Start = Settings
+  Keyboard       Enter Play · Esc Close · Tab moves between zones
+  Touch          all targets at least 48px, footer hints hidden,
+                 the island can be tapped to open Colony Overview
+  Motion         island bobs gently, settlers walk, splash pulses,
+                 panels slide in (150 ms). Respect a "reduce motion"
+                 setting.
+  Sound          soft wooden "thunk" on open, coin clink on Claim
 
 
 10. CONTENT RULES
 --------------------------------------------------------------
-  Voice      warm, short, a little storybook. Talk TO the player
-             ("Welcome back, Governor"), never like a system log.
-  Lengths    colony name max 16 chars · event line max 40 chars ·
-             request max 60 chars · button label max 18 chars
-  Numbers    whole numbers, units always shown ("6 days", "14/20")
-  Status     always colour + symbol + word: "+", "~", "!"
-             (colour-blind safe, readable in the fallback too)
-  Events     pick max 3: most important first, then newest.
-             Deaths and attacks always beat births and trade.
-  Localize   all text from language files. Leave ~30% extra room,
-             because German and Portuguese run long.
+  Voice      warm, cheeky, short. Talk to the Mayor, not about data.
+  Numbers    12,480 (comma groups, no $) · 2× · 2d 14h · 9 hours
+  Events     max 3, most important first. Danger beats luck,
+             luck beats routine. Each event names WHERE it happened.
+  Lengths    colony name max 16 · event max 36 · quest max 20 chars
+  Localize   all text in language files, plus ~30% spare room.
 
 
-11. WHEN IT SHOWS  (TRIGGERS)
+11. HOW IT IS BUILT (FEASIBILITY)
 --------------------------------------------------------------
-  [x] On first spawn after joining the world.
-  [ ] NOT on respawn after death, NOT on dimension change.
-  Re-open: Colony Ledger item, or /scriptevent colony:menu
+  LAYER 1  Plain ActionForm (fallback)         -> _fallback.png
+           Same actions, sorted by priority, long list scrolls.
+           Always works. Built first.
+  LAYER 2  JSON UI skin over that form          -> _returning.png
+           Draws the zones, materials, cards and bars.
+  LAYER 3  Live island                          -> section 5
+           Camera API orbit + see-through centre + marker entities.
 
-  Bedrock catch: a form opened while the player is still loading
-  gets cancelled ("UserBusy"). Retry every second, max 30 seconds.
-
-  Player setting "Main menu on join":
-    Always
-    Only when something happened   <- default for returning players
-    Never
-  When skipped, show an ACTION BAR MESSAGE instead (one line of
-  text above the hotbar that fades by itself), e.g.
-    "Welcome back to Oakvale. All is well."
+  Spikes (small prototypes to do before we commit):
+    tech/json-ui-spike.txt       can the skin place cards, bars and
+                                 badges from form text?
+    tech/island-camera-spike.txt can we orbit the camera around the
+                                 player's island while a form is open?
+                                 Are the chunks loaded? Does it lag?
 
 
-12. DATA THIS MENU NEEDS
+12. WHEN IT SHOWS  (TRIGGERS)
 --------------------------------------------------------------
-  Player profile  -> systems/player-profile.txt (planned)
-    firstJoinAt, lastSeenAt, colonyId, role, menu setting
-  Colony          -> systems/colony.txt (planned)
-    name, crest, day, season, year, population, beds, mood %,
-    food days, safety state, milestone progress
-  Chronicle       -> systems/chronicle.txt (planned)
-    events since lastSeenAt with importance + category;
-    resource totals then vs now (for the delta pills)
-  Requests        -> systems/requests.txt (planned)
-    the single most urgent open colonist request
-  Alerts          -> systems/alerts.txt (planned)
-
-  !! "While you were away" needs the colony to keep simulating
-     (or catch up) while the player is offline or far away.
-     -> systems/simulation.txt
+  [x] On first spawn after joining the server/world.
+  [ ] NOT on respawn, NOT on dimension change.
+  Re-open: Colony Ledger item · /scriptevent hearth:menu
+  Bedrock catch: forms opened during loading get cancelled
+  ("UserBusy"). Retry every second, max 30 seconds.
+  Player setting "Main menu on join": Always / Only when something
+  happened (default) / Never. When skipped, show an ACTION BAR
+  MESSAGE instead (one line above the hotbar that fades by itself):
+  "Welcome back to Oakridge. All is well."
 
 
-13. OPEN QUESTIONS
+13. DATA THIS MENU NEEDS
 --------------------------------------------------------------
-  [ ] Real game name? "COLONY / SIMULATOR" is a working title.
-  [ ] Tone check: is "warm storybook" the right voice?
-  [ ] Can a player own or join more than one colony?
-  [ ] What exactly can a Member (C) see?
-  [ ] Camera fly-over of the land before the first-join menu?
-  [ ] Should "Explore First" nudge later ("Ready to settle?")?
-  [ ] Colony growth tiers: Camp > Hamlet > Village > Town > City?
-  [ ] Crest: does the player design it (colour + emblem)?
+  Player profile   name, level, XP, prestige, coins, acorns,
+                   firstJoinAt, lastSeenAt, colonyId, role, settings
+  Colony           name, crest, biome, Rathouse level, day, Mayors,
+                   privacy, slots, skills (level + workers), resources
+                   (now + at lastSeenAt), next upgrade, idle settlers
+  Chronicle        events since lastSeenAt: importance, type, place
+                   (x,y,z for the pin), text
+  Daily            streak day, claimed today?, 3 quests + progress,
+                   reset time
+  Events           active event, effect, end time
+  Server           online count, open colonies list, friends list
+  Cosmetics        new wardrobe items count
+  Leaderboard      player's rank (for a future "You are #42" line)
+  -> systems/*.txt (planned): player-profile, colony, chronicle,
+     quests, events, economy, social, cosmetics, leaderboard,
+     simulation (the colony must keep working while you're away)
 
 
-14. IDEA PARKING LOT
+14. OPEN QUESTIONS
 --------------------------------------------------------------
-  - Seasonal skins: snow on the frame in winter, leaves in autumn.
-  - Newspaper header on big days: "THE OAKVALE GAZETTE".
-  - Milestone reached = a celebration screen before the menu.
-  - The steward NPC walks up and "hands" you the menu in person.
-  - Tip of the day uses what the player hasn't discovered yet.
-  - "Rule streak": Day 12 of your rule.
+  [ ] Acorns: earned only, or also bought? If they can be bought
+      with real money, check the current Minecraft Usage
+      Guidelines for servers before deciding what they can buy.
+  [ ] Prestige: what resets, what is kept, what you gain.
+  [ ] Max 4 Mayors per colony: fixed, or grows with Rathouse level?
+  [ ] Is the whole game one server world with many islands, or
+      one world per colony?
+  [ ] Daily quest reset time: fixed UTC time, or per player?
+  [ ] Day/night: does the menu follow the real in-game time?
+  [ ] Wardrobe: cosmetics for the Mayor only, or for settlers too?
 
 
-15. CHANGELOG
+15. IDEA PARKING LOT
 --------------------------------------------------------------
-  v0.1  2026-10-11  First brainstorm: triggers, 4 variants,
-                    wireframe, nav map, data needs, questions.
-  v0.2  2026-10-11  Reframed as the game's MAIN MENU. Full design
-                    for first join + returning leader, UI kit,
-                    2-layer build plan (skin + fallback), devices,
-                    content rules, milestone + request ideas.
-                    "Toast" replaced by "action bar message".
+  - Seasonal skins: snowy logo in winter, lanterns at Harvest Week.
+  - "You are #42 on the Top 100" line under the profile.
+  - Friends' colonies show their Mayor's head on the card.
+  - Milestone reached (Rathouse Lv 3): a celebration before the menu.
+  - Tap a pin to jump straight to that event in the Chronicle.
+  - Weather on the island matches the real weather in the world.
+
+
+16. CHANGELOG
+--------------------------------------------------------------
+  v0.1  2026-10-11  First brainstorm: triggers, variants, nav map.
+  v0.2  2026-10-11  Main menu redesign, UI kit, 2-layer build plan.
+  v0.3  2026-10-11  Merged with the HEARTHHOLD beta: name, pillars,
+                    economy, quests, events, social. 4 zones, material
+                    language, living island with numbered pins, 4
+                    player variants on one layout, live-camera
+                    idea, beta review, new UI kit, fallback and flow.
