@@ -1,244 +1,326 @@
 ==============================================================
- WELCOME MENU
+ WELCOME MENU  (the game's MAIN MENU)
 ==============================================================
  File      : menus/welcome-menu.txt
- Status    : DRAFT v0.1 (brainstorm)
+ Status    : DRAFT v0.2 (design spec)
  Updated   : 2026-10-11
- Mockups   : menus/welcome-menu_first-join.png
-             menus/welcome-menu_returning.png
-             menus/welcome-menu_flow.png
+ Mockups   : menus/welcome-menu_first-join.png   full design, new player
+             menus/welcome-menu_returning.png    full design, colony leader
+             menus/welcome-menu_ui-kit.png       colours, type, parts, icons
+             menus/welcome-menu_fallback.png     plain ActionForm version
+             menus/welcome-menu_flow.png         who sees what, where it goes
 --------------------------------------------------------------
 
 
-1. PURPOSE
+1. WHAT THIS MENU IS
 --------------------------------------------------------------
-The first screen every player sees after joining the world.
+This is not a popup. It is the MAIN MENU of the Colony Simulator:
+the front door of the game.
 
-It has three jobs:
-  - New players  : explain the hook in 5 seconds, then steer them
-                   to their first action (found or join a colony).
-  - Returning    : "Here's what happened while you were away."
-                   A snapshot of the colony plus the top events.
-  - Everyone     : the front door to every other menu.
+  - It is the first thing every player sees after joining.
+  - It is the HUB every other menu starts from and returns to.
+  - It reopens anytime with the Colony Ledger item.
 
-Rule of thumb: get the player playing in 1 click. It is a
-welcome mat, not a wall. Never more than ~8 lines of body text.
+If a player only ever learns one screen, it is this one.
 
 
-2. WHEN IT SHOWS (TRIGGERS)
+2. DESIGN GOALS
+--------------------------------------------------------------
+  1. ONE OBVIOUS NEXT STEP
+     Every screen has exactly one green primary button, focused
+     by default. Pressing Enter / A / tap always does the
+     sensible thing.
+
+  2. READ THE COLONY IN 3 SECONDS
+     A returning player knows "is everything OK?" at a glance:
+     4 stats, 3 events, 1 request. Details live one click deeper.
+
+  3. FEELS LIKE MINECRAFT, LOOKS PREMIUM
+     Pixel icons, blocky frames, Minecraft font, but with a
+     clear layout, consistent spacing and a real colour system.
+
+  4. WORKS ON EVERY DEVICE
+     Touch (phone/tablet), controller (console) and mouse +
+     keyboard (PC) are all first class. See section 9.
+
+  5. NEVER IN THE WAY
+     It opens fast and closes in one press. Returning players
+     with nothing new can skip it entirely (section 11).
+
+  6. THE COLONY FEELS ALIVE
+     News, deltas, and a colonist asking for help. The world
+     kept going while you were away.
+
+
+3. HOW IT IS BUILT IN BEDROCK (FEASIBILITY)
+--------------------------------------------------------------
+Two layers, so the menu can never break:
+
+  LAYER 1: Plain ActionForm (the FALLBACK)  -> _fallback.png
+    The standard Bedrock button menu. Always works, on every
+    device, after every Minecraft update. Built first.
+
+  LAYER 2: Custom skin (the FULL DESIGN)    -> _first-join.png,
+                                               _returning.png
+    A resource-pack JSON UI skin applied to that same
+    ActionForm. A hidden tag in the form title tells the skin
+    "draw this one as the Main Menu". Many Marketplace add-ons
+    use this technique.
+
+  THE RULE: both layers show the same buttons, in the same order,
+  with the same text. The skin only changes the LOOK. If an update
+  breaks the skin, players get the fallback and nothing else breaks.
+
+  Limits to design around:
+    - Everything dynamic (stats, events, names) reaches the screen
+      as TEXT. Data must be short, pre-formatted strings.
+    - Display-only pieces (stat tiles, feed items) travel as extra
+      tagged text or non-clickable "buttons" that the skin places.
+      !! Needs a small technical prototype (a "spike") before we
+         commit to the full layout. Track in tech/json-ui-spike.txt.
+    - Icons are texture files in the resource pack (16x16).
+    - Real-time animation is limited; simple fades and slides are OK.
+
+
+4. SCREEN: RETURNING LEADER  (variant B)  -> _returning.png
+--------------------------------------------------------------
+  +-------------------------------------------------------------+
+  | COLONY simulator            [Day 34 Spring] [Steve Gov] [X] |  TOP BAR
+  +---------------------------+---------------------------------+
+  | [crest] YOUR COLONY       | WHILE YOU WERE AWAY    [2 days] |
+  |         Oakvale           | [+1 settler][+96 food][-40 wood]|
+  |         Year 1 · Day 34   | | + Mira had a baby, Tobin      |
+  | +----------+----------+   | | ~ A trader caravan came, left |
+  | |POPULATION| MOOD     |   | | ! Zombie raid hit east wall   |
+  | |14 /16 bed| Content  |   | :REQUEST · Bram the Builder   : |
+  | +----------+----------+   | :"East wall needs 24 stone"   : |
+  | |FOOD      | SAFETY   |   |          Open Chronicle · 3 new>|
+  | |6 days    | Damaged  |   |                                 |
+  | +----------+----------+   |                                 |
+  | NEXT MILESTONE: Village   |                                 |
+  | [=========-----] 14/20    |                                 |
+  +---------------------------+------+------+------+-----+------+
+  | >  CONTINUE                Enter |Overvw|Chron3|Alrt2|Guide|Set |
+  +---------------------------+------+------+------+-----+------+
+  | TIP  Green Thumb farmers work 25% faster.  Enter Esc  v0.1.0 |
+  +-------------------------------------------------------------+
+
+  Zones:
+    TOP BAR       game logo | day & season | player & role | close
+    COLONY CARD   crest, name, date, 4 stat tiles, next milestone
+    NEWS CARD     time away, resource deltas, max 3 events,
+                  1 colonist request, link to Chronicle
+    ACTION ROW    CONTINUE (primary, focused) + 5 nav tiles
+    FOOTER        rotating tip | control hints | version
+
+  The 4 stat tiles (always these 4, always this order):
+    POPULATION  settlers / beds       blue bar = how full housing is
+    MOOD        word + %              green / yellow / red
+    FOOD        days of food left     yellow under 7, red under 3
+    SAFETY      word (Safe / Damaged / Under attack)
+
+  Nav tiles (always this order, same as the fallback):
+    Overview · Chronicle · Alerts · Guide · Settings
+    Badges: gold = new things to read, red = needs action.
+    Alerts tile with 0 alerts: no badge, still shown (stable layout).
+
+  "Next milestone" = the colony's next growth goal
+  (Camp > Hamlet > Village > Town > City). It gives every session
+  a reason to keep going. -> systems/progression.txt (planned)
+
+
+5. SCREEN: FIRST JOIN  (variant A)  -> _first-join.png
+--------------------------------------------------------------
+  +-------------------------------------------------------------+
+  | COLONY simulator                       [Steve · New]    [X] |
+  |                  THE FRONTIER AWAITS                        |
+  |                  Welcome, Settler.                          |
+  |    Raise a settlement. Lead its people. Write its story.    |
+  |  +-------------------------+  +-------------------------+   |
+  |  | [pixel scene: camp]     |  | [pixel scene: village]  |   |
+  |  | RECOMMENDED             |  |                         |   |
+  |  | Found a Colony          |  | Join a Colony           |   |
+  |  | 1 Place your Town Hall  |  | [crest] Oakvale   OPEN  |   |
+  |  | 2 Welcome 3 settlers    |  | [crest] Ironmere  ASK   |   |
+  |  | 3 Give them first jobs  |  |                         |   |
+  |  | [ START            -> ] |  | [ BROWSE 2 COLONIES  -> ]|  |
+  |  +-------------------------+  +-------------------------+   |
+  |            [How to Play]   [Explore First]                  |
+  | TIP  Your Colony Ledger is in your hotbar...  Enter Esc v.. |
+  +-------------------------------------------------------------+
+
+  - Two big choice cards: the decision that matters.
+  - "Found a Colony" is recommended and focused by default.
+  - The 3 steps tell new players exactly what happens next.
+  - "Join a Colony" lists up to 3 colonies with their join rule
+    (OPEN / ASK TO JOIN / CLOSED). With 0 colonies the card says
+    "No colonies yet. Be the first!" and its button is hidden.
+  - Esc / close = Explore First.
+
+
+6. OTHER VARIANTS
+--------------------------------------------------------------
+  C) RETURNING MEMBER   same as B, but:
+       - title role is their own, e.g. "Steward Alex"
+       - stats they can't see are shown as "Ask the Governor"
+       - no colony-admin actions
+  D) WANDERER           no colony (left, exiled, or colony fell)
+       - layout like A, cards: "Found a New Colony" / "Join"
+       - if their colony fell: a third, smaller card
+         "The Fall of Oakvale: read its Chronicle"
+  +  ADMIN EXTRA         ops/host get a 6th nav tile: World Admin
+                        (crown icon) -> menus/world-admin.txt
+
+
+7. COMPONENTS  (-> _ui-kit.png)
+--------------------------------------------------------------
+  Every future menu reuses these. Nothing new without a reason.
+
+  Primary button   green, only 1 per screen, big label + subline
+  Secondary button dark grey, same shape as primary
+  Ghost button     small, icon + text, for side actions
+  Nav tile         square, icon + label, optional badge
+  Badge            red (urgent) or gold (new), top-right corner
+  Pill / chip      small info labels (time away, day, player)
+  Stat tile        label + value + coloured bar
+  Feed item        coloured edge + icon + text + time + symbol
+  Request card     dashed gold frame, colonist face + quote
+  Colony crest     banner shape, colony colour + emblem
+  Choice card      pixel scene + title + body + button (first join)
+  Close button     [X] top-right, always in the same place
+
+  States for every clickable part:
+    default · hover (mouse) · focus (controller/keyboard) ·
+    pressed · disabled
+
+
+8. VISUAL STYLE
+--------------------------------------------------------------
+  Colours
+    Panel       #1C1E23    Raised      #2C3038    Frame   #0A0B0D
+    Text        #F3EFE6    Muted       #A8A397
+    Gold        #F2B84B    brand, focus ring, "new", highlights
+    Green       #3C8527    the primary action (Bedrock's own green)
+    Good        #6CC35A    Neutral     #E8C547
+    Bad         #E5554F    Info        #5BB4E5
+
+  Type (Minecraft font in-game, the mockups use a look-alike)
+    Display 44 · Title 32 · Heading 26 · Body 15-17 · Caption 13
+    Eyebrow 12, UPPERCASE, wide letter spacing
+
+  Frames
+    2px near-black border, 1px light top edge, darker bottom edge.
+    It's the classic Minecraft "bevel", flattened and modern.
+
+  Backdrop
+    The live world stays visible behind the menu, darkened
+    with a vignette. You never feel teleported out of the game.
+
+  Icons
+    16x16 pixel art, 2-3 colours each, readable at 18px.
+    Current set: flag people book compass arrow hall scroll bell
+    gear heart bread shield person sun crown head house tree
+    -> assets/icons.txt (planned)
+
+
+9. INTERACTION & DEVICES
+--------------------------------------------------------------
+  Default focus   the primary button (CONTINUE / START)
+  Controller      D-pad/stick moves focus in reading order:
+                  top bar > left column > right column > nav row
+                  A = select · B = close · gold focus ring
+  Keyboard        Enter = select · Esc = close · arrows/Tab move
+  Touch           every target at least 48px tall, no hover-only
+                  info. Control hints in the footer are hidden.
+  Mouse           hover state on everything clickable
+
+  Open / close    150 ms fade + small slide up. A soft "page turn"
+                  sound on open, a click on select.
+  Small screens   phones: stats become a single row of 4,
+                  the news card shows 2 events instead of 3.
+                  (Mockup for phone layout: TODO)
+
+
+10. CONTENT RULES
+--------------------------------------------------------------
+  Voice      warm, short, a little storybook. Talk TO the player
+             ("Welcome back, Governor"), never like a system log.
+  Lengths    colony name max 16 chars · event line max 40 chars ·
+             request max 60 chars · button label max 18 chars
+  Numbers    whole numbers, units always shown ("6 days", "14/20")
+  Status     always colour + symbol + word: "+", "~", "!"
+             (colour-blind safe, readable in the fallback too)
+  Events     pick max 3: most important first, then newest.
+             Deaths and attacks always beat births and trade.
+  Localize   all text from language files. Leave ~30% extra room,
+             because German and Portuguese run long.
+
+
+11. WHEN IT SHOWS  (TRIGGERS)
 --------------------------------------------------------------
   [x] On first spawn after joining the world.
-  [ ] NOT on respawn after death (that gets its own small toast).
-  [ ] NOT on dimension change.
+  [ ] NOT on respawn after death, NOT on dimension change.
+  Re-open: Colony Ledger item, or /scriptevent colony:menu
 
-  Re-open anytime with:
-    - the Colony Ledger item (given on first join)
-    - a command, e.g. /scriptevent colony:menu welcome
+  Bedrock catch: a form opened while the player is still loading
+  gets cancelled ("UserBusy"). Retry every second, max 30 seconds.
 
-  Bedrock catch:
-    A form opened while the player is still loading gets cancelled
-    ("UserBusy"). Plan: retry every ~1s until it opens, up to ~30s,
-    or wait until the player first moves or looks around.
-
-  Player setting "Welcome on join":
-    - Always
-    - Only when something happened   <- default for returning players
-    - Never (just show a short on-screen toast instead)
+  Player setting "Main menu on join":
+    Always
+    Only when something happened   <- default for returning players
+    Never
+  When skipped, show an ACTION BAR MESSAGE instead (one line of
+  text above the hotbar that fades by itself), e.g.
+    "Welcome back to Oakvale. All is well."
 
 
-3. VARIANTS (WHO SEES WHAT)
+12. DATA THIS MENU NEEDS
 --------------------------------------------------------------
-The menu picks one variant from the player's profile.
+  Player profile  -> systems/player-profile.txt (planned)
+    firstJoinAt, lastSeenAt, colonyId, role, menu setting
+  Colony          -> systems/colony.txt (planned)
+    name, crest, day, season, year, population, beds, mood %,
+    food days, safety state, milestone progress
+  Chronicle       -> systems/chronicle.txt (planned)
+    events since lastSeenAt with importance + category;
+    resource totals then vs now (for the delta pills)
+  Requests        -> systems/requests.txt (planned)
+    the single most urgent open colonist request
+  Alerts          -> systems/alerts.txt (planned)
 
-  A) FIRST JOIN         never joined this world before
-  B) RETURNING LEADER   has a colony (Governor role)
-  C) RETURNING MEMBER   lives in someone else's colony
-  D) WANDERER           returning, but has no colony
-                        (left it, was exiled, or the colony fell)
-  +  ADMIN EXTRA        adds a "World Admin" button for ops/host
-
-
---- A) FIRST JOIN ------------------------------------------- [mockup]
-
-  Title : Welcome, Settler
-  Body  : These lands are untamed. Gather settlers, raise a town,
-          and write your colony's story.
-          A Colony Ledger is now in your inventory; open it anytime.
-          Tip: Colonies grow when their people are fed, housed
-          and happy.
-
-  Buttons:
-    [flag]    Found a Colony   "Start your own settlement"
-    [people]  Join a Colony    "2 colonies in this world"
-    [book]    How to Play      "The basics in 2 minutes"
-    [compass] Explore First    "Look around, decide later"
-
-  Notes:
-    - "Join a Colony" is hidden if no colonies exist yet.
-      (ActionForm buttons can't be greyed out, only hidden or
-       labelled "locked".)
-    - Closing with X = same as "Explore First".
+  !! "While you were away" needs the colony to keep simulating
+     (or catch up) while the player is offline or far away.
+     -> systems/simulation.txt
 
 
---- B) RETURNING LEADER ------------------------------------- [mockup]
-
-  Title : Welcome back, Governor <name>
-  Body  : SNAPSHOT
-            Oakvale - Day 34, Late Spring
-            Population 14 | Mood: Content | Food: 6 days
-          WHILE YOU WERE AWAY (2 days)
-            + Mira the farmer had a baby (Tobin)
-            ~ A trader caravan came and left
-            ! A zombie raid damaged the east wall
-          (max 3 events, most important first, full list in Chronicle)
-
-  Buttons:
-    [arrow]   Continue          close the menu, get playing
-    [hall]    Colony Overview   -> menus/colony-overview.txt
-    [scroll]  Chronicle         -> menus/chronicle.txt
-    [bell]    Alerts (2)        -> menus/alerts.txt   (only if any)
-    [gear]    Settings          -> menus/settings.txt
-
-  Colour code for events:
-    green  +  good  (births, new settlers, finished buildings)
-    yellow ~  neutral (traders, weather, seasons)
-    red    !  bad   (raids, deaths, starvation, fire)
-
-
---- C) RETURNING MEMBER -------------------------------------
-
-  Same as B, but:
-    - Title  : Welcome back, <role> <name> of <colony>
-               e.g. "Welcome back, Steward Alex of Oakvale"
-    - Shows only what this role can see (open question, see 8)
-    - No admin buttons for the colony
-
-
---- D) WANDERER ---------------------------------------------
-
-  Title : Welcome back, Wanderer
-  Body  : If the colony fell: "Oakvale fell in Year 2, Winter.
-          Its story lives on in the Chronicle."
-  Buttons:
-    Found a New Colony
-    Join a Colony
-    Read the Chronicle of <old colony>   (only if it fell)
-    Explore
-
-
-4. WIREFRAME (FIRST JOIN)
+13. OPEN QUESTIONS
 --------------------------------------------------------------
-
-  +-------------------------------------------+
-  |            Welcome, Settler            [X]|
-  +-------------------------------------------+
-  |  These lands are untamed. Gather          |
-  |  settlers, raise a town, and write        |
-  |  your colony's story.                     |
-  |                                           |
-  |  Tip: Colonies grow when their people     |
-  |  are fed, housed and happy.               |
-  |                                           |
-  |  +-------------------------------------+  |
-  |  | [ic] Found a Colony                 |  |
-  |  |      Start your own settlement      |  |
-  |  +-------------------------------------+  |
-  |  | [ic] Join a Colony                  |  |
-  |  |      2 colonies in this world       |  |
-  |  +-------------------------------------+  |
-  |  | [ic] How to Play                    |  |
-  |  +-------------------------------------+  |
-  |  | [ic] Explore First                  |  |
-  |  +-------------------------------------+  |
-  +-------------------------------------------+
+  [ ] Real game name? "COLONY / SIMULATOR" is a working title.
+  [ ] Tone check: is "warm storybook" the right voice?
+  [ ] Can a player own or join more than one colony?
+  [ ] What exactly can a Member (C) see?
+  [ ] Camera fly-over of the land before the first-join menu?
+  [ ] Should "Explore First" nudge later ("Ready to settle?")?
+  [ ] Colony growth tiers: Camp > Hamlet > Village > Town > City?
+  [ ] Crest: does the player design it (colour + emblem)?
 
 
-5. NAVIGATION MAP (WHERE BUTTONS LEAD)
+14. IDEA PARKING LOT
 --------------------------------------------------------------
-  welcome-menu
-    |-- Found a Colony   -> menus/found-colony.txt      (planned)
-    |-- Join a Colony    -> menus/join-colony.txt       (planned)
-    |-- How to Play      -> menus/how-to-play.txt       (planned)
-    |-- Explore First    -> close menu
-    |-- Continue         -> close menu
-    |-- Colony Overview  -> menus/colony-overview.txt   (planned)
-    |-- Chronicle        -> menus/chronicle.txt         (planned)
-    |-- Alerts           -> menus/alerts.txt            (planned)
-    |-- Settings         -> menus/settings.txt          (planned)
-    '-- World Admin      -> menus/world-admin.txt       (planned)
-
-  Every sub-menu gets a "< Back" button that returns here.
+  - Seasonal skins: snow on the frame in winter, leaves in autumn.
+  - Newspaper header on big days: "THE OAKVALE GAZETTE".
+  - Milestone reached = a celebration screen before the menu.
+  - The steward NPC walks up and "hands" you the menu in person.
+  - Tip of the day uses what the player hasn't discovered yet.
+  - "Rule streak": Day 12 of your rule.
 
 
-6. LOOK & FEEL
---------------------------------------------------------------
-  Option 1: Vanilla ActionForm   <- START HERE
-    + works everywhere (phone, console, PC), easy to change
-    + supports title, body text, colour codes, buttons with icons
-    + buttons can have a 2nd line (a grey subtitle)
-    - looks like every other addon menu
-
-  Option 2: Custom JSON UI skin (later, polish phase)
-    + our own frame, banner art, colony crest, 2-column layout
-    - fragile: Minecraft updates can break custom JSON UI
-
-  Plan: design content for Option 1 now, keep it reskinnable.
-
-  Icons needed (16x16 textures, list grows -> assets/icons.txt):
-    flag, people, book, compass, arrow, town hall,
-    scroll, bell, gear, crown (admin)
-
-  Sound: soft page-turn or bell when the menu opens.
-
-
-7. DATA THIS MENU NEEDS (DEPENDENCIES)
---------------------------------------------------------------
-  From PLAYER PROFILE (-> systems/player-profile.txt, planned)
-    - firstJoinAt, lastSeenAt
-    - colonyId, role (Governor / Steward / Citizen / none)
-    - setting: welcomeOnJoin
-
-  From COLONY (-> systems/colony.txt, planned)
-    - name, day, season, population, average mood, food days
-
-  From CHRONICLE (-> systems/chronicle.txt, planned)
-    - events since lastSeenAt, each with an importance score
-
-  From ALERTS (-> systems/alerts.txt, planned)
-    - open problems (low food, no beds, under attack...)
-
-  !! "While you were away" only works if the colony keeps simulating
-     (or catches up) while the player is offline or far away.
-     -> big topic for systems/simulation.txt
-
-
-8. OPEN QUESTIONS
---------------------------------------------------------------
-  [ ] Game name? It goes in the title of the first-join screen.
-  [ ] Tone: cozy / serious medieval / funny?
-  [ ] Can a player own more than one colony? Be in more than one?
-  [ ] What can a Member (C) see, compared with the Leader?
-  [ ] Should first join show a short camera fly-over of the land
-      before the menu pops up?
-  [ ] Should "Explore First" remind the player later
-      (e.g. after 10 min: "Ready to found a colony?")?
-  [ ] Are there spawn rules? (e.g. new players start in a safe
-      zone or at the world's "capital")
-
-
-9. IDEA PARKING LOT
---------------------------------------------------------------
-  - Rotating tip of the day at the bottom of the body.
-  - Seasonal greeting/theme (snowy frame in winter).
-  - Newspaper style header: "The Oakvale Gazette - Day 34".
-  - "Day 12 of your rule" streak counter.
-  - The colony crest (custom banner) in the header (JSON UI only).
-  - A colonist "greets" you in person when you return:
-    the mayor/steward walks up to you.
-  - "Since you left" = a mini timeline of what happened.
-
-
-10. CHANGELOG
+15. CHANGELOG
 --------------------------------------------------------------
   v0.1  2026-10-11  First brainstorm: triggers, 4 variants,
                     wireframe, nav map, data needs, questions.
+  v0.2  2026-10-11  Reframed as the game's MAIN MENU. Full design
+                    for first join + returning leader, UI kit,
+                    2-layer build plan (skin + fallback), devices,
+                    content rules, milestone + request ideas.
+                    "Toast" replaced by "action bar message".
