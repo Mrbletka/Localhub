@@ -161,6 +161,7 @@ h1 { font: 600 20px/1 var(--f-display); margin: 0; letter-spacing: .01em; text-w
 }
 .field textarea { resize: vertical; min-height: 64px; }
 .field textarea.cmds { font: 13px/1.5 var(--f-mono); min-height: 54px; }
+.field textarea.paste { min-height: 180px; }
 .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
 .check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .hint { font-size: 12.5px; color: var(--muted); margin: 0; }
@@ -294,6 +295,21 @@ pre.code .c { color: var(--code-com); }
         <button type="button" class="btn sm" data-act="addMenu" data-type="modal">+ Input form</button>
         <button type="button" class="btn sm" data-act="addMenu" data-type="message">+ Yes/No dialog</button>
       </div>
+      <div class="add-row">
+        <button type="button" class="btn sm ghost" data-act="import">Import file</button>
+        <button type="button" class="btn sm ghost" data-act="paste">Paste code</button>
+        <button type="button" class="btn sm ghost danger" data-act="undoImport" id="undoImport" hidden>Undo import</button>
+      </div>
+      <p class="hint" style="margin-top:6px">Import a .mcpack, .zip, main.js or project file to edit its menus here.</p>
+    </div>
+
+    <div class="card" id="pasteBox" hidden>
+      <div class="field"><label for="pasteText">Paste a main.js, any script with ActionFormData / ModalFormData / MessageFormData, or a project file</label>
+        <textarea id="pasteText" class="cmds paste" spellcheck="false" autocapitalize="off" placeholder="new ActionFormData().title(&quot;My Menu&quot;)…"></textarea></div>
+      <div class="ed-tools">
+        <button type="button" class="btn primary" data-act="pasteGo">Read menus</button>
+        <button type="button" class="btn ghost" data-act="paste">Cancel</button>
+      </div>
     </div>
 
     <div class="card" id="menuEditor"></div>
@@ -337,7 +353,7 @@ pre.code .c { color: var(--code-com); }
   </div>
 </main>
 
-<input type="file" id="importFile" accept=".json,application/json" hidden>
+<input type="file" id="importFile" accept=".mcpack,.mcaddon,.zip,.js,.mjs,.json,.txt" hidden>
 
 <script>
 (() => {
@@ -579,10 +595,10 @@ function renderSettings() {
           <option value="1" ${P.api === "1" ? "selected" : ""}>1.x · older worlds</option>
         </select></div>
     </div>
-    <p class="hint">Your work saves in this browser. Export a backup to move it to another device.</p>
+    <p class="hint">Your work saves in this browser. To move it to another device, export it or keep the pack: any pack or main.js made here imports back exactly.</p>
     <div class="ed-tools">
       <button type="button" class="btn sm" data-act="export">Export project</button>
-      <button type="button" class="btn sm" data-act="import">Import project</button>
+      <button type="button" class="btn sm" data-act="import">Import file</button>
       <button type="button" class="btn sm danger" data-act="reset">Start over</button>
     </div>`;
 }
@@ -605,7 +621,7 @@ const J = s => JSON.stringify(String(s ?? ""));
 const T = s => (String(s ?? "").includes("{player}") ? `fill(${J(s)}, { player: player.name })` : J(s));
 const cmdArr = s => "[" + lines(s).map(J).join(", ") + "]";
 
-function genMain() {
+function genMain(mark = true) {
   const v2 = P.api === "2";
   const names = fnNames();
   const fnOf = Object.fromEntries(P.menus.map((m, i) => [m.uid, names[i]]));
@@ -736,7 +752,8 @@ function genMain() {
     }
     L.push(`}`);
   });
-  return L.join("\n") + "\n";
+  const code = L.join("\n") + "\n";
+  return mark ? code + "\n// Menu Maker data: import this file into the tool to edit these menus again. Safe to delete.\n" + MARK + b64enc(JSON.stringify(P)) + "\n" : code;
 }
 const optsList = f => String(f.options ?? "").split("\n").map(s => s.trim()).filter(Boolean);
 const optsOf = f => JSON.stringify(optsList(f).length ? optsList(f) : ["Option"]);
@@ -981,17 +998,416 @@ document.addEventListener("click", e => {
     case "pack": buildPack(); break;
     case "export": offerFile(slug(P.name) + ".json", JSON.stringify(P, null, 2), "application/json"); break;
     case "import": $("#importFile").click(); break;
+    case "paste": { const box = $("#pasteBox"); box.hidden = !box.hidden; if (!box.hidden) $("#pasteText").focus(); break; }
+    case "pasteGo": {
+      const text = $("#pasteText").value;
+      if (!text.trim()) { toast("Paste some code first."); break; }
+      let res = null; try { res = readText(text); } catch (err) { console.warn(err); }
+      applyImport(res, "the pasted code"); if (res) $("#pasteText").value = ""; break;
+    }
+    case "undoImport":
+      if (undoP) { P = undoP; undoP = null; sel = P.menus[0].uid; logLines = []; fullRender(); toast("Import undone"); }
+      b.hidden = true; break;
   }
 });
 
 $("#importFile").addEventListener("change", async e => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-  try {
-    const p = JSON.parse(await f.text());
-    if (!valid(p)) throw new Error("bad");
-    P = p; sel = P.menus[0].uid; logLines = []; fullRender(); toast("Imported " + strip(P.name));
-  } catch (err) { toast("That file isn't a Menu Maker project."); }
+  try { applyImport(await readImport(f), f.name); }
+  catch (err) { console.warn(err); toast("Couldn't read " + f.name + ". Try a .mcpack, .zip, .js or .json file."); }
 });
+
+/* ---------------- import: files, packs and scripts ---------------- */
+// Generated scripts end with this line holding the whole project, so they load back exactly.
+const MARK = "// menu-maker:project ";
+function b64enc(str) {
+  const bytes = new TextEncoder().encode(str); let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function b64dec(b64) {
+  const bin = atob(b64.trim()); const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function withProject(p, fn) { const saved = P; P = p; try { return fn(); } finally { P = saved; } }
+
+let undoP = null;
+function applyImport(res, from) {
+  if (!res || !valid(res.project)) { toast("No menus found in " + from + "."); return; }
+  undoP = JSON.parse(JSON.stringify(P));
+  P = res.project; sel = P.start && menuBy(P.start) ? P.start : P.menus[0].uid; logLines = [];
+  $("#undoImport").hidden = false; $("#pasteBox").hidden = true;
+  fullRender();
+  const n = P.menus.length + (P.menus.length === 1 ? " menu" : " menus");
+  toast(res.how === "exact" ? `Loaded ${n} from ${from}` : `Read ${n} from ${from}. Check the button actions.`);
+}
+
+async function readImport(file) {
+  const name = file.name.toLowerCase();
+  if (/\.(mcpack|mcaddon|zip)$/.test(name)) return readZip(await file.arrayBuffer());
+  return readText(await file.text());
+}
+async function readZip(buf) {
+  if (typeof JSZip === "undefined") throw new Error("zip library missing");
+  const zip = await JSZip.loadAsync(buf);
+  const scripts = []; let manifest = null; const nested = [];
+  for (const [path, entry] of Object.entries(zip.files)) {
+    if (entry.dir) continue;
+    if (/\.(js|mjs)$/i.test(path)) scripts.push(await entry.async("string"));
+    else if (/(^|\/)manifest\.json$/i.test(path) && !manifest) { try { manifest = JSON.parse(await entry.async("string")); } catch (e) {} }
+    else if (/\.(mcpack|zip)$/i.test(path)) nested.push(await entry.async("arraybuffer"));
+  }
+  if (!scripts.length) {
+    for (const n of nested) { const r = await readZip(n); if (r) return r; }
+    return null;
+  }
+  const res = readText(scripts.join("\n;\n"));
+  if (res && manifest?.header && res.how !== "exact") {
+    res.project.name = manifest.header.name || res.project.name;
+    res.project.description = manifest.header.description || "";
+    const mod = (manifest.modules || []).find(m => m.type === "script");
+    if (manifest.header.uuid && mod?.uuid) res.project.uuids = { header: manifest.header.uuid, module: mod.uuid };
+  }
+  return res;
+}
+function readText(text) {
+  text = text.replace(/\r\n?/g, "\n");
+  const t = text.trim();
+  if (t.startsWith("{")) {
+    try { const p = JSON.parse(t); if (valid(p)) return { project: p, how: "exact" }; } catch (e) {}
+  }
+  const at = text.lastIndexOf(MARK);
+  if (at >= 0) {
+    try {
+      const p = JSON.parse(b64dec(text.slice(at + MARK.length).split("\n")[0]));
+      // Only trust the saved copy if the code wasn't edited by hand since
+      const body = text.slice(0, at).replace(/\/\/ Menu Maker data:[^\n]*\n?$/, "").trim();
+      const gen = withProject(p, () => genMain(false)).trim();
+      if (valid(p) && body === gen) return { project: p, how: "exact" };
+      // Edited by hand: read the menus from the code but keep the pack's name and IDs
+      const res = parseScript(text);
+      if (res && valid(p)) Object.assign(res.project, { name: p.name, description: p.description, uuids: p.uuids, ns: p.ns });
+      return res;
+    } catch (e) { /* fall through to reading the code */ }
+  }
+  return parseScript(text);
+}
+
+/* A small reader for Script API form code. It understands literals and call
+   chains, not all of JavaScript, so it reads what it can and skips the rest. */
+function skipNonCode(s, i) {
+  const c = s[i], n = s[i + 1];
+  if (c === "/" && n === "/") { const e = s.indexOf("\n", i); return e < 0 ? s.length : e; }
+  if (c === "/" && n === "*") { const e = s.indexOf("*/", i + 2); return e < 0 ? s.length : e + 2; }
+  if (c === '"' || c === "'" || c === "`") {
+    let j = i + 1;
+    while (j < s.length && s[j] !== c) {
+      if (s[j] === "\\") j += 2;
+      else if (c === "`" && s[j] === "$" && s[j + 1] === "{") j = matchClose(s, j + 1);
+      else if (c !== "`" && s[j] === "\n") return j;
+      else j++;
+    }
+    return j + 1;
+  }
+  return -1;
+}
+function matchClose(s, i) {
+  const open = s[i], close = { "(": ")", "[": "]", "{": "}" }[open]; let d = 0;
+  for (let j = i; j < s.length;) {
+    const k = skipNonCode(s, j); if (k >= 0) { j = k; continue; }
+    if (s[j] === open) d++; else if (s[j] === close && --d === 0) return j + 1;
+    j++;
+  }
+  return s.length;
+}
+function skipWs(s, i) {
+  for (;;) {
+    while (i < s.length && /\s/.test(s[i])) i++;
+    if (s[i] === "/" && (s[i + 1] === "/" || s[i + 1] === "*")) { i = skipNonCode(s, i); continue; }
+    return i;
+  }
+}
+const ESC = { n: "\n", t: "\t", r: "", b: "\b", f: "\f", v: "\v", 0: "\0" };
+function readString(s, i) {
+  const q = s[i]; let j = i + 1, out = "";
+  while (j < s.length && s[j] !== q) {
+    if (s[j] === "\\") {
+      const c = s[j + 1];
+      if (c === "u" && s[j + 2] === "{") { const e = s.indexOf("}", j); out += String.fromCodePoint(parseInt(s.slice(j + 3, e), 16)); j = e + 1; continue; }
+      if (c === "u") { out += String.fromCharCode(parseInt(s.slice(j + 2, j + 6), 16)); j += 6; continue; }
+      if (c === "x") { out += String.fromCharCode(parseInt(s.slice(j + 2, j + 4), 16)); j += 4; continue; }
+      if (c === "\n") { j += 2; continue; }
+      out += c in ESC ? ESC[c] : c; j += 2; continue;
+    }
+    if (q === "`" && s[j] === "$" && s[j + 1] === "{") {
+      const e = matchClose(s, j + 1);
+      out += placeholder(s.slice(j + 2, e - 1)); j = e; continue;
+    }
+    out += s[j++];
+  }
+  return { v: out, end: j + 1 };
+}
+// `${player.name}` -> {player}, `${v.amount}` -> {amount}
+function placeholder(expr) {
+  expr = expr.trim();
+  if (/^(?:\w+\.)*(?:player|source|sender|pl|p)\.name(?:Tag)?$/.test(expr)) return "{player}";
+  const m = expr.match(/^(?:\w+\.)*(\w+)$/);
+  return m ? `{${m[1]}}` : "${" + expr + "}";
+}
+function readLit(s, i) {
+  i = skipWs(s, i); const c = s[i];
+  if (c === '"' || c === "'" || c === "`") return readString(s, i);
+  const num = /^-?(\d+\.?\d*|\.\d+)(e-?\d+)?/i.exec(s.slice(i, i + 40));
+  if (num) return { v: +num[0], end: i + num[0].length };
+  for (const [w, v] of [["true", true], ["false", false], ["null", null], ["undefined", undefined]])
+    if (s.startsWith(w, i) && !/\w/.test(s[i + w.length] || "")) return { v, end: i + w.length };
+  if (c === "[" || c === "{") {
+    const close = c === "[" ? "]" : "}", out = c === "[" ? [] : {}; let j = i + 1;
+    for (;;) {
+      j = skipWs(s, j);
+      if (s[j] === close) return { v: out, end: j + 1 };
+      let key = null;
+      if (c === "{") {
+        const km = /^(?:"([^"]*)"|'([^']*)'|([A-Za-z_$][\w$]*))\s*:/.exec(s.slice(j, j + 200));
+        if (!km) return null;
+        key = km[1] ?? km[2] ?? km[3]; j += km[0].length;
+      }
+      const v = readLit(s, j); if (!v) return null;
+      if (c === "[") out.push(v.v); else out[key] = v.v;
+      j = skipWs(s, v.end);
+      if (s[j] === ",") j++; else if (s[j] !== close) return null;
+    }
+  }
+  return null;
+}
+// Reads call arguments starting at "(": literals become values, anything else {raw}
+function readArgs(s, i) {
+  const end = matchClose(s, i); const args = []; let j = i + 1;
+  while (true) {
+    j = skipWs(s, j); if (j >= end - 1) break;
+    const lit = readLit(s, j); let next;
+    const after = lit ? skipWs(s, lit.end) : -1;
+    if (lit && (s[after] === "," || after >= end - 1)) { args.push(lit.v); next = after; }
+    else {
+      let k = j;
+      while (k < end - 1 && s[k] !== ",") {
+        const sk = skipNonCode(s, k); if (sk >= 0) { k = sk; continue; }
+        if ("([{".includes(s[k])) { k = matchClose(s, k); continue; }
+        k++;
+      }
+      args.push({ raw: s.slice(j, k).trim() }); next = k;
+    }
+    j = s[next] === "," ? next + 1 : next;
+  }
+  return { args, end };
+}
+// Turns a text argument into plain text: strings, {translate}, {rawtext} or the first string in an expression
+function asText(a) {
+  if (typeof a === "string") return a;
+  if (a == null) return "";
+  if (typeof a === "number" || typeof a === "boolean") return String(a);
+  if (Array.isArray(a)) return a.map(asText).join("");
+  if (a.raw !== undefined) {
+    for (let i = 0; i < a.raw.length; i++) {
+      if ("\"'`".includes(a.raw[i])) return readString(a.raw, i).v;
+    }
+    return a.raw;
+  }
+  if (a.rawtext) return a.rawtext.map(asText).join("");
+  if (a.text !== undefined) return String(a.text);
+  if (a.translate) return a.translate;
+  return "";
+}
+
+function findFunctions(s) {
+  const out = [];
+  const re = /\bfunction\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(|\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:function\s*\(|\(|[A-Za-z_$][\w$]*\s*=>)/g;
+  let m;
+  while ((m = re.exec(s))) {
+    const name = m[1] || m[2];
+    let i = m.index + m[0].length - 1;
+    if (s[i] === "(") i = skipWs(s, matchClose(s, i));
+    else i = skipWs(s, i + 1);
+    if (s.startsWith("=>", i)) i = skipWs(s, i + 2);
+    if (s[i] !== "{") continue;
+    out.push({ name, start: i, end: matchClose(s, i) });
+  }
+  return out;
+}
+const FORM_METHODS = ["title", "body", "button", "button1", "button2", "textField", "dropdown", "slider", "toggle", "submitButton"];
+
+function parseScript(src) {
+  const fns = findFunctions(src);
+  const formRe = /\bnew\s+(ActionFormData|ModalFormData|MessageFormData)\s*\(\s*\)/g;
+  const found = []; let m;
+  while ((m = formRe.exec(src))) found.push({ cls: m[1], pos: m.index });
+  if (!found.length) return null;
+
+  const ownerOf = pos => fns.filter(f => f.start < pos && pos < f.end).sort((a, b) => (a.end - a.start) - (b.end - b.start))[0];
+  const forms = found.map((f, i) => {
+    const fn = ownerOf(f.pos);
+    const segEnd = Math.min(fn ? fn.end : src.length, ...found.slice(i + 1).filter(g => !fn || g.pos < fn.end).map(g => g.pos));
+    return { ...f, fn, seg: [f.pos, segEnd] };
+  });
+  const counts = {};
+  forms.forEach(f => {
+    const base = slug(f.fn?.name.replace(/^(show|open|display)/i, "") || "menu") || "menu";
+    f.uid = counts[base] ? base + "_" + (++counts[base]) : (counts[base] = 1, base);
+  });
+  const fnToUid = {};
+  forms.forEach(f => { if (f.fn && !(f.fn.name in fnToUid)) fnToUid[f.fn.name] = f.uid; });
+
+  let v2 = /valueStep|defaultValueIndex|\{\s*defaultValue/.test(src);
+  const v1 = !v2 && (/runCommandAsync/.test(src) || /\.(toggle)\(\s*[^,)]+,\s*(true|false)\s*\)/.test(src));
+
+  // What a block of code does: commands it runs and which menu it opens next
+  function outcomeOf(block, selfUid) {
+    const commands = [];
+    const callRe = /\b(runCommand(?:Async)?|run\w*)\s*\(/g; let c;
+    while ((c = callRe.exec(block))) {
+      const { args, end } = readArgs(block, c.index + c[0].length - 1);
+      const strs = args.flatMap(a => typeof a === "string" ? [a] : Array.isArray(a) ? a.filter(x => typeof x === "string") : []);
+      if (/^runCommand/.test(c[1])) { if (typeof args[0] === "string") commands.push(args[0]); }
+      else commands.push(...strs);
+      callRe.lastIndex = end;
+    }
+    let then = "close";
+    for (const [fname, uid] of Object.entries(fnToUid)) {
+      if (new RegExp("\\b" + fname.replace(/\$/g, "\\$") + "\\s*\\(").test(block)) { then = uid === selfUid ? "self" : uid; break; }
+    }
+    return { commands: commands.map(x => x.replace(/^\//, "")).join("\n"), then };
+  }
+  // End of the statement or { block } starting at i
+  function blockEnd(code, i) {
+    if (code[i] === "{") return matchClose(code, i);
+    const e = code.indexOf(";", i); return e < 0 ? code.length : e + 1;
+  }
+  // Splits the code after form.show() into branches keyed by the selection number
+  function branches(code) {
+    const out = {};
+    const sw = /switch\s*\(\s*[\w.]*selection\s*\)\s*\{/.exec(code);
+    if (sw) {
+      const bStart = sw.index + sw[0].length - 1, body = code.slice(bStart + 1, matchClose(code, bStart) - 1);
+      const cases = [...body.matchAll(/case\s+(\d+)\s*:/g)];
+      const def = /default\s*:/.exec(body);
+      cases.forEach((cm, k) => {
+        const end = k + 1 < cases.length ? cases[k + 1].index : def && def.index > cm.index ? def.index : body.length;
+        out[cm[1]] = body.slice(cm.index + cm[0].length, end);
+      });
+    }
+    const ifRe = /if\s*\(/g; let im;
+    while ((im = ifRe.exec(code))) {
+      const cEnd = matchClose(code, im.index + im[0].length - 1);
+      const cond = code.slice(im.index, cEnd);
+      const sel = /selection\s*===?\s*(\d+)|(\d+)\s*===?\s*[\w.]*selection/.exec(cond);
+      if (!sel) continue;
+      const n = sel[1] ?? sel[2];
+      const bs = skipWs(code, cEnd), be = blockEnd(code, bs);
+      if (!(n in out)) out[n] = code.slice(bs, be);
+      const el = skipWs(code, be);
+      if (code.startsWith("else", el) && !/^else\s+if\b/.test(code.slice(el, el + 10))) {
+        const es = skipWs(code, el + 4), ee = blockEnd(code, es);
+        if (!("else" in out)) out.else = code.slice(es, ee);
+      }
+      ifRe.lastIndex = cEnd;
+    }
+    return out;
+  }
+
+  const menus = forms.map(f => {
+    const seg = src.slice(f.seg[0], f.seg[1]);
+    const showAt = seg.search(/\.show\s*\(/);
+    const build = showAt >= 0 ? seg.slice(0, showAt) : seg;
+    const after = showAt >= 0 ? seg.slice(showAt) : "";
+    const calls = [];
+    const mRe = new RegExp("\\.(" + FORM_METHODS.join("|") + ")\\s*\\(", "g"); let cm;
+    while ((cm = mRe.exec(build))) {
+      const { args, end } = readArgs(build, cm.index + cm[0].length - 1);
+      calls.push({ name: cm[1], args }); mRe.lastIndex = end;
+    }
+    const first = (n) => calls.find(c => c.name === n)?.args;
+    const type = f.cls === "ActionFormData" ? "action" : f.cls === "ModalFormData" ? "modal" : "message";
+    const menu = { uid: f.uid, type, title: asText(first("title")?.[0]) || strip(f.fn?.name || "Menu") };
+    const br = branches(after);
+
+    if (type === "action") {
+      menu.body = asText(first("body")?.[0]);
+      menu.buttons = calls.filter(c => c.name === "button").map((c, i) => ({
+        text: asText(c.args[0]), icon: typeof c.args[1] === "string" ? c.args[1] : "",
+        ...(br[i] !== undefined ? outcomeOf(br[i], f.uid) : outcome()),
+      }));
+      if (!menu.buttons.length) menu.buttons.push({ text: "Button", icon: "", ...outcome() });
+    } else if (type === "message") {
+      menu.body = asText(first("body")?.[0]);
+      const b1 = br[0] ?? (br[1] !== undefined && br.else !== undefined ? br.else : undefined);
+      const b2 = br[1] ?? br.else;
+      menu.b1 = { text: asText(first("button1")?.[0]) || "Yes", ...(b1 !== undefined ? outcomeOf(b1, f.uid) : outcome()) };
+      menu.b2 = { text: asText(first("button2")?.[0]) || "No", ...(b2 !== undefined ? outcomeOf(b2, f.uid) : outcome()) };
+    } else {
+      // Field keys come from how the code reads formValues
+      const keys = {};
+      for (const km of after.matchAll(/(\w+)\s*[:=]\s*(?:\[[^\]]*\]\s*\[\s*)?[\w.]*formValues\s*(?:\?\.)?\[\s*(\d+)\s*\]/g)) keys[km[2]] ??= km[1];
+      const dm = /\[\s*([\w\s,]+?)\s*\]\s*=\s*[\w.]*formValues\b/.exec(after);
+      if (dm) dm[1].split(",").forEach((n, i) => { n = n.trim(); if (n) keys[i] ??= n; });
+      const fieldCalls = calls.filter(c => ["textField", "dropdown", "slider", "toggle"].includes(c.name));
+      menu.fields = fieldCalls.map((c, i) => {
+        const a = c.args, label = asText(a[0]);
+        const key = keys[i] || camel(label) || "field" + (i + 1);
+        const opt = a.find((x, k) => k > 0 && x && typeof x === "object" && !Array.isArray(x) && x.raw === undefined) || {};
+        if (c.name === "textField") return { uid: uid(), kind: "text", label, key, placeholder: asText(a[1]),
+          def: opt.defaultValue ?? (typeof a[2] === "string" ? a[2] : "") };
+        if (c.name === "dropdown") {
+          const opts = Array.isArray(a[1]) ? a[1].map(asText) : ["Option"];
+          return { uid: uid(), kind: "dropdown", label, key, options: opts.join("\n"),
+            def: opt.defaultValueIndex ?? (typeof a[2] === "number" ? a[2] : 0) };
+        }
+        if (c.name === "slider") return { uid: uid(), kind: "slider", label, key,
+          min: typeof a[1] === "number" ? a[1] : 0, max: typeof a[2] === "number" ? a[2] : 10,
+          step: opt.valueStep ?? (typeof a[3] === "number" ? a[3] : 1),
+          def: opt.defaultValue ?? (typeof a[4] === "number" ? a[4] : typeof a[1] === "number" ? a[1] : 0) };
+        return { uid: uid(), kind: "toggle", label, key, def: !!(opt.defaultValue ?? (typeof a[1] === "boolean" ? a[1] : false)), on: "", off: "" };
+      });
+      menu.submit = asText(first("submitButton")?.[0]);
+      // `if (v.toggleKey) ... else ...` becomes that toggle's on/off commands
+      let rest = after;
+      menu.fields.filter(x => x.kind === "toggle").forEach(t => {
+        const tm = new RegExp("if\\s*\\(\\s*(!?)\\s*(?:[\\w$]+\\.)?" + t.key + "\\s*\\)").exec(rest);
+        if (!tm) return;
+        const bs = skipWs(rest, tm.index + tm[0].length), be = blockEnd(rest, bs);
+        let on = rest.slice(bs, be), off = "", cut = be;
+        const el = skipWs(rest, be);
+        if (rest.startsWith("else", el) && !/^else\s+if\b/.test(rest.slice(el, el + 10))) {
+          const es = skipWs(rest, el + 4); cut = blockEnd(rest, es); off = rest.slice(es, cut);
+        }
+        if (tm[1]) [on, off] = [off, on];
+        t.on = outcomeOf(on, f.uid).commands; t.off = outcomeOf(off, f.uid).commands;
+        rest = rest.slice(0, tm.index) + rest.slice(cut);
+      });
+      Object.assign(menu, outcomeOf(rest, f.uid));
+    }
+    return menu;
+  });
+
+  // Which menu the item opens, and with which item
+  let start = menus[0].uid;
+  const use = /itemUse(?:On)?\.subscribe\s*\(/.exec(src);
+  if (use) {
+    const block = src.slice(use.index, matchClose(src, use.index + use[0].length - 1));
+    for (const [fname, u] of Object.entries(fnToUid)) if (new RegExp("\\b" + fname.replace(/\$/g, "\\$") + "\\s*\\(").test(block)) { start = u; break; }
+  }
+  const itemM = /OPEN_ITEM\s*=\s*["']([\w:.]+)["']/.exec(src) || /typeId\s*===?\s*["']((?!minecraft:player)[\w:.]+)["']/.exec(src);
+  const nsM = /id\s*!?===?\s*["']([\w-]+):/.exec(src);
+  return {
+    how: "parsed",
+    project: {
+      name: "Imported menus", description: "Menus made with Bedrock Menu Maker", api: v1 ? "1" : "2",
+      item: itemM ? (itemM[1].includes(":") ? itemM[1] : "minecraft:" + itemM[1]) : "minecraft:compass",
+      ns: nsM ? nsM[1] : "menu", start, uuids: { header: uuid(), module: uuid() }, menus,
+    },
+  };
+}
+const camel = s => { const p = pascal(s); return p ? p[0].toLowerCase() + p.slice(1) : ""; };
 
 /* datalists for icon paths and items */
 const dl = document.createElement("div");
