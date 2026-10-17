@@ -1,0 +1,1008 @@
+<title>Bedrock Menu Maker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Pixelify+Sans:wght@400;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+/* Layout: workbench. Editor column on the left, in-game preview + generated code on the right; one panel at a time on phones. */
+:root {
+  --bg: #eceeea;
+  --surface: #f8f9f6;
+  --surface-2: #e1e5de;
+  --line: #ccd2c8;
+  --fg: #1c211b;
+  --muted: #5b6457;
+  --accent: #2f7a4c;
+  --accent-fg: #ffffff;
+  --accent-soft: #d5e9dc;
+  --danger: #b23a2c;
+  --code-bg: #1d221d;
+  --code-fg: #dfe6dc;
+  --code-key: #8fd4a8;
+  --code-str: #e8c37a;
+  --code-com: #7e8a7a;
+
+  /* Bedrock form colours: the preview mimics the game, so these stay fixed in both themes */
+  --mc-panel: #c6c6c6;
+  --mc-panel-hi: #ffffff;
+  --mc-panel-lo: #555555;
+  --mc-btn: #d0d1d4;
+  --mc-btn-lo: #58585a;
+  --mc-btn-hover: #b1b2b5;
+  --mc-text: #313233;
+  --mc-title-bg: #e6e8eb;
+  --mc-field: #313233;
+  --mc-field-fg: #ffffff;
+  --mc-green: #3c8527;
+  --mc-world: #6b8f4e;
+
+  --f-display: "Pixelify Sans", "Courier New", monospace;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161916; --surface: #1e221e; --surface-2: #282d28; --line: #394039;
+    --fg: #e5e9e2; --muted: #9aa395; --accent: #62bf86; --accent-fg: #0e1a12;
+    --accent-soft: #23382a; --danger: #e46d5d; --code-bg: #111411;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161916; --surface: #1e221e; --surface-2: #282d28; --line: #394039;
+  --fg: #e5e9e2; --muted: #9aa395; --accent: #62bf86; --accent-fg: #0e1a12;
+  --accent-soft: #23382a; --danger: #e46d5d; --code-bg: #111411;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 15px/1.45 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 32px;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--bg);
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- header ---------- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  padding-block: 14px 10px; border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.brand-mark {
+  width: 28px; height: 28px; flex: none; border-radius: 4px;
+  background:
+    linear-gradient(var(--accent) 0 0) 6px 7px / 16px 3px no-repeat,
+    linear-gradient(var(--accent) 0 0) 6px 13px / 16px 3px no-repeat,
+    linear-gradient(var(--accent) 0 0) 6px 19px / 10px 3px no-repeat,
+    var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+h1 { font: 600 20px/1 var(--f-display); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.brand small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+.views { display: none; gap: 4px; background: var(--surface-2); padding: 3px; border-radius: 8px; width: 100%; }
+.views button {
+  flex: 1; border: 0; background: transparent; padding: 7px 0; border-radius: 6px;
+  font-weight: 600; font-size: 14px; color: var(--muted); cursor: pointer;
+}
+.views button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+
+/* ---------- workbench grid ---------- */
+.bench { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; padding-top: 18px; }
+.col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+@media (max-width: 900px) {
+  .views { display: flex; }
+  .bench { grid-template-columns: minmax(0, 1fr); }
+  body[data-view="build"] [data-panel]:not([data-panel="build"]),
+  body[data-view="preview"] [data-panel]:not([data-panel="preview"]),
+  body[data-view="code"] [data-panel]:not([data-panel="code"]) { display: none; }
+  .col-right { display: contents; }
+}
+
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 8px;
+}
+
+/* ---------- menu list ---------- */
+.menus { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 5px 12px 5px 6px; cursor: pointer; font-weight: 500; font-size: 14px;
+}
+.chip span.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.tag {
+  font: 600 10px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .04em;
+  padding: 4px 6px; border-radius: 999px; background: var(--surface-2); color: var(--muted); flex: none;
+}
+.tag.action { color: var(--accent); }
+.star { color: #c99a1b; font-size: 12px; }
+.add-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: var(--r);
+  padding: 6px 11px; cursor: pointer; font-weight: 600; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.ghost { background: transparent; }
+.btn.danger { color: var(--danger); }
+.btn.arming { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn.sm { padding: 3px 8px; font-size: 12px; }
+.btn:disabled { opacity: .45; cursor: default; }
+
+/* ---------- editor card ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.ed-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.ed-head h2 { font: 600 17px/1.2 var(--f-display); margin: 0; }
+.ed-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field > label, .lbl { font-size: 12px; font-weight: 600; color: var(--muted); }
+.field input[type="text"], .field input[type="number"], .field select, .field textarea {
+  width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: var(--r);
+  padding: 8px 10px; min-width: 0;
+}
+.field textarea { resize: vertical; min-height: 64px; }
+.field textarea.cmds { font: 13px/1.5 var(--f-mono); min-height: 54px; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+.hint code, .card code { font: 12px var(--f-mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+
+.fmt { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.fmt button {
+  width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--line); cursor: pointer;
+  font: 600 12px var(--f-mono); padding: 0;
+}
+.fmt .sw { border-color: rgb(0 0 0 / .25); }
+
+.items { display: flex; flex-direction: column; gap: 10px; }
+.item { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+.item .field input[type="text"], .item .field input[type="number"], .item .field select, .item .field textarea { background: var(--surface); }
+.item-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.item-head b { font-size: 13px; }
+.item-tools { display: flex; gap: 4px; }
+.then { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+
+details.settings summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+details.settings summary::-webkit-details-marker { display: none; }
+details.settings summary::after { content: "+"; font: 600 18px var(--f-mono); color: var(--muted); }
+details.settings[open] summary::after { content: "−"; }
+details.settings[open] summary { margin-bottom: 14px; }
+details.settings .stack { display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------- preview ---------- */
+.stage {
+  border-radius: 10px; overflow: hidden; position: relative; padding: 22px 14px;
+  min-height: 360px; display: flex; align-items: center; justify-content: center;
+  background:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / .05) 0 16px, transparent 16px 32px),
+    repeating-linear-gradient(0deg, rgb(0 0 0 / .05) 0 16px, transparent 16px 32px),
+    linear-gradient(#87b6e8 0 38%, var(--mc-world) 38%);
+}
+.mcform {
+  width: min(100%, 380px); background: var(--mc-panel); color: var(--mc-text);
+  font: 16px/1.3 var(--f-display);
+  border: 2px solid #000; box-shadow: inset 2px 2px 0 var(--mc-panel-hi), inset -2px -2px 0 var(--mc-panel-lo);
+  padding: 4px;
+}
+.mc-title { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--mc-title-bg); border-bottom: 2px solid var(--mc-panel-lo); }
+.mc-title .t { flex: 1; text-align: center; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.mc-x {
+  width: 24px; height: 24px; flex: none; border: 2px solid #000; background: var(--mc-btn);
+  box-shadow: inset -2px -2px 0 var(--mc-btn-lo); color: var(--mc-text); font: 600 14px/1 var(--f-display); cursor: pointer; padding: 0;
+}
+.mc-body { padding: 10px 8px; display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; }
+.mc-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 15px; }
+.mc-btn {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  border: 2px solid #000; background: var(--mc-btn); color: var(--mc-text);
+  box-shadow: inset 0 -4px 0 var(--mc-btn-lo); padding: 8px 10px 12px;
+  font: 16px/1.2 var(--f-display); cursor: pointer;
+}
+.mc-btn:hover { background: var(--mc-btn-hover); }
+.mc-btn:active { box-shadow: inset 0 -2px 0 var(--mc-btn-lo); padding-bottom: 10px; transform: translateY(2px); }
+.mc-btn .lbl-t { flex: 1; text-align: center; overflow-wrap: anywhere; min-width: 0; }
+.mc-btn.center { justify-content: center; }
+.mc-icon {
+  width: 28px; height: 28px; flex: none; display: grid; place-items: center;
+  background: var(--mc-panel-lo); color: #fff; font: 600 12px var(--f-display);
+  box-shadow: inset 2px 2px 0 rgb(255 255 255 / .2), inset -2px -2px 0 rgb(0 0 0 / .35);
+}
+.mc-label { font-size: 15px; }
+.mc-input { width: 100%; background: var(--mc-field); color: var(--mc-field-fg); border: 2px solid #000; padding: 6px 8px; font: 15px var(--f-display); }
+.mc-input::placeholder { color: #9a9a9a; }
+.mc-range { width: 100%; accent-color: var(--mc-green); }
+.mc-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mc-switch { appearance: none; width: 46px; height: 22px; border: 2px solid #000; background: var(--mc-panel-lo); position: relative; cursor: pointer; flex: none; margin: 0; }
+.mc-switch::after { content: ""; position: absolute; top: 0; left: 0; width: 18px; height: 18px; background: var(--mc-btn); box-shadow: inset -2px -2px 0 var(--mc-btn-lo); }
+.mc-switch:checked { background: var(--mc-green); }
+.mc-switch:checked::after { left: 24px; }
+.mc-closed { color: #fff; font: 16px var(--f-display); text-align: center; text-shadow: 2px 2px 0 rgb(0 0 0 / .4); display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.log {
+  font: 12.5px/1.55 var(--f-mono); background: var(--code-bg); color: var(--code-fg);
+  border-radius: 8px; padding: 10px 12px; min-height: 44px; overflow-x: auto; white-space: pre;
+}
+.log .c { color: var(--code-com); }
+.log .k { color: var(--code-key); }
+
+/* ---------- code ---------- */
+.codehead { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.tabs { display: flex; gap: 4px; }
+.tabs button { border: 1px solid var(--line); background: transparent; border-radius: var(--r); padding: 5px 10px; font: 500 13px var(--f-mono); cursor: pointer; color: var(--muted); }
+.tabs button[aria-pressed="true"] { background: var(--surface); color: var(--fg); border-color: var(--muted); }
+pre.code {
+  margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px;
+  padding: 14px; font: 12.5px/1.55 var(--f-mono); overflow: auto; max-height: 560px; tab-size: 2;
+}
+pre.code .s { color: var(--code-str); }
+pre.code .k { color: var(--code-key); }
+pre.code .c { color: var(--code-com); }
+.steps { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.steps b { color: var(--fg); }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;
+  z-index: 20; max-width: calc(100% - 32px); text-align: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .toast { animation: rise .18s ease-out; }
+  @keyframes rise { from { transform: translate(-50%, 8px); opacity: 0; } }
+}
+</style>
+
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"></div>
+    <div>
+      <h1>Bedrock Menu Maker</h1>
+      <small>Script API forms for Minecraft Bedrock add-ons</small>
+    </div>
+  </div>
+  <nav class="views" aria-label="View">
+    <button type="button" data-act="view" data-v="build" aria-pressed="true">Build</button>
+    <button type="button" data-act="view" data-v="preview" aria-pressed="false">Preview</button>
+    <button type="button" data-act="view" data-v="code" aria-pressed="false">Code</button>
+  </nav>
+</header>
+
+<main class="bench">
+  <section class="col" data-panel="build" aria-label="Editor">
+    <div>
+      <p class="section-label">Menus</p>
+      <div class="menus" id="menuList"></div>
+      <div class="add-row">
+        <button type="button" class="btn sm" data-act="addMenu" data-type="action">+ Button menu</button>
+        <button type="button" class="btn sm" data-act="addMenu" data-type="modal">+ Input form</button>
+        <button type="button" class="btn sm" data-act="addMenu" data-type="message">+ Yes/No dialog</button>
+      </div>
+    </div>
+
+    <div class="card" id="menuEditor"></div>
+
+    <details class="card settings" id="settings">
+      <summary>Pack settings</summary>
+      <div class="stack" id="settingsBody"></div>
+    </details>
+  </section>
+
+  <div class="col col-right">
+    <section class="col" data-panel="preview" aria-label="Preview">
+      <div>
+        <p class="section-label">In-game preview</p>
+        <div class="stage" id="stage"></div>
+      </div>
+      <div>
+        <p class="section-label">Commands this would run</p>
+        <div class="log" id="log"></div>
+      </div>
+    </section>
+
+    <section class="col" data-panel="code" aria-label="Generated code">
+      <div class="codehead">
+        <div class="tabs" role="group" aria-label="File">
+          <button type="button" data-act="codeTab" data-f="main" aria-pressed="true">scripts/main.js</button>
+          <button type="button" data-act="codeTab" data-f="manifest" aria-pressed="false">manifest.json</button>
+        </div>
+        <div class="ed-tools">
+          <button type="button" class="btn" data-act="copy">Copy</button>
+          <button type="button" class="btn primary" data-act="pack">Download pack</button>
+        </div>
+      </div>
+      <pre class="code" id="code"></pre>
+      <ol class="steps">
+        <li><b>Download pack</b> and open the .mcpack. Minecraft imports it.</li>
+        <li>Turn the pack on under your world's <b>Behavior Packs</b>.</li>
+        <li>In game, use the <b id="itemHint">compass</b>. You can also run <code id="evHint">/scriptevent menu:open main</code>.</li>
+      </ol>
+    </section>
+  </div>
+</main>
+
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const STORE = "bedrock-menu-maker:v1";
+
+/* ---------------- helpers ---------------- */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => Math.random().toString(36).slice(2, 9);
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() :
+  "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); }));
+const strip = s => String(s ?? "").replace(/§./g, "");
+const lines = s => String(s ?? "").split("\n").map(l => l.trim().replace(/^\//, "")).filter(Boolean);
+const pascal = s => strip(s).replace(/[^A-Za-z0-9 ]+/g, " ").trim().split(/\s+/).filter(Boolean)
+  .map(w => w[0].toUpperCase() + w.slice(1)).join("").replace(/^[0-9]+/, "");
+const fkey = (f, j) => { const k = String(f.key ?? "").trim().replace(/\W+/g, "_"); return !k ? "field" + (j + 1) : /^\d/.test(k) ? "_" + k : k; };
+const slug = s => strip(s).toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "") || "menu";
+
+function getPath(o, path) { return path.split(".").reduce((a, k) => a?.[k], o); }
+function setPath(o, path, v) {
+  const ks = path.split("."); const last = ks.pop();
+  const t = ks.reduce((a, k) => a[k], o); t[last] = v;
+}
+
+/* ---------------- model ---------------- */
+const outcome = (commands = "", then = "close") => ({ commands, then });
+function newMenu(type) {
+  const base = { uid: uid(), type };
+  if (type === "action") return { ...base, title: "New Menu", body: "Pick an option.", buttons: [{ text: "Button", icon: "", ...outcome() }] };
+  if (type === "modal") return { ...base, title: "New Form", submit: "Submit", fields: [newField("text")], ...outcome() };
+  return { ...base, title: "Are you sure?", body: "Confirm this choice.", b1: { text: "Yes", ...outcome() }, b2: { text: "No", ...outcome() } };
+}
+function newField(kind) {
+  const f = { uid: uid(), kind, label: "", key: "" };
+  if (kind === "text") Object.assign(f, { label: "Name", key: "name", placeholder: "Type here", def: "" });
+  if (kind === "dropdown") Object.assign(f, { label: "Choose", key: "choice", options: "Option A\nOption B", def: 0 });
+  if (kind === "slider") Object.assign(f, { label: "Amount", key: "amount", min: 1, max: 64, step: 1, def: 1 });
+  if (kind === "toggle") Object.assign(f, { label: "Enabled", key: "enabled", def: false, on: "", off: "" });
+  return f;
+}
+
+function sample() {
+  const main = { uid: "main", type: "action", title: "§l§2Server Hub", body: "Welcome, §e{player}§r!\nWhere do you want to go?",
+    buttons: [
+      { text: "Teleport to Spawn", icon: "textures/items/ender_pearl", commands: "tp @s 0 80 0\nplaysound mob.endermen.portal @s", then: "close" },
+      { text: "§9Item Shop", icon: "textures/items/emerald", commands: "", then: "shop" },
+      { text: "Player Settings", icon: "textures/items/redstone_dust", commands: "", then: "settings" },
+      { text: "§cServer Rules", icon: "textures/items/book_normal", commands: "", then: "rules" },
+    ] };
+  const shop = { uid: "shop", type: "action", title: "Item Shop", body: "Everything here is free today.",
+    buttons: [
+      { text: "Diamond Sword", icon: "textures/items/diamond_sword", commands: "give @s diamond_sword 1\ntellraw @s {\"rawtext\":[{\"text\":\"§aEnjoy your sword!\"}]}", then: "self" },
+      { text: "Golden Apple x4", icon: "textures/items/apple_golden", commands: "give @s golden_apple 4", then: "self" },
+      { text: "Steak x16", icon: "textures/items/beef_cooked", commands: "give @s cooked_beef 16", then: "self" },
+      { text: "Back", icon: "", commands: "", then: "main" },
+    ] };
+  const settings = { uid: "settings", type: "modal", title: "Player Settings", submit: "Save",
+    fields: [
+      { uid: uid(), kind: "toggle", label: "Night vision", key: "nightVision", def: false,
+        on: "effect @s night_vision infinite 0 true", off: "effect @s clear" },
+      { uid: uid(), kind: "dropdown", label: "Game mode", key: "mode", options: "survival\nadventure\ncreative", def: 0 },
+      { uid: uid(), kind: "slider", label: "Speed boost", key: "speed", min: 0, max: 4, step: 1, def: 0 },
+      { uid: uid(), kind: "text", label: "Say something to everyone", key: "msg", placeholder: "Hello!", def: "Hello!" },
+    ],
+    commands: "gamemode {mode} @s\neffect @s speed 600 {speed} true\nsay {msg}", then: "main" };
+  const rules = { uid: "rules", type: "message", title: "Server Rules", body: "1. Be kind to others\n2. No griefing\n3. No cheating or hacks\n\nDo you accept the rules?",
+    b1: { text: "§2I accept", commands: "tag @s add accepted_rules", then: "main" },
+    b2: { text: "§4I decline", commands: "tellraw @s {\"rawtext\":[{\"text\":\"§cYou need to accept the rules to build here.\"}]}", then: "close" } };
+  return {
+    name: "Server Hub Menus", description: "Menus made with Bedrock Menu Maker", api: "2",
+    item: "minecraft:compass", ns: "hub", start: "main",
+    uuids: { header: uuid(), module: uuid() },
+    menus: [main, shop, settings, rules],
+  };
+}
+
+let P;
+try { P = JSON.parse(localStorage.getItem(STORE)); } catch (e) { P = null; }
+if (!valid(P)) P = sample();
+let sel = P.menus[0].uid;
+let pvClosed = false;
+let logLines = [];
+let codeFile = "main";
+let lastFocus = null;
+
+function valid(p) { return p && Array.isArray(p.menus) && p.menus.length > 0 && p.uuids; }
+function save() { try { localStorage.setItem(STORE, JSON.stringify(P)); } catch (e) { /* storage unavailable */ } }
+const cur = () => P.menus.find(m => m.uid === sel) || P.menus[0];
+const menuBy = id => P.menus.find(m => m.uid === id);
+
+/* ---------------- § formatting ---------------- */
+const MC_COLORS = { 0: "#000000", 1: "#0000AA", 2: "#00AA00", 3: "#00AAAA", 4: "#AA0000", 5: "#AA00AA", 6: "#FFAA00", 7: "#AAAAAA",
+  8: "#555555", 9: "#5555FF", a: "#55FF55", b: "#55FFFF", c: "#FF5555", d: "#FF55FF", e: "#FFFF55", f: "#FFFFFF", g: "#DDD605" };
+function mcText(s, vars = {}) {
+  s = String(s ?? "").replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+  let out = "", color = null, bold = false, ital = false, buf = "";
+  const flush = () => {
+    if (!buf) return;
+    const st = (color ? `color:${color};` : "") + (bold ? "font-weight:700;" : "") + (ital ? "font-style:italic;" : "");
+    out += st ? `<span style="${st}">${esc(buf)}</span>` : esc(buf); buf = "";
+  };
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === "§" && i + 1 < s.length) {
+      flush(); const c = s[++i].toLowerCase();
+      if (MC_COLORS[c]) color = MC_COLORS[c];
+      else if (c === "l") bold = true; else if (c === "o") ital = true;
+      else if (c === "r") { color = null; bold = false; ital = false; }
+    } else buf += s[i];
+  }
+  flush();
+  return out;
+}
+
+/* ---------------- editor ---------------- */
+const TYPE_NAME = { action: "Button menu", modal: "Input form", message: "Yes/No dialog" };
+const TYPE_TAG = { action: "Action", modal: "Modal", message: "Message" };
+
+function renderMenuList() {
+  $("#menuList").innerHTML = P.menus.map(m => `
+    <button type="button" class="chip" data-act="select" data-uid="${m.uid}" aria-current="${m.uid === sel}">
+      <span class="tag ${m.type}">${TYPE_TAG[m.type]}</span>
+      <span class="name">${esc(strip(m.title) || "Untitled")}</span>
+      ${m.uid === P.start ? '<span class="star" title="Opens first">★</span>' : ""}
+    </button>`).join("");
+}
+
+const fid = path => `f-${sel}-${path.replace(/\./g, "-")}`;
+function inp(label, path, val, extra = "") {
+  return `<div class="field"><label for="${fid(path)}">${label}</label>
+    <input type="text" id="${fid(path)}" data-path="${path}" value="${esc(val)}" ${extra}></div>`;
+}
+function num(label, path, val) {
+  return `<div class="field"><label for="${fid(path)}">${label}</label>
+    <input type="number" inputmode="decimal" id="${fid(path)}" data-path="${path}" data-num value="${esc(val)}"></div>`;
+}
+function area(label, path, val, cls = "", ph = "") {
+  return `<div class="field"><label for="${fid(path)}">${label}</label>
+    <textarea id="${fid(path)}" data-path="${path}" class="${cls}" placeholder="${esc(ph)}" spellcheck="${cls ? "false" : "true"}" autocapitalize="${cls ? "off" : "sentences"}">${esc(val)}</textarea></div>`;
+}
+function thenSel(path, val, label = "Then") {
+  const opts = [["close", "Close the menu"], ["self", "Show this menu again"],
+    ...P.menus.filter(m => m.uid !== sel).map(m => [m.uid, "Open “" + (strip(m.title) || "Untitled") + "”"])];
+  return `<div class="field"><label for="${fid(path)}">${label}</label>
+    <select id="${fid(path)}" data-path="${path}">${opts.map(([v, t]) => `<option value="${v}" ${v === val ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>`;
+}
+function outcomeHTML(base, o, cmdLabel = "Run commands (one per line)") {
+  const p = base ? base + "." : "";
+  return `<div class="then">${area(cmdLabel, p + "commands", o.commands, "cmds", "give @s diamond 1")}${thenSel(p + "then", o.then)}</div>`;
+}
+function itemTools(list, i, n) {
+  return `<div class="item-tools">
+    <button type="button" class="btn sm ghost" data-act="move" data-list="${list}" data-i="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="Move up">↑</button>
+    <button type="button" class="btn sm ghost" data-act="move" data-list="${list}" data-i="${i}" data-d="1" ${i === n - 1 ? "disabled" : ""} aria-label="Move down">↓</button>
+    <button type="button" class="btn sm ghost danger" data-act="delItem" data-list="${list}" data-i="${i}" aria-label="Remove">Remove</button>
+  </div>`;
+}
+const ICONS = ["textures/items/diamond", "textures/items/emerald", "textures/items/gold_ingot", "textures/items/iron_sword",
+  "textures/items/diamond_sword", "textures/items/compass_item", "textures/items/clock_item", "textures/items/book_normal",
+  "textures/items/ender_pearl", "textures/items/apple_golden", "textures/items/bed_red", "textures/items/map_filled",
+  "textures/items/redstone_dust", "textures/items/nether_star", "textures/blocks/chest_front", "textures/blocks/grass_side_carried",
+  "textures/ui/gear", "textures/ui/settings_glyph_color_2x", "textures/ui/icon_steve", "textures/ui/arrow_dark_left_stretch"];
+
+function renderEditor() {
+  renderMenuList();
+  const m = cur();
+  const key = keyFor(m);
+  let h = `<div class="ed-head">
+      <h2>${TYPE_NAME[m.type]}</h2>
+      <div class="ed-tools">
+        ${m.uid === P.start ? '<span class="tag">★ Opens first</span>' : '<button type="button" class="btn sm" data-act="start">Open this first</button>'}
+        <button type="button" class="btn sm" data-act="dup">Duplicate</button>
+        <button type="button" class="btn sm danger" data-act="delMenu" ${P.menus.length < 2 ? "disabled" : ""}>Delete</button>
+      </div>
+    </div>
+    ${inp("Title", "title", m.title)}`;
+  if (m.type !== "modal") h += area("Body text", "body", m.body);
+  h += `<div class="field"><span class="lbl">Colour codes · tap to insert into the box you last typed in</span>
+    <div class="fmt">${Object.entries(MC_COLORS).map(([c, hex]) => `<button type="button" class="sw" style="background:${hex}" data-act="fmt" data-c="${c}" aria-label="§${c}" title="§${c}"></button>`).join("")}
+    <button type="button" data-act="fmt" data-c="l" title="Bold">B</button><button type="button" data-act="fmt" data-c="o" title="Italic"><i>I</i></button><button type="button" data-act="fmt" data-c="r" title="Reset">R</button></div></div>
+    <p class="hint">Players can open this menu with <code>/scriptevent ${esc(P.ns)}:open ${esc(key)}</code> from chat, a command block or an NPC.</p>`;
+
+  if (m.type === "action") {
+    h += `<div><p class="section-label">Buttons</p><div class="items">` + m.buttons.map((b, i) => `
+      <div class="item">
+        <div class="item-head"><b>Button ${i + 1}</b>${itemTools("buttons", i, m.buttons.length)}</div>
+        <div class="row">${inp("Label", `buttons.${i}.text`, b.text)}${inp("Icon texture (optional)", `buttons.${i}.icon`, b.icon, 'list="icons" placeholder="textures/items/diamond" autocapitalize="off" spellcheck="false"')}</div>
+        ${outcomeHTML(`buttons.${i}`, b)}
+      </div>`).join("") + `</div>
+      <div class="add-row"><button type="button" class="btn" data-act="addBtn">+ Add button</button></div></div>`;
+  } else if (m.type === "modal") {
+    h += `<div><p class="section-label">Fields</p><div class="items">` + m.fields.map((f, i) => fieldHTML(f, i, m.fields.length)).join("") + `</div>
+      <div class="add-row">
+        <button type="button" class="btn sm" data-act="addField" data-k="text">+ Text box</button>
+        <button type="button" class="btn sm" data-act="addField" data-k="dropdown">+ Dropdown</button>
+        <button type="button" class="btn sm" data-act="addField" data-k="slider">+ Slider</button>
+        <button type="button" class="btn sm" data-act="addField" data-k="toggle">+ Toggle</button>
+      </div></div>
+      <div class="item"><div class="item-head"><b>When submitted</b></div>
+        ${inp("Submit button label", "submit", m.submit)}
+        ${outcomeHTML("", m)}
+        <p class="hint">Use a field's key in braces to insert its value, e.g. <code>give @s diamond {amount}</code>. ${m.fields.map((f, j) => `<code>{${esc(fkey(f, j))}}</code>`).join(" ")} <code>{player}</code></p>
+      </div>`;
+  } else {
+    h += ["b1", "b2"].map((k, i) => `<div class="item">
+      <div class="item-head"><b>${i ? "Second" : "First"} button</b></div>
+      ${inp("Label", `${k}.text`, m[k].text)}
+      ${outcomeHTML(k, m[k])}
+    </div>`).join("");
+  }
+  $("#menuEditor").innerHTML = h;
+}
+
+function fieldHTML(f, i, n) {
+  const p = `fields.${i}`;
+  const KIND = { text: "Text box", dropdown: "Dropdown", slider: "Slider", toggle: "Toggle" };
+  let h = `<div class="item"><div class="item-head"><b>${KIND[f.kind]}</b>${itemTools("fields", i, n)}</div>
+    <div class="row">${inp("Label", p + ".label", f.label)}${inp("Key (for commands)", p + ".key", f.key, 'autocapitalize="off" spellcheck="false"')}</div>`;
+  if (f.kind === "text") h += `<div class="row">${inp("Placeholder", p + ".placeholder", f.placeholder)}${inp("Default", p + ".def", f.def)}</div>`;
+  if (f.kind === "dropdown") h += `<div class="row">${area("Options (one per line)", p + ".options", f.options)}${num("Default option #", p + ".def", f.def + 1)}</div>`;
+  if (f.kind === "slider") h += `<div class="row">${num("Min", p + ".min", f.min)}${num("Max", p + ".max", f.max)}${num("Step", p + ".step", f.step)}${num("Default", p + ".def", f.def)}</div>`;
+  if (f.kind === "toggle") h += `<label class="check"><input type="checkbox" id="${fid(p + ".def")}" data-path="${p}.def" data-bool ${f.def ? "checked" : ""}> On by default</label>
+    <div class="row">${area("If on, run", p + ".on", f.on, "cmds")}${area("If off, run", p + ".off", f.off, "cmds")}</div>`;
+  return h + `</div>`;
+}
+
+function renderSettings() {
+  $("#settingsBody").innerHTML = `
+    <div class="row">
+      <div class="field"><label for="s-name">Pack name</label><input type="text" id="s-name" data-set="name" value="${esc(P.name)}"></div>
+      <div class="field"><label for="s-ns">Command namespace</label><input type="text" id="s-ns" data-set="ns" value="${esc(P.ns)}" autocapitalize="off" spellcheck="false"></div>
+    </div>
+    <div class="field"><label for="s-desc">Pack description</label><input type="text" id="s-desc" data-set="description" value="${esc(P.description)}"></div>
+    <div class="row">
+      <div class="field"><label for="s-item">Item that opens the first menu</label><input type="text" id="s-item" data-set="item" value="${esc(P.item)}" list="items" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><label for="s-api">Script API version</label>
+        <select id="s-api" data-set="api">
+          <option value="2" ${P.api === "2" ? "selected" : ""}>2.0 · Minecraft 1.21.90+</option>
+          <option value="1" ${P.api === "1" ? "selected" : ""}>1.x · older worlds</option>
+        </select></div>
+    </div>
+    <p class="hint">Your work saves in this browser. Export a backup to move it to another device.</p>
+    <div class="ed-tools">
+      <button type="button" class="btn sm" data-act="export">Export project</button>
+      <button type="button" class="btn sm" data-act="import">Import project</button>
+      <button type="button" class="btn sm danger" data-act="reset">Start over</button>
+    </div>`;
+}
+
+/* ---------------- code generation ---------------- */
+function fnNames() {
+  const seen = {};
+  return P.menus.map((m, i) => {
+    let n = "show" + (pascal(m.title) || "Menu" + (i + 1));
+    if (seen[n]) n += ++seen[n]; else seen[n] = 1;
+    return n;
+  });
+}
+function keyFor(m) {
+  const names = fnNames(); const i = P.menus.indexOf(m);
+  const n = names[i].slice(4);
+  return n[0].toLowerCase() + n.slice(1);
+}
+const J = s => JSON.stringify(String(s ?? ""));
+const T = s => (String(s ?? "").includes("{player}") ? `fill(${J(s)}, { player: player.name })` : J(s));
+const cmdArr = s => "[" + lines(s).map(J).join(", ") + "]";
+
+function genMain() {
+  const v2 = P.api === "2";
+  const names = fnNames();
+  const fnOf = Object.fromEntries(P.menus.map((m, i) => [m.uid, names[i]]));
+  const used = new Set(P.menus.map(m => ({ action: "ActionFormData", modal: "ModalFormData", message: "MessageFormData" })[m.type]));
+  const startFn = fnOf[P.start] || names[0];
+  const ns = slug(P.ns);
+  const L = [];
+  L.push(`// ${strip(P.name)}: generated by Bedrock Menu Maker`);
+  L.push(`import { world, system } from "@minecraft/server";`);
+  L.push(`import { ${[...used].sort().join(", ")} } from "@minecraft/server-ui";`);
+  L.push(``);
+  L.push(`const OPEN_ITEM = ${J(P.item.trim() || "minecraft:compass")};`);
+  L.push(`const MENUS = {`);
+  P.menus.forEach((m, i) => L.push(`  ${keyFor(m)}: ${names[i]},`));
+  L.push(`};`);
+  L.push(``);
+  L.push(`// Use the item to open the first menu`);
+  L.push(`world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {`);
+  L.push(`  if (itemStack?.typeId === OPEN_ITEM) ${startFn}(source);`);
+  L.push(`});`);
+  L.push(``);
+  L.push(`// /scriptevent ${ns}:open <menu>   (e.g. from a command block or NPC)`);
+  L.push(`system.afterEvents.scriptEventReceive.subscribe(({ id, message, sourceEntity }) => {`);
+  L.push(`  if (id !== "${ns}:open" || sourceEntity?.typeId !== "minecraft:player") return;`);
+  L.push(`  const show = MENUS[message.trim()] ?? ${startFn};`);
+  L.push(`  show(sourceEntity);`);
+  L.push(`});`);
+  L.push(``);
+  L.push(`// Replaces {key} with a value, e.g. {player} or a form field`);
+  L.push(`function fill(text, vars) {`);
+  L.push(`  return text.replace(/\\{(\\w+)\\}/g, (m, k) => (k in vars ? String(vars[k]) : m));`);
+  L.push(`}`);
+  L.push(``);
+  L.push(`// Runs commands as the player`);
+  L.push(`function run(player, commands, vars = {}) {`);
+  L.push(`  vars.player ??= player.name;`);
+  L.push(`  for (const raw of commands) {`);
+  L.push(`    const cmd = fill(raw, vars);`);
+  if (v2) {
+    L.push(`    try {`);
+    L.push(`      player.runCommand(cmd);`);
+    L.push(`    } catch (e) {`);
+    L.push('      console.warn(`[menus] "${cmd}" failed: ${e}`);');
+    L.push(`    }`);
+  } else {
+    L.push('    player.runCommandAsync(cmd).catch((e) => console.warn(`[menus] "${cmd}" failed: ${e}`));');
+  }
+  L.push(`  }`);
+  L.push(`}`);
+
+  const thenLines = (o, self, ind, vars) => {
+    const out = [];
+    if (lines(o.commands).length) out.push(`${ind}run(player, ${cmdArr(o.commands)}${vars ? ", v" : ""});`);
+    if (o.then === "self") out.push(`${ind}return ${self}(player);`);
+    else if (o.then !== "close" && fnOf[o.then]) out.push(`${ind}return ${fnOf[o.then]}(player);`);
+    return out;
+  };
+
+  P.menus.forEach((m, i) => {
+    const fn = names[i];
+    L.push(``);
+    L.push(`async function ${fn}(player) {`);
+    if (m.type === "action") {
+      L.push(`  const form = new ActionFormData()`);
+      L.push(`    .title(${T(m.title)})`);
+      L.push(`    .body(${T(m.body)});`);
+      m.buttons.forEach(b => L.push(`  form.button(${T(b.text)}${b.icon.trim() ? ", " + J(b.icon.trim()) : ""});`));
+      L.push(``);
+      L.push(`  const res = await form.show(player);`);
+      L.push(`  if (res.canceled) return;`);
+      L.push(`  switch (res.selection) {`);
+      m.buttons.forEach((b, j) => {
+        const body = thenLines(b, fn, "      ");
+        L.push(`    case ${j}:`);
+        L.push(...body);
+        if (!body.length || !body[body.length - 1].includes("return")) L.push(`      break;`);
+      });
+      L.push(`  }`);
+    } else if (m.type === "message") {
+      L.push(`  const form = new MessageFormData()`);
+      L.push(`    .title(${T(m.title)})`);
+      L.push(`    .body(${T(m.body)})`);
+      L.push(`    .button1(${T(m.b1.text)})`);
+      L.push(`    .button2(${T(m.b2.text)});`);
+      L.push(``);
+      L.push(`  const res = await form.show(player);`);
+      L.push(`  if (res.canceled) return;`);
+      L.push(`  if (res.selection === 0) {`);
+      L.push(...thenLines(m.b1, fn, "    "));
+      L.push(`  } else {`);
+      L.push(...thenLines(m.b2, fn, "    "));
+      L.push(`  }`);
+    } else {
+      L.push(`  const form = new ModalFormData().title(${T(m.title)});`);
+      m.fields.forEach(f => {
+        if (f.kind === "text") L.push(v2
+          ? `  form.textField(${J(f.label)}, ${J(f.placeholder)}${f.def ? `, { defaultValue: ${J(f.def)} }` : ""});`
+          : `  form.textField(${J(f.label)}, ${J(f.placeholder)}${f.def ? ", " + J(f.def) : ""});`);
+        if (f.kind === "dropdown") L.push(v2
+          ? `  form.dropdown(${J(f.label)}, ${optsOf(f)}, { defaultValueIndex: ${clampIdx(f)} });`
+          : `  form.dropdown(${J(f.label)}, ${optsOf(f)}, ${clampIdx(f)});`);
+        if (f.kind === "slider") L.push(v2
+          ? `  form.slider(${J(f.label)}, ${+f.min || 0}, ${+f.max || 0}, { valueStep: ${+f.step || 1}, defaultValue: ${+f.def || 0} });`
+          : `  form.slider(${J(f.label)}, ${+f.min || 0}, ${+f.max || 0}, ${+f.step || 1}, ${+f.def || 0});`);
+        if (f.kind === "toggle") L.push(v2
+          ? `  form.toggle(${J(f.label)}, { defaultValue: ${!!f.def} });`
+          : `  form.toggle(${J(f.label)}, ${!!f.def});`);
+      });
+      if (strip(m.submit).trim()) L.push(`  form.submitButton(${J(m.submit)});`);
+      L.push(``);
+      L.push(`  const res = await form.show(player);`);
+      L.push(`  if (res.canceled) return;`);
+      L.push(`  const v = {`);
+      m.fields.forEach((f, j) => {
+        const k = fkey(f, j);
+        L.push(f.kind === "dropdown"
+          ? `    ${k}: ${optsOf(f)}[res.formValues[${j}]],`
+          : `    ${k}: res.formValues[${j}],`);
+      });
+      L.push(`  };`);
+      m.fields.forEach((f, j) => {
+        if (f.kind !== "toggle" || (!lines(f.on).length && !lines(f.off).length)) return;
+        const k = fkey(f, j);
+        L.push(`  if (v.${k}) run(player, ${cmdArr(f.on)}, v);`);
+        if (lines(f.off).length) L.push(`  else run(player, ${cmdArr(f.off)}, v);`);
+      });
+      L.push(...thenLines(m, fn, "  ", true));
+    }
+    L.push(`}`);
+  });
+  return L.join("\n") + "\n";
+}
+const optsList = f => String(f.options ?? "").split("\n").map(s => s.trim()).filter(Boolean);
+const optsOf = f => JSON.stringify(optsList(f).length ? optsList(f) : ["Option"]);
+const clampIdx = f => Math.max(0, Math.min((optsList(f).length || 1) - 1, (+f.def || 0)));
+
+function genManifest() {
+  const v2 = P.api === "2";
+  return JSON.stringify({
+    format_version: 2,
+    header: {
+      name: P.name || "Menus", description: P.description || "",
+      uuid: P.uuids.header, version: [1, 0, 0], min_engine_version: v2 ? [1, 21, 90] : [1, 20, 80],
+    },
+    modules: [{ type: "script", language: "javascript", uuid: P.uuids.module, version: [1, 0, 0], entry: "scripts/main.js" }],
+    dependencies: [
+      { module_name: "@minecraft/server", version: v2 ? "2.0.0" : "1.11.0" },
+      { module_name: "@minecraft/server-ui", version: v2 ? "2.0.0" : "1.3.0" },
+    ],
+  }, null, 2) + "\n";
+}
+
+function highlight(src, file) {
+  let h = esc(src);
+  if (file === "manifest") return h.replace(/(&quot;[^&]*?&quot;)(\s*:)/g, '<span class="k">$1</span>$2').replace(/:\s(&quot;.*?&quot;)/g, ': <span class="s">$1</span>');
+  return h.split("\n").map(line => {
+    if (/^\s*\/\//.test(line)) return `<span class="c">${line}</span>`;
+    return line
+      .replace(/(&quot;(?:[^&\\]|\\.|&(?!quot;))*?&quot;)/g, '<span class="s">$1</span>')
+      .replace(/\b(import|from|const|async|function|await|return|if|else|switch|case|break|for|of|try|catch|new)\b(?![^<]*<\/span>)/g, '<span class="k">$1</span>');
+  }).join("\n");
+}
+
+/* ---------------- preview ---------------- */
+function previewVars() {
+  const v = { player: "Steve" };
+  document.querySelectorAll("#stage [data-key]").forEach(el => {
+    v[el.dataset.key] = el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.selectedOptions[0]?.text : el.type === "range" ? +el.value : (el.value || "");
+  });
+  return v;
+}
+function iconHTML(b) {
+  const ic = b.icon.trim();
+  if (!ic) return "";
+  const n = ic.split("/").pop().replace(/_item$|_normal$/, "").replace(/_/g, " ");
+  return `<span class="mc-icon" title="${esc(ic)}">${esc(n.slice(0, 2).toUpperCase())}</span>`;
+}
+function renderPreview() {
+  const m = cur(); const stage = $("#stage");
+  if (pvClosed) {
+    stage.innerHTML = `<div class="mc-closed">Menu closed<button type="button" class="mc-btn center" data-act="reopen" style="width:auto"><span>Open “${esc(strip(menuBy(P.start)?.title || m.title))}”</span></button></div>`;
+  } else {
+    let body = "";
+    if (m.type === "action") {
+      if (strip(m.body).trim()) body += `<div class="mc-text">${mcText(m.body, { player: "Steve" })}</div>`;
+      body += m.buttons.map((b, i) => `<button type="button" class="mc-btn" data-act="pv" data-i="${i}">${iconHTML(b)}<span class="lbl-t">${mcText(b.text)}</span></button>`).join("");
+    } else if (m.type === "message") {
+      body += `<div class="mc-text">${mcText(m.body, { player: "Steve" })}</div>`;
+      body += `<button type="button" class="mc-btn center" data-act="pv" data-i="b1"><span class="lbl-t">${mcText(m.b1.text)}</span></button>`;
+      body += `<button type="button" class="mc-btn center" data-act="pv" data-i="b2"><span class="lbl-t">${mcText(m.b2.text)}</span></button>`;
+    } else {
+      body += m.fields.map((f, j) => {
+        const id = `pv-${m.uid}-${j}`; const k = esc(fkey(f, j));
+        if (f.kind === "text") return `<label class="mc-label" for="${id}">${mcText(f.label)}</label><input class="mc-input" id="${id}" data-key="${k}" placeholder="${esc(strip(f.placeholder))}" value="${esc(f.def)}">`;
+        if (f.kind === "dropdown") return `<label class="mc-label" for="${id}">${mcText(f.label)}</label><select class="mc-input" id="${id}" data-key="${k}">${optsList(f).map((o, oi) => `<option ${oi === clampIdx(f) ? "selected" : ""}>${esc(strip(o))}</option>`).join("")}</select>`;
+        if (f.kind === "slider") return `<label class="mc-label" for="${id}">${mcText(f.label)}: <b data-out="${id}">${+f.def || 0}</b></label><input type="range" class="mc-range" id="${id}" data-key="${k}" min="${+f.min || 0}" max="${+f.max || 0}" step="${+f.step || 1}" value="${+f.def || 0}">`;
+        return `<div class="mc-toggle"><label class="mc-label" for="${id}">${mcText(f.label)}</label><input type="checkbox" class="mc-switch" id="${id}" data-key="${k}" ${f.def ? "checked" : ""}></div>`;
+      }).join("");
+      body += `<button type="button" class="mc-btn center" data-act="pv" data-i="submit"><span class="lbl-t">${mcText(m.submit || "Submit")}</span></button>`;
+    }
+    stage.innerHTML = `<div class="mcform" role="dialog" aria-label="${esc(strip(m.title))}">
+      <div class="mc-title"><span style="width:24px"></span><span class="t">${mcText(m.title)}</span><button type="button" class="mc-x" data-act="pvClose" aria-label="Close">×</button></div>
+      <div class="mc-body">${body}</div></div>`;
+  }
+  renderLog();
+}
+function renderLog() {
+  $("#log").innerHTML = logLines.length ? logLines.map(l => l.startsWith("#") ? `<span class="c">${esc(l)}</span>` : `<span class="k">/</span>${esc(l)}`).join("\n")
+    : `<span class="c"># Tap a button in the preview to try your menu.</span>`;
+}
+function simulate(o, vars, extra = []) {
+  const sub = c => c.replace(/\{(\w+)\}/g, (mm, k) => (k in vars ? String(vars[k]) : mm));
+  const ran = [...extra, ...lines(o.commands)].map(sub);
+  logLines = ran.length ? ran : ["# (no commands)"];
+  if (o.then === "close") pvClosed = true;
+  else if (o.then !== "self" && menuBy(o.then)) { sel = o.then; renderEditor(); }
+  renderPreview();
+}
+
+/* ---------------- code panel ---------------- */
+function renderCode() {
+  const src = codeFile === "main" ? genMain() : genManifest();
+  $("#code").innerHTML = highlight(src, codeFile);
+  $("#itemHint").textContent = (P.item || "").replace(/^minecraft:/, "").replace(/_/g, " ") || "item";
+  const start = menuBy(P.start) || P.menus[0];
+  $("#evHint").textContent = `/scriptevent ${slug(P.ns)}:open ${keyFor(start)}`;
+}
+
+/* ---------------- files ---------------- */
+const dlCap = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(null);
+async function offerFile(name, data, mime) {
+  const dl = await dlCap;
+  if (dl) {
+    try { await dl.save({ filename: name, data }); return true; }
+    catch (e) { if (e?.code !== "declined") toast("Couldn't save the file here. Use Copy instead."); return false; }
+  }
+  const blob = data instanceof Blob ? data : new Blob([data], { type: mime || "application/octet-stream" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  return true;
+}
+function packIcon() {
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  g.fillStyle = "#3c8527"; g.fillRect(0, 0, 64, 64);
+  g.fillStyle = "#2a5e1c"; for (let i = 0; i < 64; i += 8) for (let j = (i / 8) % 2 * 8; j < 64; j += 16) g.fillRect(i, j, 8, 8);
+  g.fillStyle = "#000"; g.fillRect(10, 10, 44, 44);
+  g.fillStyle = "#c6c6c6"; g.fillRect(12, 12, 40, 40);
+  g.fillStyle = "#58585a"; [18, 28, 38].forEach(y => g.fillRect(16, y + 4, 32, 2));
+  g.fillStyle = "#d0d1d4"; [18, 28, 38].forEach(y => g.fillRect(16, y, 32, 4));
+  return new Promise(r => c.toBlob(r, "image/png"));
+}
+async function buildPack() {
+  if (typeof JSZip === "undefined") { toast("The zip library didn't load. Copy the files instead."); return; }
+  const zip = new JSZip();
+  zip.file("manifest.json", genManifest());
+  zip.file("scripts/main.js", genMain());
+  const icon = await packIcon(); if (icon) zip.file("pack_icon.png", icon);
+  const base = slug(P.name);
+  const dl = await dlCap;
+  if (dl) {
+    // The viewer only allows .zip saves; Minecraft needs the .mcpack extension.
+    const blob = await zip.generateAsync({ type: "blob" });
+    if (await offerFile(base + ".zip", blob)) toast("Saved. Rename it to " + base + ".mcpack, then open it.");
+  } else {
+    const blob = await zip.generateAsync({ type: "blob", mimeType: "application/octet-stream" });
+    if (await offerFile(base + ".mcpack", blob)) toast("Pack downloaded. Open it to import into Minecraft.");
+  }
+}
+
+let toastT;
+function toast(msg) {
+  document.querySelector(".toast")?.remove(); clearTimeout(toastT);
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+  document.body.appendChild(t); toastT = setTimeout(() => t.remove(), 3200);
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast("Copied"); }
+  catch (e) {
+    const r = document.createRange(); r.selectNodeContents($("#code"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    toast("Text selected. Copy it from your device's menu.");
+  }
+}
+
+/* ---------------- events ---------------- */
+function refresh() { save(); renderPreview(); renderCode(); }
+function fullRender() { renderEditor(); renderSettings(); pvClosed = false; refresh(); }
+
+document.addEventListener("focusin", e => {
+  if (e.target.matches("#menuEditor input[type=text], #menuEditor textarea")) lastFocus = e.target;
+});
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.path) {
+    let v = t.dataset.bool !== undefined ? t.checked : t.value;
+    if (t.dataset.num !== undefined) v = t.value === "" ? 0 : +t.value;
+    if (/^fields\.\d+\.def$/.test(t.dataset.path) && getPath(cur(), t.dataset.path.replace(/def$/, "kind")) === "dropdown") v = Math.max(0, v - 1);
+    setPath(cur(), t.dataset.path, v);
+    if (t.dataset.path === "title") renderMenuList();
+    if (/\.key$/.test(t.dataset.path)) { refresh(); return; }
+    pvClosed = false; refresh();
+  } else if (t.dataset.set) {
+    P[t.dataset.set] = t.value;
+    if (t.dataset.set === "ns") renderEditor();
+    refresh();
+  } else if (t.matches("#stage input[type=range]")) {
+    const out = document.querySelector(`[data-out="${t.id}"]`); if (out) out.textContent = t.value;
+  }
+});
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const m = cur(); const act = b.dataset.act;
+  switch (act) {
+    case "view":
+      document.body.dataset.view = b.dataset.v;
+      document.querySelectorAll(".views button").forEach(x => x.setAttribute("aria-pressed", x === b));
+      try { localStorage.setItem(STORE + ":view", b.dataset.v); } catch (err) {}
+      window.scrollTo(0, 0); break;
+    case "select": sel = b.dataset.uid; pvClosed = false; logLines = []; renderEditor(); renderPreview(); break;
+    case "addMenu": { const n = newMenu(b.dataset.type); P.menus.push(n); sel = n.uid; fullRender(); break; }
+    case "start": P.start = m.uid; fullRender(); break;
+    case "dup": {
+      const c = JSON.parse(JSON.stringify(m)); c.uid = uid(); c.title = m.title + " copy";
+      P.menus.splice(P.menus.indexOf(m) + 1, 0, c); sel = c.uid; fullRender(); break;
+    }
+    case "delMenu": case "reset":
+      if (!b.classList.contains("arming")) {
+        b.classList.add("arming"); b.dataset.label = b.textContent; b.textContent = "Tap again to confirm";
+        setTimeout(() => { b.classList.remove("arming"); if (b.dataset.label) b.textContent = b.dataset.label; }, 3000);
+        break;
+      }
+      if (act === "reset") { P = sample(); sel = P.menus[0].uid; logLines = []; fullRender(); toast("Started over with the example menus"); break; }
+      P.menus = P.menus.filter(x => x !== m);
+      P.menus.forEach(x => {
+        const fix = o => { if (o && o.then === m.uid) o.then = "close"; };
+        (x.buttons || []).forEach(fix); fix(x); fix(x.b1); fix(x.b2);
+      });
+      if (P.start === m.uid) P.start = P.menus[0].uid;
+      sel = P.menus[0].uid; fullRender(); break;
+    case "addBtn": m.buttons.push({ text: "Button " + (m.buttons.length + 1), icon: "", ...outcome() }); renderEditor(); refresh(); break;
+    case "addField": m.fields.push(newField(b.dataset.k)); renderEditor(); refresh(); break;
+    case "move": {
+      const list = m[b.dataset.list], i = +b.dataset.i, j = i + +b.dataset.d;
+      [list[i], list[j]] = [list[j], list[i]]; renderEditor(); refresh(); break;
+    }
+    case "delItem": m[b.dataset.list].splice(+b.dataset.i, 1); renderEditor(); refresh(); break;
+    case "fmt": {
+      const el = lastFocus && document.contains(lastFocus) ? lastFocus : $("#menuEditor [data-path=title]");
+      const code = "§" + b.dataset.c; const s = el.selectionStart ?? el.value.length, en = el.selectionEnd ?? s;
+      el.value = el.value.slice(0, s) + code + el.value.slice(en);
+      el.focus(); el.setSelectionRange(s + 2, s + 2);
+      el.dispatchEvent(new Event("input", { bubbles: true })); break;
+    }
+    case "pv": {
+      const i = b.dataset.i;
+      if (m.type === "action") simulate(m.buttons[+i], { player: "Steve" });
+      else if (m.type === "message") simulate(m[i], { player: "Steve" });
+      else {
+        const v = previewVars(), extra = [];
+        m.fields.forEach((f, j) => { if (f.kind === "toggle") extra.push(...lines(v[fkey(f, j)] ? f.on : f.off)); });
+        simulate(m, v, extra);
+      }
+      break;
+    }
+    case "pvClose": pvClosed = true; logLines = ["# Menu closed without a choice"]; renderPreview(); break;
+    case "reopen": sel = menuBy(P.start) ? P.start : sel; pvClosed = false; logLines = []; renderEditor(); renderPreview(); break;
+    case "codeTab":
+      codeFile = b.dataset.f;
+      document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b)); renderCode(); break;
+    case "copy": copyText(codeFile === "main" ? genMain() : genManifest()); break;
+    case "pack": buildPack(); break;
+    case "export": offerFile(slug(P.name) + ".json", JSON.stringify(P, null, 2), "application/json"); break;
+    case "import": $("#importFile").click(); break;
+  }
+});
+
+$("#importFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const p = JSON.parse(await f.text());
+    if (!valid(p)) throw new Error("bad");
+    P = p; sel = P.menus[0].uid; logLines = []; fullRender(); toast("Imported " + strip(P.name));
+  } catch (err) { toast("That file isn't a Menu Maker project."); }
+});
+
+/* datalists for icon paths and items */
+const dl = document.createElement("div");
+dl.innerHTML = `<datalist id="icons">${ICONS.map(i => `<option value="${i}">`).join("")}</datalist>
+  <datalist id="items">${["minecraft:compass", "minecraft:clock", "minecraft:book", "minecraft:nether_star", "minecraft:stick", "minecraft:emerald", "minecraft:recovery_compass"].map(i => `<option value="${i}">`).join("")}</datalist>`;
+document.body.appendChild(dl);
+
+let v0 = "build";
+try { v0 = localStorage.getItem(STORE + ":view") || "build"; } catch (e) {}
+document.body.dataset.view = v0;
+document.querySelectorAll(".views button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === v0));
+fullRender();
+})();
+</script>
