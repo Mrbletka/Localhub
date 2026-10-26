@@ -1,0 +1,9 @@
+{
+  "name": "Localhub Bedrock Studio",
+  "short_name": "Bedrock Studio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#11151c",
+  "theme_color": "#11151c",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "localhub-bedrock-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mobile-first local Node.js workspace and AI agent studio for Minecraft Bedrock add-ons.",
+  "type": "module",
+  "bin": {
+    "localhub": "server/index.js"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "lan": "node server/index.js --host 0.0.0.0",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  }
+}

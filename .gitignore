@@ -1,0 +1,5 @@
+node_modules/
+# Local user data: projects, builds, API keys and agent chat history
+workspace/
+dist/
+.localhub/
