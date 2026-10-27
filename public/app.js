@@ -996,6 +996,17 @@ function onFileChanged(e) {
 }
 function connectWorkspaceEvents() {
   const es = new EventSource(withToken('/api/events'));
+  // This stream also tells the server a studio window is open (app mode stops it when none are).
+  es.onopen = () => {
+    if (!$('#offline').hidden) location.reload();
+  };
+  es.onerror = () => {
+    clearTimeout(connectWorkspaceEvents.check);
+    connectWorkspaceEvents.check = setTimeout(async () => {
+      const alive = await fetch('/api/status', { headers: TOKEN ? { 'x-localhub-token': TOKEN } : {} }).then((r) => r.ok).catch(() => false);
+      if (!alive) $('#offline').hidden = false;
+    }, 1500);
+  };
   es.onmessage = (msg) => {
     const e = JSON.parse(msg.data);
     if (e.type === 'file_changed') onFileChanged(e);
@@ -1138,6 +1149,7 @@ function settingsSheet() {
   el('button', { class: 'btn primary block', type: 'submit' }, 'Save settings')));
 }
 $('#btn-settings').addEventListener('click', settingsSheet);
+$('#btn-reconnect').addEventListener('click', () => location.reload());
 
 function applyTheme() {
   const t = store.get('theme', 'auto');

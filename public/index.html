@@ -10,6 +10,7 @@
 <title>Bedrock Studio</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
@@ -98,6 +99,12 @@
 <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="offline" id="offline" role="alertdialog" aria-labelledby="offline-title" hidden>
+  <img src="/icon.svg" alt="" width="72" height="72">
+  <h2 id="offline-title">Studio server stopped</h2>
+  <p>It stops by itself when the app is closed. Tap the <b>Bedrock Studio</b> widget (or run <code>npm start</code>) to start it again.</p>
+  <button class="btn primary" id="btn-reconnect">Try again</button>
+</div>
 
 <script type="module" src="/app.js"></script>
 </body>

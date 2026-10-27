@@ -22,6 +22,7 @@ import { handleMcp } from './mcp.js';
 import { exportLibrary } from './library.js';
 import { STUDIO_VERSION } from './bedrock/versions.js';
 import { CORE_RULES } from './bedrock/knowledge.js';
+import { createActivity, shouldStop, openInBrowser } from './lifecycle.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(here, '..', 'public');
@@ -35,7 +36,13 @@ function parseArgs(argv) {
     else if (k === '--host') args.host = val();
     else if (k === '--data') args.data = val();
     else if (k === '--token') args.token = val();
-    else if (k === '--help' || k === '-h') args.help = true;
+    else if (k === '--open') args.open = true;
+    else if (k === '--exit-when-idle') args.idleExit = Number(inline ?? (/^\d+$/.test(argv[i + 1] || '') ? argv[++i] : 45));
+    else if (k === '--app') {
+      // What the Termux widget runs: open the IDE, stop when its last window closes.
+      args.open = true;
+      args.idleExit ??= 45;
+    } else if (k === '--help' || k === '-h') args.help = true;
   }
   return args;
 }
@@ -49,7 +56,7 @@ const MIME = {
 
 const isLoopback = (host) => ['127.0.0.1', 'localhost', '::1'].includes(host);
 
-export function createServer({ dataDir, host = '127.0.0.1', token = '' }) {
+export function createServer({ dataDir, host = '127.0.0.1', token = '', activity = createActivity() }) {
   const ws = new Workspace(path.join(dataDir, 'workspace'));
   const distDir = path.join(dataDir, 'dist');
   fs.mkdirSync(distDir, { recursive: true });
@@ -293,11 +300,18 @@ export function createServer({ dataDir, host = '127.0.0.1', token = '' }) {
     }
     req.on('close', unsub);
   });
+  // Every open IDE window keeps this stream open; app mode stops the server when none are left.
   route('GET', '/api/events', async ({ req, res }) => {
     const write = sse(req, res);
     const onEvent = (e) => write(e);
     bus.on('workspace', onEvent);
-    req.on('close', () => bus.off('workspace', onEvent));
+    activity.clients++;
+    activity.everConnected = true;
+    req.on('close', () => {
+      bus.off('workspace', onEvent);
+      activity.clients--;
+      activity.lastSeen = Date.now();
+    });
   });
 
   // Plain HTTP tool access for any agent that does not speak MCP.
@@ -323,6 +337,8 @@ export function createServer({ dataDir, host = '127.0.0.1', token = '' }) {
     try {
       const denied = guard(req, url);
       if (denied) return send(res, 403, { error: denied });
+      activity.lastRequest = Date.now();
+      if (url.pathname === '/mcp') activity.lastMcp = activity.lastRequest;
 
       if (url.pathname === '/mcp') {
         if (req.method === 'POST') {
@@ -363,7 +379,7 @@ export function createServer({ dataDir, host = '127.0.0.1', token = '' }) {
     }
   });
   server.requestTimeout = 0; // SSE streams stay open
-  return { server, ws, config, agents, distDir, host };
+  return { server, ws, config, agents, distDir, host, activity };
 }
 
 function workspaceGuide() {
@@ -395,7 +411,14 @@ function lanAddresses() {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
-    console.log('Usage: node server/index.js [--port 3737] [--host 127.0.0.1|0.0.0.0] [--data <dir>] [--token <secret>]');
+    console.log(`Usage: node server/index.js [options]
+  --port 3737              port to listen on
+  --host 127.0.0.1         use 0.0.0.0 for LAN access (a token is then required)
+  --data <dir>             where workspace/, dist/ and settings live (default: current folder)
+  --token <secret>         access token for LAN mode
+  --open                   open the IDE in the browser once the server is up
+  --exit-when-idle [sec]   stop when no IDE window has been open for this long (default 45)
+  --app                    --open + --exit-when-idle (what the Termux widget runs)`);
     return;
   }
   const dataDir = path.resolve(args.data);
@@ -407,16 +430,42 @@ async function main() {
     token = fs.existsSync(tokenFile) ? fs.readFileSync(tokenFile, 'utf8').trim() : crypto.randomBytes(18).toString('base64url');
     fs.writeFileSync(tokenFile, token, { mode: 0o600 });
   }
-  const { server, ws, config } = createServer({ dataDir, host: args.host, token });
+  const { server, ws, config, agents, activity } = createServer({ dataDir, host: args.host, token });
+  const q = token ? `/?token=${token}` : '/';
+  const appUrl = `http://localhost:${args.port}${q}`;
+  server.on('error', async (err) => {
+    if (err.code !== 'EADDRINUSE') throw err;
+    // Already running (e.g. the widget was tapped twice): just bring the IDE up.
+    const running = await fetch(`http://127.0.0.1:${args.port}/api/status`, { headers: token ? { authorization: `Bearer ${token}` } : {} }).then((r) => r.ok).catch(() => false);
+    if (running) {
+      console.log(`  Bedrock Studio is already running on port ${args.port}.`);
+      if (args.open) openInBrowser(appUrl);
+      process.exit(0);
+    }
+    console.error(`  Port ${args.port} is used by another program. Start with --port <other port>.`);
+    process.exit(1);
+  });
+  if (args.idleExit > 0) {
+    const idleMs = args.idleExit * 1000;
+    const timer = setInterval(() => {
+      if (!shouldStop(activity, { idleMs, activeRuns: agents.activeRuns().length })) return;
+      clearInterval(timer);
+      console.log(`  No studio window open for ${args.idleExit}s - stopping.`);
+      server.close();
+      server.closeAllConnections?.();
+      setTimeout(() => process.exit(0), 200).unref();
+    }, Math.min(5000, Math.max(250, idleMs / 2)));
+  }
   server.listen(args.port, args.host, () => {
-    const q = token ? `/?token=${token}` : '/';
     console.log(`\n  Localhub Bedrock Studio v${STUDIO_VERSION}`);
     console.log(`  Workspace: ${ws.root}`);
     console.log(`  Open:      http://localhost:${args.port}${q}`);
     if (!isLoopback(args.host)) for (const ip of lanAddresses()) console.log(`  LAN:       http://${ip}:${args.port}${q}`);
     console.log(`  MCP:       http://localhost:${args.port}/mcp${token ? `  (header "Authorization: Bearer ${token}")` : ''}`);
     if (!config.apiKey) console.log('  Note:      add your Anthropic API key in Settings to enable the agents.');
+    if (args.idleExit > 0) console.log(`  App mode:  stops ${args.idleExit}s after the last studio window closes.`);
     console.log('');
+    if (args.open) openInBrowser(appUrl);
   });
 }
 

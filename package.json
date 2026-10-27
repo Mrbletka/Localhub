@@ -9,7 +9,9 @@
   },
   "scripts": {
     "start": "node server/index.js",
+    "app": "node server/index.js --app",
     "lan": "node server/index.js --host 0.0.0.0",
+    "widget": "bash scripts/install-termux-widget.sh",
     "test": "node --test test/*.test.js"
   },
   "engines": {
