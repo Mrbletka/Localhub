@@ -41,10 +41,17 @@ To keep projects on shared storage, run `termux-setup-storage` once, then start 
 npm run widget
 ```
 
-Then install **Termux:Widget** from the same place you got Termux (F-Droid or GitHub; they must match),
-long-press the home screen > Widgets > Termux:Widget, pick the 1x1 shortcut and choose **Bedrock Studio**.
-It gets the studio icon. Tapping it starts the server in the background (no terminal window) and opens the
-studio; about 45 seconds after you close the studio, the server stops by itself and releases the wake lock.
+Then:
+
+1. Install **Termux:Widget** from the same place you got Termux (F-Droid or GitHub; they must match).
+2. Allow Termux to open the browser from the background: Settings > Apps > Termux > **Display over other
+   apps** > Allow. On Xiaomi / Redmi / POCO also allow Termux > Other permissions > **Display pop-up windows
+   while running in the background**. Without this, Android silently blocks the studio from opening.
+3. Open the Termux:Widget app and tap **CREATE SHORTCUTS**, then long-press the Termux:Widget app icon and
+   drag **Bedrock Studio** onto your home screen. It gets the studio icon. (If your launcher offers the 1x1
+   "Termux shortcut" widget, that works too; the 2x2 list widget works but has no icon.)
+
+Tapping it starts the server in the background (no terminal window) and opens the studio; about 45 seconds after you close the studio, the server stops by itself and releases the wake lock.
 It keeps running while an agent is still working, and for 10 minutes after Claude Code last used the MCP
 connection. Tapping the icon while it's already running just opens the studio again.
 

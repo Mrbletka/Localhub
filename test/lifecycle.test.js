@@ -87,4 +87,8 @@ test('widget installer writes an executable launcher and icon', () => {
   const icon = fs.readFileSync(path.join(home, '.shortcuts', 'icons', 'Bedrock Studio.png'));
   assert.equal(icon.readUInt32BE(0), 0x89504e47);
   execFileSync('bash', ['-n', launcher]);
+  // Same launcher as an app shortcut, still under a tasks/ folder so it runs in the background.
+  const dynamic = path.join(home, '.termux', 'widget', 'dynamic_shortcuts', 'tasks', 'Bedrock Studio');
+  assert.equal(fs.readFileSync(dynamic, 'utf8'), text);
+  assert.equal(fs.statSync(dynamic).mode & 0o777, 0o700);
 });
