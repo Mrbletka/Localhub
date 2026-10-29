@@ -1,8 +1,9 @@
 // Sessions: every player has CONFIG.sessions.slots save slots. Each session is its own mine plot (in a grid far
 // from spawn) with its own money, upgrades, rebirths and unplaced drills. Only the active session earns.
-import { world, system, BlockVolume } from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { getJson, setJson, getNumber, setNumber, giveItem } from './lib/util.js';
+import { buildMine, arrival, lookAt, safetyFloor } from './mine_builder.js';
 
 const NS = CONFIG.namespace;
 const P = CONFIG.plots;
@@ -10,11 +11,16 @@ const SLOTS = CONFIG.sessions.slots;
 const STATE_KEY = `${NS}:sessions`;
 const ACTIVE_KEY = `${NS}:active_session`;
 const DRILLS = new Set(CONFIG.generators.map((g) => g.block));
+const BREAKABLE = new Set([...DRILLS, ...CONFIG.ores.map((o) => o.block)]);
 
-/** { players: { playerId: { name, slots: [{ index, built } | null, ...] } }, free: plotIndex[], next: plotIndex } */
+/**
+ * { players: { playerId: { name, slots: [{ index, version } | null, ...] } }, free: plotIndex[], next: plotIndex }
+ * version: layout version of the mine built on that plot (CONFIG.mine.version); older mines are rebuilt on entry.
+ */
 let state = { players: {}, free: [], next: 0 };
 const deleteHooks = [];
 const enterHooks = [];
+const rebuildHooks = [];
 
 const save = () => setJson(world, STATE_KEY, state);
 
@@ -69,6 +75,9 @@ export const onSessionDelete = (fn) => deleteHooks.push(fn);
 /** Called with (player, slot, plotCenter) once a player stands in the mine of the session they play. */
 export const onSessionEnter = (fn) => enterHooks.push(fn);
 
+/** Called with (player, slot) right before the active session's mine is (re)built: drop what stood in it. */
+export const onMineRebuild = (fn) => rebuildHooks.push(fn);
+
 // ---- plots -----------------------------------------------------------------------------------------------------
 
 export function plotCenter(index) {
@@ -81,13 +90,13 @@ export function plotCenter(index) {
 
 /** Owner of the plot containing a location: { owner, name, slot, index }, or undefined. */
 export function plotAt(dimensionId, { x, y, z }) {
-  if (dimensionId !== P.dimension || y < P.origin.y - 8 || y > P.origin.y + P.clearHeight + 16) return;
+  if (dimensionId !== P.dimension || y < P.origin.y - 8 || y > P.origin.y + 26) return;
   const col = Math.round((x - P.origin.x) / P.spacing);
   const row = Math.round((z - P.origin.z) / P.spacing);
   if (col < 0 || col >= P.perRow || row < 0) return;
   const index = row * P.perRow + col;
   const c = plotCenter(index);
-  if (Math.abs(x - c.x) > P.radius || Math.abs(z - c.z) > P.radius) return;
+  if (Math.abs(x - c.x) > CONFIG.mine.half || Math.abs(z - c.z) > CONFIG.mine.half) return;
   for (const [owner, p] of Object.entries(state.players)) {
     const slot = p.slots.findIndex((s) => s?.index === index);
     if (slot >= 0) return { owner, name: p.name, slot, index };
@@ -100,53 +109,55 @@ export function inActivePlot(player, dimensionId, location) {
   return !!plot && plot.owner === player.id && plot.slot === activeSession(player);
 }
 
-/** Arrival spot: near the south edge, looking at the middle, so you never land inside a drill. */
+/** On the rails in front of the tunnel, looking at the ore vein. */
 function arrive(player, c) {
   const dimension = world.getDimension(P.dimension);
-  const spot = { x: c.x + 0.5, y: c.y + 1, z: c.z + P.radius - 2 + 0.5 };
-  player.teleport(spot, { dimension, facingLocation: { x: c.x + 0.5, y: c.y + 1, z: c.z + 0.5 } });
+  const spot = arrival(c);
+  player.teleport(spot, { dimension, facingLocation: lookAt(c) });
   player.setSpawnPoint({ dimension, x: Math.floor(spot.x), y: spot.y, z: Math.floor(spot.z) });
 }
 
-function build(dimension, c) {
-  const r = P.radius;
-  const fill = (x1, y1, z1, x2, y2, z2, block) => dimension.fillBlocks(new BlockVolume({ x: x1, y: y1, z: z1 }, { x: x2, y: y2, z: z2 }), block);
-  fill(c.x - r, c.y + 1, c.z - r, c.x + r, c.y + P.clearHeight, c.z + r, 'minecraft:air');
-  fill(c.x - r, c.y, c.z - r, c.x + r, c.y, c.z + r, P.floor);
-  fill(c.x - r, c.y + 1, c.z - r, c.x + r, c.y + 1, c.z - r, P.border);
-  fill(c.x - r, c.y + 1, c.z + r, c.x + r, c.y + 1, c.z + r, P.border);
-  fill(c.x - r, c.y + 1, c.z - r, c.x - r, c.y + 1, c.z + r, P.border);
-  fill(c.x + r, c.y + 1, c.z - r, c.x + r, c.y + 1, c.z + r, P.border);
-  for (const [dx, dz] of [[-r, -r], [-r, r], [r, -r], [r, r]]) dimension.getBlock({ x: c.x + dx, y: c.y + 2, z: c.z + dz })?.setType(P.light);
-}
+/** Layout version of the mine on a plot (plots from before versions: 1 if built, 0 if not). */
+const mineVersion = (record) => record.version ?? (record.built ? 1 : 0);
 
-/** Take a player to a session's plot, building it first if it never finished. done(true) once they stand in it. */
-function goToPlot(player, record, done) {
+/**
+ * Take a player to a session's mine. A mine that is missing or has an older layout is built first - around the
+ * player: one teleport to the arrival spot (before the loading screen opens: teleports close menus), then the
+ * mine goes up across a few ticks without ever putting a block where the player stands. done(true) when they are in.
+ */
+function goToPlot(player, record, slot, done) {
   const c = plotCenter(record.index);
-  if (record.built) {
+  if (mineVersion(record) >= CONFIG.mine.version) {
     arrive(player, c);
     return done(true);
   }
+  for (const fn of rebuildHooks) fn(player, slot);
   const dimension = world.getDimension(P.dimension);
-  player.addEffect('slow_falling', 200, { showParticles: false });
-  player.teleport({ x: c.x + 0.5, y: c.y + 3, z: c.z + 0.5 }, { dimension });
+  const spot = arrival(c);
+  player.addEffect('slow_falling', 600, { showParticles: false });
+  player.teleport({ ...spot, y: spot.y + 1.5 }, { dimension, facingLocation: lookAt(c) });
   let tries = 0;
-  const handle = system.runInterval(() => {
-    if (!player.isValid) return system.clearRun(handle);
+  const attempt = () => {
+    if (!player.isValid) return;
     try {
-      build(dimension, c);
+      safetyFloor(dimension, c); // something to stand on at once, even before the rest of the area has loaded
     } catch {
-      // chunks still loading - try again shortly
-      if (++tries < 40) return;
-      system.clearRun(handle);
-      return done(false);
+      // not loaded yet either - the build retries
     }
-    system.clearRun(handle);
-    record.built = true;
-    save();
-    arrive(player, c);
-    done(true);
-  }, 5);
+    system.runJob(
+      buildMine(dimension, c, record.index + 1, (ok) => {
+        if (!ok) return ++tries < 40 ? system.runTimeout(attempt, 5) : done(false); // not loaded yet
+        record.version = CONFIG.mine.version;
+        delete record.built;
+        save();
+        player.removeEffect('slow_falling');
+        if (player.location.y < c.y + 0.9) arrive(player, c); // fell below the floor before it was there
+        else player.setSpawnPoint({ dimension, x: Math.floor(spot.x), y: spot.y, z: Math.floor(spot.z) });
+        done(true);
+      }),
+    );
+  };
+  system.runTimeout(attempt, 2);
 }
 
 // ---- switching -------------------------------------------------------------------------------------------------
@@ -181,7 +192,7 @@ export function playSession(player, slot, done = () => {}) {
     player.setDynamicProperty(ACTIVE_KEY, slot);
     unstashDrills(player, slot);
   }
-  goToPlot(player, record, (ok) => {
+  goToPlot(player, record, slot, (ok) => {
     if (ok) for (const fn of enterHooks) fn(player, slot, plotCenter(record.index));
     done(ok);
   });
@@ -191,7 +202,7 @@ export function playSession(player, slot, done = () => {}) {
 export function createSession(player, slot, done) {
   const p = (state.players[player.id] ??= { name: player.name, slots: Array(SLOTS).fill(null) });
   p.name = player.name;
-  p.slots[slot] = { index: state.free.length ? state.free.shift() : state.next++, built: false };
+  p.slots[slot] = { index: state.free.length ? state.free.shift() : state.next++, version: 0 };
   save();
   setNumber(player, sessionKey(slot, 'money'), CONFIG.startingMoney);
   setNumber(player, sessionKey(slot, 'income_level'), 0);
@@ -220,14 +231,8 @@ export function deleteSession(player, slot) {
 
 // ---- protection ------------------------------------------------------------------------------------------------
 
-/** True for the floor and rim of a plot, which nobody may break. */
-function isStructure(index, { x, y, z }) {
-  const c = plotCenter(index);
-  return y === c.y || (y <= c.y + 2 && (Math.abs(x - c.x) === P.radius || Math.abs(z - c.z) === P.radius));
-}
-
 /**
- * Other players may not break blocks inside someone's mine, and nobody breaks its floor or rim.
+ * In a mine only its owner breaks blocks, and only ores and drills (the cave itself is unbreakable).
  * Before-events are read-only: messages go through system.run.
  */
 world.beforeEvents.playerBreakBlock.subscribe((event) => {
@@ -237,19 +242,19 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   if (plot.owner !== player.id) {
     event.cancel = true;
     system.run(() => player.onScreenDisplay.setActionBar(`§cThis is ${plot.name}'s mine.`));
-  } else if (isStructure(plot.index, event.block.location)) {
+  } else if (!BREAKABLE.has(event.block.typeId)) {
     event.cancel = true;
-    system.run(() => player.onScreenDisplay.setActionBar('§7The floor and walls of your mine are unbreakable.'));
+    system.run(() => player.onScreenDisplay.setActionBar('§7Only ores and drills can be broken in your mine.'));
   }
 });
 
-/** ...or build in it: the block is removed again and handed back. Drills are handled in main.js. */
+/** ...and only drills can be placed (main.js checks those): anything else is taken out again and handed back. */
 world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   if (DRILLS.has(block.typeId) || block.isAir) return;
   const plot = plotAt(dimension.id, block.location);
-  if (!plot || plot.owner === player.id) return;
+  if (!plot) return;
   const item = block.getItemStack(1);
   block.setType('minecraft:air');
   if (item) player.getComponent('minecraft:inventory')?.container?.addItem(item);
-  player.onScreenDisplay.setActionBar(`§cThis is ${plot.name}'s mine.`);
+  player.onScreenDisplay.setActionBar(plot.owner === player.id ? '§7Only drills can be placed in your mine.' : `§cThis is ${plot.name}'s mine.`);
 });

@@ -34,8 +34,14 @@ export const CONFIG = {
     { name: 'Ruby Depths', cost: 100000, weights: { rock: 35, coal: 10, copper: 15, iron: 15, gold: 15, ruby: 10 } },
     { name: 'Diamond Core', cost: 750000, weights: { rock: 30, coal: 8, copper: 12, iron: 15, gold: 15, ruby: 12, diamond: 8 } },
   ],
-  // Ore field inside each mine plot, relative to the plot centre: x -radiusX..radiusX, z zFrom..zTo, `height` layers.
-  field: { radiusX: 4, zFrom: -7, zTo: 1, height: 2, respawnSeconds: 4 },
+  // The mine on every plot (BP/scripts/mine_builder.js). Bump `version` when the layout changes: older mines are rebuilt
+  // the next time their session is entered (drills placed in them go back to the inventory).
+  mine: {
+    version: 2,
+    half: 15, // a mine fills x/z -half..half around its plot centre
+    vein: { x: [-6, 6], z: [-12, -9], y: [1, 4] }, // the ore field: a vein in the north wall (y 0 = mine floor)
+    respawnSeconds: 4,
+  },
 
   // Drills: automation, unlocked at this mine level. income is money per second per placed drill.
   drillsUnlockMine: 3,
@@ -51,16 +57,11 @@ export const CONFIG = {
 
   // Save slots per player. Each session has its own mine plot, money, upgrades, rebirths and drills.
   sessions: { slots: 2 },
-  // Private mine plots in a grid far from spawn: plot i sits at origin + (i % perRow, i / perRow) x spacing.
+  // Mines sit in a grid far from spawn: plot i is centred at origin + (i % perRow, i / perRow) x spacing.
   plots: {
     dimension: 'minecraft:overworld',
     origin: { x: 10000, y: 80, z: 10000 },
     spacing: 48,
-    radius: 12, // plot is (2 x radius + 1) blocks wide
     perRow: 16,
-    clearHeight: 16,
-    floor: 'minecraft:polished_deepslate',
-    border: 'minecraft:deepslate_bricks',
-    light: 'minecraft:lantern',
   },
 };

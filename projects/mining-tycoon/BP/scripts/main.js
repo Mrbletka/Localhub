@@ -1,9 +1,10 @@
 import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { formatNumber, getNumber, setNumber, getJson, setJson, giveItem, hasItem } from './lib/util.js';
-import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete, plotAt, plotCenter } from './sessions.js';
+import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete, onMineRebuild } from './sessions.js';
 import { stat, setStat, addStat, pickTier, mineLevel, valueMultiplier, valueCost, rebirthCost } from './economy.js';
-import { inField, rerollField, syncPick, popupUntil } from './mining.js';
+import { rerollField, syncPick, popupUntil } from './mining.js';
+import { padBlockId } from './mine_builder.js';
 import { showStartMenu, fullScreenMenu, icon } from './menu.js';
 
 const NS = CONFIG.namespace;
@@ -53,7 +54,7 @@ function buyDrill(player, g) {
   if (!drillsUnlocked(player) || !pay(player, g.cost)) return;
   giveItem(player, g.block);
   player.playSound('random.orb');
-  player.sendMessage(`§aBought a ${g.name}. Place it in your mine, next to the ore field.`);
+  player.sendMessage(`§aBought a ${g.name}. Place it on a drill pad: the light tiles along the side walls of your mine.`);
 }
 
 function upgradePick(player) {
@@ -163,10 +164,10 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
     giveItem(player, tier.block);
     return player.sendMessage('§cDrills only work in the mine of the session you are playing.');
   }
-  if (inField(plotCenter(plotAt(dimension.id, block.location).index), block.location)) {
+  if (block.below()?.typeId !== padBlockId()) {
     block.setType('minecraft:air');
     giveItem(player, tier.block);
-    return player.sendMessage('§cKeep the ore field free: place drills next to it.');
+    return player.sendMessage('§cPlace drills on the drill pads: the light tiles along the side walls of your mine.');
   }
   if (owned(player.id, slot).length >= CONFIG.maxGeneratorsPerPlayer) {
     block.setType('minecraft:air');
@@ -202,6 +203,19 @@ world.afterEvents.playerBreakBlock.subscribe(({ block, dimension }) => {
 });
 
 onSessionDelete((playerId, slot) => removeDrills(owned(playerId, slot)));
+
+// A mine that gets rebuilt (new layout) loses what stood in it: its drills go back to the inventory.
+onMineRebuild((player, slot) => {
+  const drills = owned(player.id, slot);
+  for (const [key, g] of drills) {
+    giveItem(player, g.block);
+    delete generators[key];
+  }
+  if (drills.length) {
+    save();
+    player.sendMessage(`§eYour mine was rebuilt: your ${drills.length} drill${drills.length > 1 ? 's are' : ' is'} back in your inventory.`);
+  }
+});
 
 world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
   if (!initialSpawn) return;

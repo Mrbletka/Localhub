@@ -1,12 +1,13 @@
-// Hand mining: every mine plot has an ore field. Breaking an ore pays cash at once and the ore grows back a few
-// seconds later, rolled from the session's mine level. Ores need a good enough pick; picks follow the session.
+// Hand mining: every mine has an ore field - the vein in its north wall. Breaking an ore pays cash at once and the ore
+// grows back a few seconds later, rolled from the session's mine level. Ores need a good enough pick; picks follow
+// the session.
 import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { formatNumber, getNumber, giveItem } from './lib/util.js';
 import { activeSession, plotAt, plotCenter, onSessionEnter, sessionKey } from './sessions.js';
 import { addStat, pickTier, mineLevel, valueMultiplier } from './economy.js';
 
-const F = CONFIG.field;
+const V = CONFIG.mine.vein;
 const ORES = new Map(CONFIG.ores.map((o) => [o.block, o]));
 const ORE_BY_ID = new Map(CONFIG.ores.map((o) => [o.id, o]));
 const PICK_TIER = new Map(CONFIG.picks.map((p, i) => [p.item, i + 1]));
@@ -15,12 +16,13 @@ const PICK_TIER = new Map(CONFIG.picks.map((p, i) => [p.item, i + 1]));
 export const popupUntil = new Map();
 
 function* fieldCells(c) {
-  for (let dy = 1; dy <= F.height; dy++)
-    for (let dx = -F.radiusX; dx <= F.radiusX; dx++) for (let dz = F.zFrom; dz <= F.zTo; dz++) yield { x: c.x + dx, y: c.y + dy, z: c.z + dz };
+  for (let y = V.y[0]; y <= V.y[1]; y++)
+    for (let x = V.x[0]; x <= V.x[1]; x++) for (let z = V.z[0]; z <= V.z[1]; z++) yield { x: c.x + x, y: c.y + y, z: c.z + z };
 }
 
 export function inField(c, { x, y, z }) {
-  return Math.abs(x - c.x) <= F.radiusX && z - c.z >= F.zFrom && z - c.z <= F.zTo && y - c.y >= 1 && y - c.y <= F.height;
+  const [dx, dy, dz] = [x - c.x, y - c.y, z - c.z];
+  return dx >= V.x[0] && dx <= V.x[1] && dy >= V.y[0] && dy <= V.y[1] && dz >= V.z[0] && dz <= V.z[1];
 }
 
 /** A random ore block for a mine level, by its weights. */
@@ -96,7 +98,7 @@ function scheduleRegrow(owner, index, location) {
     } catch {
       // chunk unloaded - refilled on the next visit
     }
-  }, F.respawnSeconds * 20 + Math.floor(Math.random() * 20));
+  }, CONFIG.mine.respawnSeconds * 20 + Math.floor(Math.random() * 20));
 }
 
 // Ores in a mine: only from the session they belong to, and only with a good enough pick.

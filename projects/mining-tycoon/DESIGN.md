@@ -3,7 +3,7 @@
 Template: **Tycoon** · Namespace: `mining_tycoon`
 
 ## Concept
-You run a mine, starting with nothing but a **Wooden Pick**. Break the ores in your mine's **ore field** by hand: every
+You run a mine, starting with nothing but a **Wooden Pick**. Break the ores in your mine's **ore vein** by hand: every
 ore pays cash on the spot and grows back a few seconds later. Spend the cash on a better **pick** (mines faster and can
 break harder ores), a deeper **mine** (richer ores appear in the field) and **ore value**. Once your mine reaches the
 Iron Vein, **drills** unlock: automation that earns while you keep mining. When it's all maxed, **rebirth**: the session
@@ -12,7 +12,7 @@ resets but you keep a permanent cash bonus.
 ## Core loop
 0. Join -> full-screen **start menu** -> **Play** / **Create session** starts a save with its own mine (later:
    **Sessions** to pick one of your 2 save slots).
-1. Mine ores in your ore field with your pick -> instant cash (`+$12 Copper Ore`).
+1. Mine ores in the vein of your underground mine with your pick -> instant cash (`+$12 Copper Ore`).
 2. Open the **Miner's Tablet** -> **Upgrades**: pick, mine level, ore value.
 3. Better pick -> faster and harder ores; better mine -> more valuable ores in the field.
 4. Mine level 3 (Iron Vein) unlocks **Drills** -> place them in your mine for passive income.
@@ -72,7 +72,7 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
 
 ## Systems (current)
 - Ownership: placed drills are stored in a world dynamic property (`mining_tycoon:generators`) with owner and session slot; only the owner can break them.
-- Drill income: `sum(drill income) x cash multiplier`, paid every 20 ticks. Drills can't go in the ore field.
+- Drill income: `sum(drill income) x cash multiplier`, paid every 20 ticks. Drills go on the drill pads only.
 - Money shows in the action bar (no scoreboard; the old `mining_tycoon_money` sidebar is removed on world load).
 - Limit: 40 drills per session.
 - Start menu (`BP/scripts/menu.js`): shown on every join (retried every 5 ticks until the client can show it), and
@@ -100,14 +100,14 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
   you switch away, handed back when you return). Only the active session (`mining_tycoon:active_session`) earns.
   A new session starts with $0, a Wooden Pick and the Shallow Mine. Deleting one frees its plot; the next owner gets it rebuilt clean.
   Worlds from before sessions: the old plot, money, upgrades and rebirths become session 1.
-- Hand mining (`BP/scripts/mining.js`): each mine has an **ore field** of 9 x 9 x 2 ores in front of the arrival
-  spot (config `field`, relative to the plot centre). Breaking an ore pays `value x cash multiplier` at once
+- Hand mining (`BP/scripts/mining.js`): the ore field is the **vein** in the north wall of each mine, 13 wide, 4 high
+  and 4 deep (config `mine.vein`, relative to the plot centre). Breaking an ore pays `value x cash multiplier` at once
   (`+$12 Copper Ore` popup; the money action bar waits for it) and the ore grows back after ~4-5 s, rolled from the
   session's mine level (never inside a player). Ores drop nothing (`loot_tables/blocks/ore_empty.json`).
   - An ore needs the pick tier in its config (`pick`); by hand or with a weaker pick the break is cancelled with a hint.
   - Picks (`mining_tycoon:pick_1..6`) follow the session: arriving in a session, upgrading, rebirth and respawning
     all make sure you hold exactly that session's pick. Pick speed only works on blocks tagged `mining_tycoon_ore`.
-  - Arriving in a session refills empty field cells; a mine upgrade (or rebirth) re-rolls the whole field.
+  - Arriving in a session refills empty vein cells; a mine upgrade (or rebirth) re-rolls the whole vein.
   - Players in a session get a short saturation effect every 10 s, so mining never makes them hungry.
 - Miner's Tablet (`openMenu` in `main.js`): body shows session, money, pick, mine and cash multiplier (+ drill income).
   **Upgrades** -> Pick (next pick, price, ores it unlocks), Mine (next level, price, ores it adds), Ore value (+25%);
@@ -141,18 +141,37 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
     texture as the form button icon (`icon('play')` -> `ui/icons/play`, or pick / ore / drill textures in the
     tablet); Navs have fixed icons in the generator (`icon=`, `back_icon=`). Icons: play, new_slot, sessions, session,
     exit, back, delete, upgrades, drills, rebirth, home, coin, lock.
-- Mine plots: 25x25 polished-deepslate platforms with a deepslate-brick rim and corner lanterns, in a 16-wide grid at
-  x/z 10000, y 80, 48 blocks apart. Your respawn point is set to the mine you are playing. Drills only work in the mine
-  of your active session, and a drill can only be broken from the session it belongs to. Other players can't break or
-  place blocks in your mines; nobody can break a mine's floor or rim.
+- The mine (`BP/scripts/mine_builder.js`, config `mine`): every session plays in an enclosed underground cave, 31 x 31
+  blocks around its plot centre (floor y 0, roof y 10), in a 16-wide grid at x/z 10000, y 80, 48 blocks apart.
+  - Hall about 27 x 20 with rough rock walls (stone, andesite, tuff, cobbled deepslate, deepslate, a bit of mossy
+    cobblestone, all chosen by seeded noise so a plot always looks the same), a ceiling 7-9 high in deepslate, tuff and
+    dripstone with stalactites, three spruce arches with hanging lanterns, lanterns on chains, froglights in the roof.
+  - North: the **ore vein** (x -6..6, z -12..-9, y 1..4) in a timber frame, gravel rubble in front of it.
+  - Sides: **drill pads** (polished tuff in deepslate-tile frames, x 9..12 on both sides, z -4..6): drills can only
+    stand on a pad.
+  - South: a rail track runs from a dark tunnel (timber frame, blackstone back) over a spruce landing with barrels to
+    the vein. Players arrive on the rails at z 10 looking at the vein; their respawn point is set there.
+  - Built across ticks with `system.runJob` while the loading screen shows: one teleport to the arrival spot first
+    (teleports close menus), a safety floor under it, then the plan (computed across ticks too) goes in column by
+    column bottom-up - never a solid block where the player stands - and hanging/attached blocks (lanterns, chains,
+    stalactites, rails) go in last, top-down. Block ids are checked at runtime with fallbacks (`minecraft:chain` became
+    `minecraft:iron_chain`; old versions get plain blocks where a state is unknown).
+  - Each plot record stores the layout `version` it was built with; a session whose mine is older than
+    `CONFIG.mine.version` (old floating platforms are version 1) gets it rebuilt on entry, and drills that stood in it
+    go back to the inventory.
+  - Protection: only the owner breaks blocks in a mine, and only ores and drills; only drills can be placed (on pads,
+    in the active session's mine). Drills in your other session's mine can't be broken from this one.
 
 ## Roadmap (built step by step)
 - [x] **Foundation:** project from the tycoon template, rethemed to mining (drills, Miner's Tablet, texts).
 - [x] **Menu look:** pixel-art logo, button icons, animated background (pan, lanterns, gems, dust, minecart).
 - [x] **Pack icon:** cave, logo and a gold pick striking gold ore (BP and RP).
 - [ ] **Look:** pixel-art drill textures, Miner's Tablet icon.
-- [ ] **Ore feel:** mining particles/sounds; drills that visibly mine the ore field next to them.
+- [ ] **Ore feel:** mining particles/sounds; drills that visibly mine the vein.
+- [ ] **Growing mine (idea):** mine upgrades make the cave bigger / add chambers, rebirth layers change its look.
 - [x] **Start menu + plots:** full-screen join menu (Play / Create session / Exit), private mine plots, drills only in your own mine.
+- [x] **Underground mine:** enclosed cave with timber arches, lanterns, rails, an ore vein in the north wall and drill
+  pads; old platforms are rebuilt automatically.
 - [x] **Sessions:** 2 save slots per player with a full-screen slots menu; stone & gold menu buttons.
 - [x] **One-form menus:** start menu, sessions, delete + confirm and the Miner's Tablet (shop, rebirth) switch pages
   without closing.
