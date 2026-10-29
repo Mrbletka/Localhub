@@ -850,6 +850,7 @@
             "100%"
           ],
           "layer": 1,
+          "keep_ratio": false,
           "controls": [
             {
               "glow_0": {
@@ -860,6 +861,7 @@
                   "48%"
                 ],
                 "layer": 2,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -878,6 +880,7 @@
                   "48%"
                 ],
                 "layer": 2,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -896,6 +899,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -914,6 +918,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -932,6 +937,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -950,6 +956,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -968,6 +975,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -986,6 +994,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -1004,6 +1013,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -1022,6 +1032,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -1040,6 +1051,7 @@
                   "14.06%"
                 ],
                 "layer": 3,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "center",
                 "offset": [
@@ -1059,6 +1071,7 @@
                 ],
                 "layer": 2,
                 "alpha": 0.8,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "top_left",
                 "offset": "@server_form.mining_tycoon_dust_0_0"
@@ -1074,6 +1087,7 @@
                 ],
                 "layer": 2,
                 "alpha": 0.8,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "top_left",
                 "offset": "@server_form.mining_tycoon_dust_1_0"
@@ -1089,6 +1103,7 @@
                 ],
                 "layer": 2,
                 "alpha": 0.8,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "top_left",
                 "offset": "@server_form.mining_tycoon_dust_2_0"
@@ -1104,6 +1119,7 @@
                 ],
                 "layer": 2,
                 "alpha": 0.8,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "top_left",
                 "offset": "@server_form.mining_tycoon_dust_3_0"
@@ -1119,6 +1135,7 @@
                 ],
                 "layer": 2,
                 "alpha": 0.8,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "top_left",
                 "offset": "@server_form.mining_tycoon_dust_4_0"
@@ -1134,6 +1151,7 @@
                 ],
                 "layer": 2,
                 "alpha": 0.8,
+                "keep_ratio": false,
                 "anchor_from": "top_left",
                 "anchor_to": "top_left",
                 "offset": "@server_form.mining_tycoon_dust_5_0"
@@ -1158,7 +1176,8 @@
                       "size": [
                         "100%",
                         "100%"
-                      ]
+                      ],
+                      "keep_ratio": false
                     }
                   }
                 ]

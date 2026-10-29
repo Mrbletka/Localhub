@@ -175,19 +175,19 @@ def background_fx():
     flicker = [[(0.35, 0.55, 0.95), (0.12, 0.95, 0.75), (0.5, 0.75, 1.0), (0.7, 1.0, 0.55)],
                [(0.5, 0.6, 1.0), (0.2, 1.0, 0.8), (0.3, 0.8, 0.95), (0.9, 0.95, 0.6)]]
     for i, (x, y) in enumerate(LIGHTS):
-        fx.append({f'glow_{i}': {'type': 'image', 'texture': f'{UI}/fx_glow', 'size': ['24%', '48%'], 'layer': 2,
+        fx.append({f'glow_{i}': {'type': 'image', 'texture': f'{UI}/fx_glow', 'size': ['24%', '48%'], 'layer': 2, 'keep_ratio': False,
                                  'anchor_from': 'top_left', 'anchor_to': 'center', 'offset': [pct(x + 0.5, 128), pct(y + 0.5, 64)],
                                  'alpha': chain(f'mining_tycoon_flicker_{i}', 'alpha', flicker[i], 'in_out_sine')}})
     for i, (x, y) in enumerate(GEMS):
         rest = 2.2 + (i * 1.37) % 3.5  # every gem twinkles on its own rhythm
-        fx.append({f'sparkle_{i}': {'type': 'image', 'texture': f'{UI}/fx_sparkle', 'size': ['7.03%', '14.06%'], 'layer': 3,
+        fx.append({f'sparkle_{i}': {'type': 'image', 'texture': f'{UI}/fx_sparkle', 'size': ['7.03%', '14.06%'], 'layer': 3, 'keep_ratio': False,
                                     'anchor_from': 'top_left', 'anchor_to': 'center', 'offset': [pct(x + 0.5, 128), pct(y + 0.5, 64)],
                                     'alpha': chain(f'mining_tycoon_twinkle_{i}', 'alpha',
                                                    [(0.6 + i * 0.45, 0, 0), (0.18, 0, 1), (0.45, 1, 0), (rest, 0, 0)])}})
     for i in range(6):
         x = 8 + i * 17 + (i % 2) * 5
         up = 9 + (i * 2.3) % 6
-        fx.append({f'dust_{i}': {'type': 'image', 'texture': f'{UI}/fx_dust', 'size': ['0.78%', '1.56%'], 'layer': 2, 'alpha': 0.8,
+        fx.append({f'dust_{i}': {'type': 'image', 'texture': f'{UI}/fx_dust', 'size': ['0.78%', '1.56%'], 'layer': 2, 'alpha': 0.8, 'keep_ratio': False,
                                  'anchor_from': 'top_left', 'anchor_to': 'top_left',
                                  'offset': chain(f'mining_tycoon_dust_{i}', 'offset',
                                                  [(up, [f'{x}%', '104%'], [f'{x + 4}%', '-6%']), (0.01, [f'{x + 4}%', '-6%'], [f'{x}%', '104%'])])}})
@@ -196,7 +196,7 @@ def background_fx():
                             'offset': chain('mining_tycoon_cart', 'offset',
                                             [(2.5, ['-12%', cart_y], ['-12%', cart_y]), (12, ['-12%', cart_y], ['104%', cart_y]),
                                              (4, ['104%', cart_y], ['104%', cart_y])]),
-                            'controls': [{'cart': {'type': 'image', 'texture': f'{UI}/fx_minecart', 'size': ['100%', '100%']}}]}})
+                            'controls': [{'cart': {'type': 'image', 'texture': f'{UI}/fx_minecart', 'size': ['100%', '100%'], 'keep_ratio': False}}]}})
     return fx
 
 # Loader: a gold pick strikes a gold ore that shakes on every hit (both loops last 0.67 s, so they stay in step).
@@ -215,7 +215,8 @@ ui['mining_tycoon_screen_bg'] = {
     'type': 'panel', 'size': ['100%', '100%'],
     'bindings': [{'binding_name': '#title_text'}, view(f'(not ({not_ours} = #title_text))')],  # only behind our menus
     'controls': [{'background': {'type': 'image', 'texture': f'{UI}/menu_bg', 'size': ['100%', '100%'], 'layer': 1,
-                                 'controls': background_fx()}}],
+                                 'keep_ratio': False,  # images keep the 2:1 ratio of their art by default: on a wider
+                                 'controls': background_fx()}}],  # screen the cave stopped short of both edges
 }
 
 screens = []
