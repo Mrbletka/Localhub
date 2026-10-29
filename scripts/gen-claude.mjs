@@ -83,13 +83,17 @@ identifiers/keys/function names to use, how its part connects to the rest, and w
 the same file. Afterwards read their key files, integrate, and validate.
 
 ## Workflow for a request
-1. Pick or create the project; read its DESIGN.md. For a new idea, write the concept, core loop, systems, content list and
+1. Continue from the latest version: \`git fetch origin\`, then merge every \`origin/claude/*\` branch that has commits your
+   branch lacks and touches the project you are working on (\`git log HEAD..origin/claude/<x> -- projects/<slug>\`), oldest
+   first. Earlier sessions push their work to those branches, and main may not have it yet.
+2. Pick or create the project; read its DESIGN.md. For a new idea, write the concept, core loop, systems, content list and
    progression into DESIGN.md first.
-2. Build it (yourself or with the team). Keep DESIGN.md in sync with what exists.
-3. \`${CLI} validate <slug>\` until it passes, then \`${CLI} build <slug>\` to confirm it packages.
-4. Commit with a clear message and push, so the owner can pull it onto the phone
-   (studio app > Build > GitHub sync > Get Claude's work), build the .mcaddon there and import it into Minecraft.
-5. Reply in short, plain language: what you built, how to try it in game, and any decision they should make.
+3. Build it (yourself or with the team). Keep DESIGN.md in sync with what exists.
+4. \`${CLI} validate <slug>\` until it passes, then \`${CLI} build <slug>\` to confirm it packages. Leave the version in
+   project.json alone for normal changes (the phone numbers test builds itself); bump it only for a release (/ship).
+5. Commit with a clear message and push.
+6. Reply in short, plain language: what you changed and how to try it - in the studio app on the phone,
+   **Build > Update in Minecraft**, tap Open on the download, then rejoin the world - plus any decision they should make.
 
 ## Bedrock rules
 ${CORE_RULES}

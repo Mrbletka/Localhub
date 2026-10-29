@@ -126,3 +126,33 @@ test('GitHub sync: get Claude branches, pull main, push phone edits', async () =
   // Outside a git repo the studio says so instead of failing.
   assert.equal((await new GitSync(tmp('localhub-nogit-')).status()).isRepo, false);
 });
+
+test('getLatest merges only the Claude branches that touch the project', async () => {
+  const dir = tmp('localhub-latest-');
+  const git = (cwd, ...args) => execFileSync('git', ['-c', 'user.name=Test', '-c', 'user.email=t@example.com', '-c', 'init.defaultBranch=main', ...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  const origin = path.join(dir, 'origin.git');
+  git(dir, 'init', '--bare', origin);
+  const phone = path.join(dir, 'phone');
+  git(dir, 'clone', origin, phone);
+  git(phone, 'checkout', '-b', 'main');
+  await createProject(new Workspace(path.join(phone, 'projects')), { name: 'Tycoon A', template: 'tycoon' });
+  await createProject(new Workspace(path.join(phone, 'projects')), { name: 'Other B', template: 'blank' });
+  git(phone, 'add', '-A');
+  git(phone, 'commit', '-m', 'init');
+  git(phone, 'push', '-u', 'origin', 'main');
+  const cloud = path.join(dir, 'cloud');
+  git(dir, 'clone', origin, cloud);
+  for (const [branch, slug, text] of [['claude/a1', 'tycoon-a', 'first'], ['claude/b1', 'other-b', 'MARKER-B'], ['claude/a2', 'tycoon-a', 'second']]) {
+    git(cloud, 'checkout', '-q', '-B', branch, branch === 'claude/a2' ? 'claude/a1' : 'origin/main');
+    fs.appendFileSync(path.join(cloud, 'projects', slug, 'DESIGN.md'), `\n${text}\n`);
+    git(cloud, 'commit', '-qam', `${slug}: ${text}`);
+    git(cloud, 'push', '-q', 'origin', branch);
+  }
+  const res = await new GitSync(path.join(phone, 'projects')).getLatest('tycoon-a');
+  assert.equal(res.error, null);
+  assert.deepEqual(res.merged, ['claude/a1', 'claude/a2']);
+  const design = fs.readFileSync(path.join(phone, 'projects', 'tycoon-a', 'DESIGN.md'), 'utf8');
+  assert.match(design, /first\n\nsecond/);
+  assert.doesNotMatch(fs.readFileSync(path.join(phone, 'projects', 'other-b', 'DESIGN.md'), 'utf8'), /MARKER-B/);
+  assert.deepEqual((await new GitSync(path.join(phone, 'projects')).getLatest('tycoon-a')).merged, [], 'nothing new the second time');
+});

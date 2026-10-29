@@ -107,3 +107,24 @@ test('knowledge base answers every topic', () => {
   assert.match(reference('nonsense'), /Unknown topic/);
   assert.match(reference('items, blocks'), /minecraft:item[\s\S]*minecraft:block/);
 });
+
+test('test builds always get a higher version without touching project.json', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'localhub-testbuild-'));
+  const ws = new Workspace(path.join(dir, 'ws'));
+  const distDir = path.join(dir, 'dist');
+  const { slug } = await createProject(ws, { name: 'Iterate', template: 'blank' });
+  const before = await ws.readText(`${slug}/project.json`);
+  const versions = [];
+  for (let i = 0; i < 3; i++) versions.push((await buildProject(ws, slug, { distDir, testBuild: true })).version);
+  assert.deepEqual(versions, ['1.0.1', '1.0.2', '1.0.3']);
+  assert.equal(await ws.readText(`${slug}/project.json`), before);
+  const files = readZip(fs.readFileSync(path.join(distDir, slug, `${slug}-v1.0.3.mcaddon`)));
+  assert.deepEqual(JSON.parse(files.find((f) => f.name === `${slug}_RP/manifest.json`).data).header.version, [1, 0, 3]);
+  // A real release version above the test builds takes over again.
+  const meta = JSON.parse(before);
+  meta.version = [1, 1, 0];
+  await ws.write(`${slug}/project.json`, JSON.stringify(meta));
+  assert.equal((await buildProject(ws, slug, { distDir, testBuild: true })).version, '1.1.1');
+  assert.equal((await buildProject(ws, slug, { distDir, testBuild: true })).version, '1.1.2');
+  assert.equal((await buildProject(ws, slug, { distDir })).version, '1.1.0', 'normal builds keep the project version');
+});

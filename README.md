@@ -93,8 +93,14 @@ work done in the cloud reaches your phone through GitHub.
    `/qa <project>`, `/ship <project> minor`.
 2. Claude designs it, builds it in `projects/<slug>/` (handing parts to the specialists), validates it and
    pushes, usually to a `claude/...` branch.
-3. In the studio app on your phone: **Build > Sync with Claude > Get it**. The project appears; build the
-   `.mcaddon` and tap it to import into Minecraft.
+3. In the studio app on your phone: **Build > Update in Minecraft**. It gets Claude's latest changes for the
+   project, builds a test version with a higher version number and downloads it. Tap **Open** on the download
+   (Minecraft imports it), then leave and rejoin your world. A brand-new project arrives with
+   **Build > Sync with Claude > Get it** first.
+
+`/reload` alone can't pick up changes on a phone: it only re-reads packs in Minecraft's development folders, and
+Android doesn't let other apps write there. On a PC, set the `com.mojang` folder in Settings, use **Deploy**,
+then `/reload` in game.
 
 Edits you make on the phone go back with **Push my changes**. Pulling works without signing in for a public
 repo; pushing (and pulling a private repo) needs your GitHub login once in Termux:

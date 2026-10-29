@@ -159,6 +159,7 @@ async function selectProject(slug) {
   S.sessionId = null;
   S.lastValidation = null;
   S.lastBuild = null;
+  S.lastUpdate = null;
   detachRun();
   renderHeader();
   renderEditor();
@@ -1139,6 +1140,31 @@ async function renderShip() {
     await loadProjects();
   }) });
   const summary = el('textarea', { rows: 2, placeholder: 'Short summary for your library page' }, p.description || '');
+  const updateBtn = el('button', { class: 'btn primary block', onclick: guard(async () => {
+    updateBtn.disabled = true;
+    updateBtn.textContent = "Getting Claude's changes and building…";
+    let res;
+    try {
+      res = await api('POST', `/api/projects/${encodeURIComponent(S.project)}/update-game`);
+    } finally {
+      updateBtn.disabled = false;
+      updateBtn.textContent = '⬇ Update in Minecraft';
+    }
+    S.lastValidation = res.report;
+    const got = res.sync?.merged?.length ? `Got ${res.sync.merged.length} update${res.sync.merged.length === 1 ? '' : 's'} from Claude. ` : res.sync?.pulled ? 'Got the latest from GitHub. ' : '';
+    if (!res.ok) {
+      toast(`${got}Can't build: fix the errors below (or ask QA).`, true);
+      return renderShip();
+    }
+    // Download the .mcaddon; opening it from Chrome's download message imports it into Minecraft.
+    const a = el('a', { href: withToken(`/api/download?file=${encodeURIComponent(res.download)}`), download: '' });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    S.lastUpdate = { version: res.version, note: `${got}${res.sync?.error ? `(${res.sync.error}) ` : ''}` };
+    toast(`${got}v${res.version} ready - tap Open on the download`);
+    renderShip();
+  }) }, '⬇ Update in Minecraft');
   const deploy = S.config?.minecraftDir ? el('button', { class: 'btn', onclick: guard(async () => {
     const res = await api('POST', `/api/projects/${encodeURIComponent(S.project)}/deploy`);
     toast(`Deployed ${res.deployed.length} packs - run /reload in game`);
@@ -1149,6 +1175,10 @@ async function renderShip() {
     el('div', { class: 'card' },
       el('h3', {}, `${p.name || S.project}`),
       el('p', {}, `${p.type || 'addon'} · v${p.version || '1.0.0'} · namespace ${p.namespace || '?'}`),
+      updateBtn,
+      el('p', { class: 'hint' }, S.lastUpdate
+        ? `${S.lastUpdate.note}Built test version ${S.lastUpdate.version}. Tap Open on the download (Minecraft imports it), then leave and rejoin your world.`
+        : "Gets Claude's latest changes, builds a new test version and downloads it. Open the download to import into Minecraft, then rejoin your world."),
       el('div', { class: 'row', style: { flexWrap: 'wrap' } }, validateBtn, bump, buildBtn, deploy),
       v ? el('div', { class: 'row' }, el('span', { class: `pill ${v.ok ? 'ok' : 'bad'}` }, v.ok ? 'Valid' : 'Has errors'), el('span', { class: 'pill' }, `${v.counts.error} errors · ${v.counts.warning} warnings`)) : el('p', {}, 'Validate to check manifests, identifiers, textures, scripts and more.'),
       issueList(v)),

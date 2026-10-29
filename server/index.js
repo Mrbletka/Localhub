@@ -224,6 +224,14 @@ export function createServer({ dataDir, host = '127.0.0.1', token = '', activity
     if (body.bump && body.bump !== 'none') await bumpVersion(ws, params.slug, body.bump);
     return buildProject(ws, params.slug, { distDir, force: Boolean(body.force) });
   });
+  // One tap on the phone: get Claude's latest work for this project, build a test version, hand it to Minecraft.
+  route('POST', '/api/projects/:slug/update-game', async ({ params }) => {
+    const slug = normalizeRel(params.slug);
+    const got = await sync.getLatest(slug);
+    if (got.pulled || got.merged.length) bus.emit('workspace', { type: 'synced' });
+    const build = await buildProject(ws, slug, { distDir, testBuild: true });
+    return { ...build, sync: got };
+  });
   route('POST', '/api/projects/:slug/deploy', async ({ params }) => deployProject(ws, params.slug, config.get('minecraftDir')));
   route('GET', '/api/projects/:slug/builds', async ({ params }) => {
     const dir = path.join(distDir, normalizeRel(params.slug));

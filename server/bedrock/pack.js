@@ -46,7 +46,26 @@ function stampManifest(manifest, version, headerUuids) {
   return m;
 }
 
-export async function buildProject(ws, slug, { distDir, force = false } = {}) {
+const newer = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+
+/**
+ * Version for a test build: one patch above project.json's version (so it never collides with a
+ * normal build already imported), or above the last test build - so Minecraft always replaces the
+ * previous import, while project.json (shared with Claude through git) stays untouched.
+ */
+async function nextTestVersion(distDir, slug, version) {
+  const file = path.join(distDir, '.test-versions.json');
+  const state = JSON.parse(await fs.readFile(file, 'utf8').catch(() => '{}'));
+  const last = state[slug];
+  const base = [version[0], version[1], version[2] + 1];
+  const next = last && newer(base, last) <= 0 ? [last[0], last[1], last[2] + 1] : base;
+  state[slug] = next;
+  await fs.mkdir(distDir, { recursive: true });
+  await fs.writeFile(file, JSON.stringify(state, null, 2));
+  return next;
+}
+
+export async function buildProject(ws, slug, { distDir, force = false, testBuild = false } = {}) {
   const root = normalizeRel(slug);
   const report = await validateProject(ws, root);
   if (!report.ok && !force) return { ok: false, report, message: 'Validation failed - fix the errors (or build with force).' };
@@ -54,7 +73,8 @@ export async function buildProject(ws, slug, { distDir, force = false } = {}) {
   const packs = await collectPacks(ws, root);
   if (!packs.length) throw new WorkspaceError('No packs to build');
   const headerUuids = new Set(packs.map((p) => p.manifest.header?.uuid).filter(Boolean));
-  const versionLabel = meta.version.join('.');
+  const version = testBuild ? await nextTestVersion(distDir, root, meta.version) : meta.version;
+  const versionLabel = version.join('.');
   const outDir = path.join(distDir, root);
   await fs.mkdir(outDir, { recursive: true });
 
@@ -66,7 +86,7 @@ export async function buildProject(ws, slug, { distDir, force = false } = {}) {
     for (const f of pack.files) {
       const rel = f.path.slice(pack.dir.length + 1);
       let data = await ws.readBuffer(f.path);
-      if (rel === 'manifest.json') data = Buffer.from(JSON.stringify(stampManifest(pack.manifest, meta.version, headerUuids), null, 2));
+      if (rel === 'manifest.json') data = Buffer.from(JSON.stringify(stampManifest(pack.manifest, version, headerUuids), null, 2));
       entries.push({ name: rel, data });
       addonEntries.push({ name: `${folder}/${rel}`, data });
     }

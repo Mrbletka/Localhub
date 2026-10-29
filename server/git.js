@@ -117,6 +117,40 @@ export class GitSync {
     return { ok: true, output: res.out };
   }
 
+  /**
+   * Everything new for one project: pull the current branch, then merge Claude's branches that
+   * touch projects/<slug>, oldest first. Offline or not a git clone: returns what it could do.
+   */
+  async getLatest(slug) {
+    const root = await this.repoRoot();
+    if (!root) return { pulled: false, merged: [], error: null };
+    const fetched = await git(root, ['fetch', '--prune', 'origin']);
+    if (!fetched.ok) return { pulled: false, merged: [], error: explain(fetched, 'Checking GitHub') };
+    const result = { pulled: false, merged: [], error: null };
+    const st = await this.status();
+    if (st.behind) {
+      await this.pull();
+      result.pulled = true;
+    }
+    const spec = `${await this.#projectsSpec()}/${slug}`;
+    const refs = (await git(root, ['for-each-ref', '--sort=committerdate', '--format=%(refname:short)', 'refs/remotes/origin/claude/'])).out.split('\n').filter(Boolean);
+    for (const ref of refs) {
+      const fresh = await git(root, ['rev-list', '--count', `HEAD..${ref}`]);
+      if (!fresh.ok || Number(fresh.out) === 0) continue;
+      const touches = (await git(root, ['diff', '--name-only', `HEAD...${ref}`, '--', spec])).out;
+      if (!touches) continue;
+      const branch = ref.replace(/^origin\//, '');
+      try {
+        await this.merge(branch);
+        result.merged.push(branch);
+      } catch (err) {
+        result.error = err.message;
+        break;
+      }
+    }
+    return result;
+  }
+
   /** Commit project changes made on the phone and push the current branch. */
   async push() {
     const root = await this.#need();
