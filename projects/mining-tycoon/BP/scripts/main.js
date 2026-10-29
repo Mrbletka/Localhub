@@ -2,6 +2,8 @@ import { world, system, DisplaySlotId, ObjectiveSortOrder } from '@minecraft/ser
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui';
 import { CONFIG } from './config.js';
 import { formatNumber, getNumber, setNumber, addNumber, getJson, setJson, giveItem, hasItem, ensureObjective, toScore } from './lib/util.js';
+import { loadPlots, inOwnPlot } from './plots.js';
+import { showStartMenu } from './menu.js';
 
 const NS = CONFIG.namespace;
 const KEY = {
@@ -101,10 +103,11 @@ function openMenu(player) {
     .button('Buy drills', CONFIG.generators[0].icon)
     .button(`Upgrade income\n§8$${formatNumber(upgradeCost(level))}`)
     .button(`Rebirth\n§8$${formatNumber(rebirthCost(rebirths))}`)
+    .button('Main menu')
     .show(player)
     .then((res) => {
       if (res.canceled || res.selection === undefined) return;
-      [buyMenu, upgrade, rebirth][res.selection]?.(player);
+      [buyMenu, upgrade, rebirth, showStartMenu][res.selection]?.(player);
     });
 }
 
@@ -115,6 +118,11 @@ world.afterEvents.itemUse.subscribe(({ source: player, itemStack }) => {
 world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   const tier = TIERS.get(block.typeId);
   if (!tier) return;
+  if (!inOwnPlot(player, dimension.id, block.location)) {
+    block.setType('minecraft:air');
+    giveItem(player, tier.block);
+    return player.sendMessage('§cDrills only work in your own mine. Tap §fCreate session§c in the menu to claim one.');
+  }
   if (owned(player.id).length >= CONFIG.maxGeneratorsPerPlayer) {
     block.setType('minecraft:air');
     giveItem(player, tier.block);
@@ -151,11 +159,11 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
     giveItem(player, CONFIG.generators[0].block);
   }
   if (!hasItem(player, CONFIG.items.tablet)) giveItem(player, CONFIG.items.tablet);
-  player.sendMessage(`§bWelcome to ${CONFIG.title}!§r Place drills to mine ore for cash. Use the Miner's Tablet to buy more.`);
 });
 
 world.afterEvents.worldLoad.subscribe(() => {
   generators = getJson(world, GENERATORS_KEY, {});
+  loadPlots();
   moneyBoard = ensureObjective(`${NS}_money`, '§aMoney');
   world.scoreboard.setObjectiveAtDisplaySlot(DisplaySlotId.Sidebar, { objective: moneyBoard, sortOrder: ObjectiveSortOrder.Descending });
 

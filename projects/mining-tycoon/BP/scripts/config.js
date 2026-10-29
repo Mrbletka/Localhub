@@ -13,4 +13,18 @@ export const CONFIG = {
   ],
   upgrade: { baseCost: 100, costGrowth: 1.75, incomeBonusPerLevel: 0.25 },
   rebirth: { baseCost: 50000, costGrowth: 4, bonusPerRebirth: 0.5 },
+  // Join menu. Forms whose title starts with this tag get the full-screen look from RP/ui/server_form.json.
+  menu: { tag: '§m§t§s' },
+  // Private mine plots in a grid far from spawn: plot i sits at origin + (i % perRow, i / perRow) x spacing.
+  plots: {
+    dimension: 'minecraft:overworld',
+    origin: { x: 10000, y: 80, z: 10000 },
+    spacing: 48,
+    radius: 12, // plot is (2 x radius + 1) blocks wide
+    perRow: 16,
+    clearHeight: 16,
+    floor: 'minecraft:polished_deepslate',
+    border: 'minecraft:deepslate_bricks',
+    light: 'minecraft:lantern',
+  },
 };
