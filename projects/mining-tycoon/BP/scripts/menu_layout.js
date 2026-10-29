@@ -20,5 +20,6 @@ export const MENU = {
     "hasSessions": "§h§s",
     "slot0": "§f§1",
     "slot1": "§f§2"
-  }
+  },
+  "icons": []
 };

@@ -47,6 +47,782 @@
       }
     ]
   },
+  "mining_tycoon_logo_float_0": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 1.6,
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      -2
+    ],
+    "next": "@server_form.mining_tycoon_logo_float_1"
+  },
+  "mining_tycoon_logo_float_1": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 1.6,
+    "from": [
+      0,
+      -2
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_logo_float_0"
+  },
+  "mining_tycoon_logo_twinkle_0_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.2,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_logo_twinkle_0_1"
+  },
+  "mining_tycoon_logo_twinkle_0_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.5,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_logo_twinkle_0_2"
+  },
+  "mining_tycoon_logo_twinkle_0_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 2.4,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_logo_twinkle_0_0"
+  },
+  "mining_tycoon_logo_twinkle_1_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.2,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_logo_twinkle_1_1"
+  },
+  "mining_tycoon_logo_twinkle_1_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.5,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_logo_twinkle_1_2"
+  },
+  "mining_tycoon_logo_twinkle_1_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 3.7,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_logo_twinkle_1_0"
+  },
+  "mining_tycoon_pan_start_0": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 16,
+    "from": [
+      -18,
+      0
+    ],
+    "to": [
+      18,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_pan_start_1"
+  },
+  "mining_tycoon_pan_start_1": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 16,
+    "from": [
+      18,
+      0
+    ],
+    "to": [
+      -18,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_pan_start_0"
+  },
+  "mining_tycoon_flicker_0_0": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.35,
+    "from": 0.55,
+    "to": 0.95,
+    "next": "@server_form.mining_tycoon_flicker_0_1"
+  },
+  "mining_tycoon_flicker_0_1": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.12,
+    "from": 0.95,
+    "to": 0.75,
+    "next": "@server_form.mining_tycoon_flicker_0_2"
+  },
+  "mining_tycoon_flicker_0_2": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.5,
+    "from": 0.75,
+    "to": 1.0,
+    "next": "@server_form.mining_tycoon_flicker_0_3"
+  },
+  "mining_tycoon_flicker_0_3": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.7,
+    "from": 1.0,
+    "to": 0.55,
+    "next": "@server_form.mining_tycoon_flicker_0_0"
+  },
+  "mining_tycoon_flicker_1_0": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.5,
+    "from": 0.6,
+    "to": 1.0,
+    "next": "@server_form.mining_tycoon_flicker_1_1"
+  },
+  "mining_tycoon_flicker_1_1": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.2,
+    "from": 1.0,
+    "to": 0.8,
+    "next": "@server_form.mining_tycoon_flicker_1_2"
+  },
+  "mining_tycoon_flicker_1_2": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.3,
+    "from": 0.8,
+    "to": 0.95,
+    "next": "@server_form.mining_tycoon_flicker_1_3"
+  },
+  "mining_tycoon_flicker_1_3": {
+    "anim_type": "alpha",
+    "easing": "in_out_sine",
+    "duration": 0.9,
+    "from": 0.95,
+    "to": 0.6,
+    "next": "@server_form.mining_tycoon_flicker_1_0"
+  },
+  "mining_tycoon_twinkle_0_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.6,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_0_1"
+  },
+  "mining_tycoon_twinkle_0_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_0_2"
+  },
+  "mining_tycoon_twinkle_0_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_0_3"
+  },
+  "mining_tycoon_twinkle_0_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 2.2,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_0_0"
+  },
+  "mining_tycoon_twinkle_1_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 1.05,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_1_1"
+  },
+  "mining_tycoon_twinkle_1_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_1_2"
+  },
+  "mining_tycoon_twinkle_1_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_1_3"
+  },
+  "mining_tycoon_twinkle_1_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 3.5700000000000003,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_1_0"
+  },
+  "mining_tycoon_twinkle_2_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 1.5,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_2_1"
+  },
+  "mining_tycoon_twinkle_2_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_2_2"
+  },
+  "mining_tycoon_twinkle_2_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_2_3"
+  },
+  "mining_tycoon_twinkle_2_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 4.94,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_2_0"
+  },
+  "mining_tycoon_twinkle_3_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 1.9500000000000002,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_3_1"
+  },
+  "mining_tycoon_twinkle_3_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_3_2"
+  },
+  "mining_tycoon_twinkle_3_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_3_3"
+  },
+  "mining_tycoon_twinkle_3_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 2.8100000000000005,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_3_0"
+  },
+  "mining_tycoon_twinkle_4_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 2.4,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_4_1"
+  },
+  "mining_tycoon_twinkle_4_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_4_2"
+  },
+  "mining_tycoon_twinkle_4_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_4_3"
+  },
+  "mining_tycoon_twinkle_4_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 4.180000000000001,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_4_0"
+  },
+  "mining_tycoon_twinkle_5_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 2.85,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_5_1"
+  },
+  "mining_tycoon_twinkle_5_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_5_2"
+  },
+  "mining_tycoon_twinkle_5_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_5_3"
+  },
+  "mining_tycoon_twinkle_5_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 5.550000000000001,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_5_0"
+  },
+  "mining_tycoon_twinkle_6_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 3.3000000000000003,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_6_1"
+  },
+  "mining_tycoon_twinkle_6_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_6_2"
+  },
+  "mining_tycoon_twinkle_6_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_6_3"
+  },
+  "mining_tycoon_twinkle_6_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 3.420000000000001,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_6_0"
+  },
+  "mining_tycoon_twinkle_7_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 3.75,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_7_1"
+  },
+  "mining_tycoon_twinkle_7_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_7_2"
+  },
+  "mining_tycoon_twinkle_7_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_7_3"
+  },
+  "mining_tycoon_twinkle_7_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 4.79,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_7_0"
+  },
+  "mining_tycoon_twinkle_8_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 4.2,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_8_1"
+  },
+  "mining_tycoon_twinkle_8_1": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": 0,
+    "to": 1,
+    "next": "@server_form.mining_tycoon_twinkle_8_2"
+  },
+  "mining_tycoon_twinkle_8_2": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.45,
+    "from": 1,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_8_3"
+  },
+  "mining_tycoon_twinkle_8_3": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 2.660000000000001,
+    "from": 0,
+    "to": 0,
+    "next": "@server_form.mining_tycoon_twinkle_8_0"
+  },
+  "mining_tycoon_dust_0_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 9.0,
+    "from": [
+      "8%",
+      "104%"
+    ],
+    "to": [
+      "12%",
+      "-6%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_0_1"
+  },
+  "mining_tycoon_dust_0_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.01,
+    "from": [
+      "12%",
+      "-6%"
+    ],
+    "to": [
+      "8%",
+      "104%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_0_0"
+  },
+  "mining_tycoon_dust_1_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 11.3,
+    "from": [
+      "30%",
+      "104%"
+    ],
+    "to": [
+      "34%",
+      "-6%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_1_1"
+  },
+  "mining_tycoon_dust_1_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.01,
+    "from": [
+      "34%",
+      "-6%"
+    ],
+    "to": [
+      "30%",
+      "104%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_1_0"
+  },
+  "mining_tycoon_dust_2_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 13.6,
+    "from": [
+      "42%",
+      "104%"
+    ],
+    "to": [
+      "46%",
+      "-6%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_2_1"
+  },
+  "mining_tycoon_dust_2_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.01,
+    "from": [
+      "46%",
+      "-6%"
+    ],
+    "to": [
+      "42%",
+      "104%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_2_0"
+  },
+  "mining_tycoon_dust_3_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 9.899999999999999,
+    "from": [
+      "64%",
+      "104%"
+    ],
+    "to": [
+      "68%",
+      "-6%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_3_1"
+  },
+  "mining_tycoon_dust_3_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.01,
+    "from": [
+      "68%",
+      "-6%"
+    ],
+    "to": [
+      "64%",
+      "104%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_3_0"
+  },
+  "mining_tycoon_dust_4_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 12.2,
+    "from": [
+      "76%",
+      "104%"
+    ],
+    "to": [
+      "80%",
+      "-6%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_4_1"
+  },
+  "mining_tycoon_dust_4_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.01,
+    "from": [
+      "80%",
+      "-6%"
+    ],
+    "to": [
+      "76%",
+      "104%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_4_0"
+  },
+  "mining_tycoon_dust_5_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 14.5,
+    "from": [
+      "98%",
+      "104%"
+    ],
+    "to": [
+      "102%",
+      "-6%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_5_1"
+  },
+  "mining_tycoon_dust_5_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.01,
+    "from": [
+      "102%",
+      "-6%"
+    ],
+    "to": [
+      "98%",
+      "104%"
+    ],
+    "next": "@server_form.mining_tycoon_dust_5_0"
+  },
+  "mining_tycoon_cart_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 2.5,
+    "from": [
+      "-12%",
+      "-6.25%"
+    ],
+    "to": [
+      "-12%",
+      "-6.25%"
+    ],
+    "next": "@server_form.mining_tycoon_cart_1"
+  },
+  "mining_tycoon_cart_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 12,
+    "from": [
+      "-12%",
+      "-6.25%"
+    ],
+    "to": [
+      "104%",
+      "-6.25%"
+    ],
+    "next": "@server_form.mining_tycoon_cart_2"
+  },
+  "mining_tycoon_cart_2": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 4,
+    "from": [
+      "104%",
+      "-6.25%"
+    ],
+    "to": [
+      "104%",
+      "-6.25%"
+    ],
+    "next": "@server_form.mining_tycoon_cart_0"
+  },
+  "mining_tycoon_cart_bump_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      "-11%"
+    ],
+    "next": "@server_form.mining_tycoon_cart_bump_1"
+  },
+  "mining_tycoon_cart_bump_1": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.18,
+    "from": [
+      0,
+      "-11%"
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_cart_bump_0"
+  },
+  "mining_tycoon_content_in_start": {
+    "anim_type": "offset",
+    "easing": "out_cubic",
+    "duration": 0.35,
+    "from": [
+      0,
+      14
+    ],
+    "to": [
+      0,
+      0
+    ]
+  },
+  "mining_tycoon_logo_drop_start": {
+    "anim_type": "offset",
+    "easing": "out_back",
+    "duration": 0.6,
+    "from": [
+      0,
+      -36
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_logo_float_0"
+  },
+  "mining_tycoon_pan_tablet_0": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 16,
+    "from": [
+      -18,
+      0
+    ],
+    "to": [
+      18,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_pan_tablet_1"
+  },
+  "mining_tycoon_pan_tablet_1": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 16,
+    "from": [
+      18,
+      0
+    ],
+    "to": [
+      -18,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_pan_tablet_0"
+  },
+  "mining_tycoon_content_in_tablet": {
+    "anim_type": "offset",
+    "easing": "out_cubic",
+    "duration": 0.35,
+    "from": [
+      0,
+      14
+    ],
+    "to": [
+      0,
+      0
+    ]
+  },
+  "mining_tycoon_logo_drop_tablet": {
+    "anim_type": "offset",
+    "easing": "out_back",
+    "duration": 0.6,
+    "from": [
+      0,
+      -36
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_logo_float_0"
+  },
   "mining_tycoon_long_form": {
     "type": "panel",
     "size": [
@@ -78,12 +854,329 @@
                 "type": "image",
                 "texture": "textures/mining_tycoon/ui/menu_bg",
                 "size": [
-                  "100% + 64px",
-                  "100% + 32px"
+                  "100% + 96px",
+                  "100% + 8px"
                 ],
                 "anchor_from": "center",
                 "anchor_to": "center",
-                "layer": 1
+                "layer": 1,
+                "offset": "@server_form.mining_tycoon_pan_start_0",
+                "controls": [
+                  {
+                    "glow_0": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_glow",
+                      "size": [
+                        "24%",
+                        "48%"
+                      ],
+                      "layer": 2,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "11.33%",
+                        "14.84%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_flicker_0_0"
+                    }
+                  },
+                  {
+                    "glow_1": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_glow",
+                      "size": [
+                        "24%",
+                        "48%"
+                      ],
+                      "layer": 2,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "88.67%",
+                        "14.84%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_flicker_1_0"
+                    }
+                  },
+                  {
+                    "sparkle_0": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "5.86%",
+                        "47.66%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_0_0"
+                    }
+                  },
+                  {
+                    "sparkle_1": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "18.36%",
+                        "72.66%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_1_0"
+                    }
+                  },
+                  {
+                    "sparkle_2": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "4.30%",
+                        "82.03%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_2_0"
+                    }
+                  },
+                  {
+                    "sparkle_3": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "27.73%",
+                        "32.03%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_3_0"
+                    }
+                  },
+                  {
+                    "sparkle_4": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "95.70%",
+                        "44.53%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_4_0"
+                    }
+                  },
+                  {
+                    "sparkle_5": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "85.55%",
+                        "69.53%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_5_0"
+                    }
+                  },
+                  {
+                    "sparkle_6": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "98.05%",
+                        "78.91%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_6_0"
+                    }
+                  },
+                  {
+                    "sparkle_7": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "74.61%",
+                        "28.91%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_7_0"
+                    }
+                  },
+                  {
+                    "sparkle_8": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "93.36%",
+                        "10.16%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_8_0"
+                    }
+                  },
+                  {
+                    "dust_0": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_0_0"
+                    }
+                  },
+                  {
+                    "dust_1": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_1_0"
+                    }
+                  },
+                  {
+                    "dust_2": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_2_0"
+                    }
+                  },
+                  {
+                    "dust_3": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_3_0"
+                    }
+                  },
+                  {
+                    "dust_4": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_4_0"
+                    }
+                  },
+                  {
+                    "dust_5": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_5_0"
+                    }
+                  },
+                  {
+                    "minecart": {
+                      "type": "panel",
+                      "size": [
+                        "9.38%",
+                        "14.06%"
+                      ],
+                      "layer": 4,
+                      "anchor_from": "bottom_left",
+                      "anchor_to": "bottom_left",
+                      "offset": "@server_form.mining_tycoon_cart_0",
+                      "controls": [
+                        {
+                          "cart": {
+                            "type": "image",
+                            "texture": "textures/mining_tycoon/ui/fx_minecart",
+                            "size": [
+                              "100%",
+                              "100%"
+                            ],
+                            "offset": "@server_form.mining_tycoon_cart_bump_0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
               }
             },
             {
@@ -96,25 +1189,67 @@
                 ],
                 "anchor_from": "center",
                 "anchor_to": "center",
-                "layer": 2,
+                "layer": 20,
+                "offset": "@server_form.mining_tycoon_content_in_start",
                 "controls": [
                   {
-                    "logo": {
-                      "type": "label",
-                      "text": "MINING TYCOON",
-                      "color": [
-                        1.0,
-                        0.82,
-                        0.28
-                      ],
-                      "shadow": true,
-                      "text_alignment": "center",
+                    "logo_row": {
+                      "type": "panel",
                       "size": [
                         "100%",
-                        "default"
+                        56
                       ],
-                      "font_type": "MinecraftTen",
-                      "font_scale_factor": 2.0
+                      "controls": [
+                        {
+                          "logo": {
+                            "type": "image",
+                            "texture": "textures/mining_tycoon/ui/logo",
+                            "size": [
+                              180,
+                              56
+                            ],
+                            "offset": "@server_form.mining_tycoon_logo_drop_start",
+                            "controls": [
+                              {
+                                "logo_sparkle_0": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                                  "size": [
+                                    14,
+                                    14
+                                  ],
+                                  "layer": 1,
+                                  "anchor_from": "top_left",
+                                  "anchor_to": "center",
+                                  "offset": [
+                                    "12%",
+                                    "22%"
+                                  ],
+                                  "alpha": "@server_form.mining_tycoon_logo_twinkle_0_0"
+                                }
+                              },
+                              {
+                                "logo_sparkle_1": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                                  "size": [
+                                    14,
+                                    14
+                                  ],
+                                  "layer": 1,
+                                  "anchor_from": "top_left",
+                                  "anchor_to": "center",
+                                  "offset": [
+                                    "88%",
+                                    "72%"
+                                  ],
+                                  "alpha": "@server_form.mining_tycoon_logo_twinkle_1_0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -122,7 +1257,7 @@
                       "type": "panel",
                       "size": [
                         "100%",
-                        6
+                        4
                       ]
                     }
                   },
@@ -808,7 +1943,11 @@
                                                   "mining_tycoon_go_delete_0@server_form.mining_tycoon_nav_toggle": {
                                                     "$toggle_name": "mining_tycoon_go_delete_0",
                                                     "$nav_text": "Delete Session 1",
-                                                    "$nav_back_text": "Keep it"
+                                                    "$nav_back_text": "Keep it",
+                                                    "$nav_icon": "textures/mining_tycoon/ui/icons/delete",
+                                                    "$nav_back_icon": "textures/mining_tycoon/ui/icons/back",
+                                                    "$nav_icon_visible": false,
+                                                    "$nav_back_icon_visible": false
                                                   }
                                                 }
                                               ]
@@ -1129,7 +2268,11 @@
                                                   "mining_tycoon_go_delete_1@server_form.mining_tycoon_nav_toggle": {
                                                     "$toggle_name": "mining_tycoon_go_delete_1",
                                                     "$nav_text": "Delete Session 2",
-                                                    "$nav_back_text": "Keep it"
+                                                    "$nav_back_text": "Keep it",
+                                                    "$nav_icon": "textures/mining_tycoon/ui/icons/delete",
+                                                    "$nav_back_icon": "textures/mining_tycoon/ui/icons/back",
+                                                    "$nav_icon_visible": false,
+                                                    "$nav_back_icon_visible": false
                                                   }
                                                 }
                                               ]
@@ -1220,7 +2363,11 @@
                                             "mining_tycoon_go_delete@server_form.mining_tycoon_nav_toggle": {
                                               "$toggle_name": "mining_tycoon_go_delete",
                                               "$nav_text": "Delete a session",
-                                              "$nav_back_text": "Back"
+                                              "$nav_back_text": "Back",
+                                              "$nav_icon": "textures/mining_tycoon/ui/icons/delete",
+                                              "$nav_back_icon": "textures/mining_tycoon/ui/icons/back",
+                                              "$nav_icon_visible": false,
+                                              "$nav_back_icon_visible": false
                                             }
                                           }
                                         ]
@@ -1289,7 +2436,11 @@
                                       "mining_tycoon_go_sessions@server_form.mining_tycoon_nav_toggle": {
                                         "$toggle_name": "mining_tycoon_go_sessions",
                                         "$nav_text": "Sessions",
-                                        "$nav_back_text": "Back"
+                                        "$nav_back_text": "Back",
+                                        "$nav_icon": "textures/mining_tycoon/ui/icons/sessions",
+                                        "$nav_back_icon": "textures/mining_tycoon/ui/icons/back",
+                                        "$nav_icon_visible": false,
+                                        "$nav_back_icon_visible": false
                                       }
                                     }
                                   ]
@@ -1384,12 +2535,329 @@
                 "type": "image",
                 "texture": "textures/mining_tycoon/ui/menu_bg",
                 "size": [
-                  "100% + 64px",
-                  "100% + 32px"
+                  "100% + 96px",
+                  "100% + 8px"
                 ],
                 "anchor_from": "center",
                 "anchor_to": "center",
-                "layer": 1
+                "layer": 1,
+                "offset": "@server_form.mining_tycoon_pan_tablet_0",
+                "controls": [
+                  {
+                    "glow_0": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_glow",
+                      "size": [
+                        "24%",
+                        "48%"
+                      ],
+                      "layer": 2,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "11.33%",
+                        "14.84%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_flicker_0_0"
+                    }
+                  },
+                  {
+                    "glow_1": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_glow",
+                      "size": [
+                        "24%",
+                        "48%"
+                      ],
+                      "layer": 2,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "88.67%",
+                        "14.84%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_flicker_1_0"
+                    }
+                  },
+                  {
+                    "sparkle_0": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "5.86%",
+                        "47.66%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_0_0"
+                    }
+                  },
+                  {
+                    "sparkle_1": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "18.36%",
+                        "72.66%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_1_0"
+                    }
+                  },
+                  {
+                    "sparkle_2": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "4.30%",
+                        "82.03%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_2_0"
+                    }
+                  },
+                  {
+                    "sparkle_3": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "27.73%",
+                        "32.03%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_3_0"
+                    }
+                  },
+                  {
+                    "sparkle_4": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "95.70%",
+                        "44.53%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_4_0"
+                    }
+                  },
+                  {
+                    "sparkle_5": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "85.55%",
+                        "69.53%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_5_0"
+                    }
+                  },
+                  {
+                    "sparkle_6": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "98.05%",
+                        "78.91%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_6_0"
+                    }
+                  },
+                  {
+                    "sparkle_7": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "74.61%",
+                        "28.91%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_7_0"
+                    }
+                  },
+                  {
+                    "sparkle_8": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                      "size": [
+                        "7.03%",
+                        "14.06%"
+                      ],
+                      "layer": 3,
+                      "anchor_from": "top_left",
+                      "anchor_to": "center",
+                      "offset": [
+                        "93.36%",
+                        "10.16%"
+                      ],
+                      "alpha": "@server_form.mining_tycoon_twinkle_8_0"
+                    }
+                  },
+                  {
+                    "dust_0": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_0_0"
+                    }
+                  },
+                  {
+                    "dust_1": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_1_0"
+                    }
+                  },
+                  {
+                    "dust_2": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_2_0"
+                    }
+                  },
+                  {
+                    "dust_3": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_3_0"
+                    }
+                  },
+                  {
+                    "dust_4": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_4_0"
+                    }
+                  },
+                  {
+                    "dust_5": {
+                      "type": "image",
+                      "texture": "textures/mining_tycoon/ui/fx_dust",
+                      "size": [
+                        "0.78%",
+                        "1.56%"
+                      ],
+                      "layer": 2,
+                      "alpha": 0.8,
+                      "anchor_from": "top_left",
+                      "anchor_to": "top_left",
+                      "offset": "@server_form.mining_tycoon_dust_5_0"
+                    }
+                  },
+                  {
+                    "minecart": {
+                      "type": "panel",
+                      "size": [
+                        "9.38%",
+                        "14.06%"
+                      ],
+                      "layer": 4,
+                      "anchor_from": "bottom_left",
+                      "anchor_to": "bottom_left",
+                      "offset": "@server_form.mining_tycoon_cart_0",
+                      "controls": [
+                        {
+                          "cart": {
+                            "type": "image",
+                            "texture": "textures/mining_tycoon/ui/fx_minecart",
+                            "size": [
+                              "100%",
+                              "100%"
+                            ],
+                            "offset": "@server_form.mining_tycoon_cart_bump_0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
               }
             },
             {
@@ -1402,25 +2870,67 @@
                 ],
                 "anchor_from": "center",
                 "anchor_to": "center",
-                "layer": 2,
+                "layer": 20,
+                "offset": "@server_form.mining_tycoon_content_in_tablet",
                 "controls": [
                   {
-                    "logo": {
-                      "type": "label",
-                      "text": "MINING TYCOON",
-                      "color": [
-                        1.0,
-                        0.82,
-                        0.28
-                      ],
-                      "shadow": true,
-                      "text_alignment": "center",
+                    "logo_row": {
+                      "type": "panel",
                       "size": [
                         "100%",
-                        "default"
+                        56
                       ],
-                      "font_type": "MinecraftTen",
-                      "font_scale_factor": 2.0
+                      "controls": [
+                        {
+                          "logo": {
+                            "type": "image",
+                            "texture": "textures/mining_tycoon/ui/logo",
+                            "size": [
+                              180,
+                              56
+                            ],
+                            "offset": "@server_form.mining_tycoon_logo_drop_tablet",
+                            "controls": [
+                              {
+                                "logo_sparkle_0": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                                  "size": [
+                                    14,
+                                    14
+                                  ],
+                                  "layer": 1,
+                                  "anchor_from": "top_left",
+                                  "anchor_to": "center",
+                                  "offset": [
+                                    "12%",
+                                    "22%"
+                                  ],
+                                  "alpha": "@server_form.mining_tycoon_logo_twinkle_0_0"
+                                }
+                              },
+                              {
+                                "logo_sparkle_1": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/fx_sparkle",
+                                  "size": [
+                                    14,
+                                    14
+                                  ],
+                                  "layer": 1,
+                                  "anchor_from": "top_left",
+                                  "anchor_to": "center",
+                                  "offset": [
+                                    "88%",
+                                    "72%"
+                                  ],
+                                  "alpha": "@server_form.mining_tycoon_logo_twinkle_1_0"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
                     }
                   },
                   {
@@ -1428,7 +2938,7 @@
                       "type": "panel",
                       "size": [
                         "100%",
-                        6
+                        4
                       ]
                     }
                   },
@@ -1594,7 +3104,11 @@
                                       "mining_tycoon_go_upgrades@server_form.mining_tycoon_nav_toggle": {
                                         "$toggle_name": "mining_tycoon_go_upgrades",
                                         "$nav_text": "Upgrades",
-                                        "$nav_back_text": "Back"
+                                        "$nav_back_text": "Back",
+                                        "$nav_icon": "textures/mining_tycoon/ui/icons/upgrades",
+                                        "$nav_back_icon": "textures/mining_tycoon/ui/icons/back",
+                                        "$nav_icon_visible": false,
+                                        "$nav_back_icon_visible": false
                                       }
                                     }
                                   ]
@@ -1753,7 +3267,11 @@
                                       "mining_tycoon_go_shop@server_form.mining_tycoon_nav_toggle": {
                                         "$toggle_name": "mining_tycoon_go_shop",
                                         "$nav_text": "Drills",
-                                        "$nav_back_text": "Back"
+                                        "$nav_back_text": "Back",
+                                        "$nav_icon": "textures/mining_tycoon/ui/icons/drills",
+                                        "$nav_back_icon": "textures/mining_tycoon/ui/icons/back",
+                                        "$nav_icon_visible": false,
+                                        "$nav_back_icon_visible": false
                                       }
                                     }
                                   ]
@@ -1912,7 +3430,11 @@
                                       "mining_tycoon_go_rebirth@server_form.mining_tycoon_nav_toggle": {
                                         "$toggle_name": "mining_tycoon_go_rebirth",
                                         "$nav_text": "Rebirth",
-                                        "$nav_back_text": "Not yet"
+                                        "$nav_back_text": "Not yet",
+                                        "$nav_icon": "textures/mining_tycoon/ui/icons/rebirth",
+                                        "$nav_back_icon": "textures/mining_tycoon/ui/icons/back",
+                                        "$nav_icon_visible": false,
+                                        "$nav_back_icon_visible": false
                                       }
                                     }
                                   ]
@@ -2022,6 +3544,34 @@
         }
       }
     ]
+  },
+  "mining_tycoon_icon_bob_0": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 0.3,
+    "from": [
+      7,
+      0
+    ],
+    "to": [
+      7,
+      -1.5
+    ],
+    "next": "@server_form.mining_tycoon_icon_bob_1"
+  },
+  "mining_tycoon_icon_bob_1": {
+    "anim_type": "offset",
+    "easing": "in_out_sine",
+    "duration": 0.3,
+    "from": [
+      7,
+      -1.5
+    ],
+    "to": [
+      7,
+      0
+    ],
+    "next": "@server_form.mining_tycoon_icon_bob_0"
   },
   "mining_tycoon_list_start_top": {
     "type": "stack_panel",
@@ -2496,7 +4046,8 @@
             1.0,
             0.96,
             0.75
-          ]
+          ],
+          "$state_icon_offset": "@server_form.mining_tycoon_icon_bob_0"
         }
       },
       {
@@ -2526,7 +4077,43 @@
       0,
       0
     ],
+    "$state_icon_offset|default": [
+      7,
+      0
+    ],
     "controls": [
+      {
+        "icon": {
+          "type": "image",
+          "size": [
+            16,
+            16
+          ],
+          "layer": 2,
+          "anchor_from": "left_middle",
+          "anchor_to": "left_middle",
+          "offset": "$state_icon_offset",
+          "bindings": [
+            {
+              "binding_name": "#form_button_texture",
+              "binding_name_override": "#texture",
+              "binding_type": "collection",
+              "binding_collection_name": "form_buttons"
+            },
+            {
+              "binding_name": "#form_button_texture_file_system",
+              "binding_name_override": "#texture_file_system",
+              "binding_type": "collection",
+              "binding_collection_name": "form_buttons"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(not ((#texture = '') or (#texture = 'loading')))",
+              "target_property_name": "#visible"
+            }
+          ]
+        }
+      },
       {
         "label": {
           "type": "label",
@@ -2535,12 +4122,12 @@
           "shadow": true,
           "text_alignment": "center",
           "size": [
-            "100% - 12px",
+            "100% - 48px",
             "default"
           ],
           "offset": "$state_text_offset",
           "max_size": [
-            "100% - 12px",
+            "100% - 48px",
             22
           ],
           "layer": 1,
@@ -2586,6 +4173,24 @@
     ],
     "controls": [
       {
+        "icon": {
+          "type": "image",
+          "size": [
+            16,
+            16
+          ],
+          "layer": 2,
+          "anchor_from": "left_middle",
+          "anchor_to": "left_middle",
+          "offset": [
+            7,
+            0
+          ],
+          "texture": "$nav_icon",
+          "visible": "$nav_icon_visible"
+        }
+      },
+      {
         "label": {
           "type": "label",
           "text": "$nav_text",
@@ -2597,7 +4202,7 @@
           "shadow": true,
           "text_alignment": "center",
           "size": [
-            "100% - 12px",
+            "100% - 48px",
             "default"
           ],
           "layer": 1
@@ -2614,6 +4219,21 @@
     ],
     "controls": [
       {
+        "icon": {
+          "type": "image",
+          "size": [
+            16,
+            16
+          ],
+          "layer": 2,
+          "anchor_from": "left_middle",
+          "anchor_to": "left_middle",
+          "offset": "@server_form.mining_tycoon_icon_bob_0",
+          "texture": "$nav_icon",
+          "visible": "$nav_icon_visible"
+        }
+      },
+      {
         "label": {
           "type": "label",
           "text": "$nav_text",
@@ -2625,7 +4245,7 @@
           "shadow": true,
           "text_alignment": "center",
           "size": [
-            "100% - 12px",
+            "100% - 48px",
             "default"
           ],
           "layer": 1
@@ -2642,6 +4262,24 @@
     ],
     "controls": [
       {
+        "icon": {
+          "type": "image",
+          "size": [
+            16,
+            16
+          ],
+          "layer": 2,
+          "anchor_from": "left_middle",
+          "anchor_to": "left_middle",
+          "offset": [
+            7,
+            0
+          ],
+          "texture": "$nav_back_icon",
+          "visible": "$nav_back_icon_visible"
+        }
+      },
+      {
         "label": {
           "type": "label",
           "text": "$nav_back_text",
@@ -2653,7 +4291,7 @@
           "shadow": true,
           "text_alignment": "center",
           "size": [
-            "100% - 12px",
+            "100% - 48px",
             "default"
           ],
           "layer": 1
@@ -2670,6 +4308,21 @@
     ],
     "controls": [
       {
+        "icon": {
+          "type": "image",
+          "size": [
+            16,
+            16
+          ],
+          "layer": 2,
+          "anchor_from": "left_middle",
+          "anchor_to": "left_middle",
+          "offset": "@server_form.mining_tycoon_icon_bob_0",
+          "texture": "$nav_back_icon",
+          "visible": "$nav_back_icon_visible"
+        }
+      },
+      {
         "label": {
           "type": "label",
           "text": "$nav_back_text",
@@ -2681,7 +4334,7 @@
           "shadow": true,
           "text_alignment": "center",
           "size": [
-            "100% - 12px",
+            "100% - 48px",
             "default"
           ],
           "layer": 1

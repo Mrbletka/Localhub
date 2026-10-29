@@ -112,7 +112,7 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
   `tools/gen_server_form.py` - edit the menu tree there and run it):
   - A form whose title starts with a form tag (`§m§t§s` start menu, `§m§t§t` tablet) is drawn full screen: cave
     background `textures/mining_tycoon/ui/menu_bg` (128x64, drawn 32px past each edge to cover the screen safe area),
-    gold MINING TYCOON logo, the body text on every page, a heading per sub-page and stone & gold buttons (nine-sliced
+    logo, the body text on every page, a heading per sub-page and stone & gold buttons (nine-sliced
     `textures/mining_tycoon/ui/button`, `button_hover`, `button_pressed`; gold text, up to 2 lines). Other forms keep
     the normal look.
   - All pages of a menu are in that one form. Sub-pages open with **Navs**: on/off toggles inside the UI that turn into
@@ -121,6 +121,16 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
     title flags (`§h§s` has sessions, `§f§1`/`§f§2` slot filled) show or hide Navs. Scripts use the names from
     `menu_layout.js` via `fullScreenMenu(player, { form, flags, body, buttons: [{ list, text, run }] })` in `menu.js`.
   - Without the resource pack every button shows in one plain list (including the delete confirmations).
+  - Look and motion (all generated): pixel-art logo `ui/logo.png` (drops in with a bounce, then floats, two twinkling
+    sparkles); the cave background (now 96px wider / 8px taller than the screen) pans slowly left and right, with
+    flickering lantern glows (`ui/fx_glow`), gems that twinkle on their own rhythm (`ui/fx_sparkle`), drifting dust
+    (`ui/fx_dust`) and a minecart (`ui/fx_minecart`, cut out of the background) rolling along the rail every ~18 s.
+    The menu content slides up when a menu opens. Effect positions are texel coordinates of `menu_bg.png`
+    (`LIGHTS`, `GEMS`, `RAIL` in the generator) - update them if the background is repainted.
+  - Icons: every button has a 16x16 icon on the left that bobs while the button is selected. Real buttons pass a
+    texture as the form button icon (`icon('play')` -> `ui/icons/play`, or pick / ore / drill textures in the
+    tablet); Navs have fixed icons in the generator (`icon=`, `back_icon=`). Icons: play, new_slot, sessions, session,
+    exit, back, delete, upgrades, drills, rebirth, home, coin, lock.
 - Mine plots: 25x25 polished-deepslate platforms with a deepslate-brick rim and corner lanterns, in a 16-wide grid at
   x/z 10000, y 80, 48 blocks apart. Your respawn point is set to the mine you are playing. Drills only work in the mine
   of your active session, and a drill can only be broken from the session it belongs to. Other players can't break or
@@ -128,6 +138,7 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
 
 ## Roadmap (built step by step)
 - [x] **Foundation:** project from the tycoon template, rethemed to mining (drills, Miner's Tablet, texts).
+- [x] **Menu look:** pixel-art logo, button icons, animated background (pan, lanterns, gems, dust, minecart).
 - [ ] **Look:** pixel-art drill textures, Miner's Tablet icon, pack icon.
 - [ ] **Ore feel:** mining particles/sounds; drills that visibly mine the ore field next to them.
 - [x] **Start menu + plots:** full-screen join menu (Play / Create session / Exit), private mine plots, drills only in your own mine.

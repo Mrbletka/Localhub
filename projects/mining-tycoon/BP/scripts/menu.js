@@ -12,6 +12,9 @@ import { sessionsOf, hasSessions, activeSession, lastSession, sessionStats, play
 
 const SHADE = { red: 0.06, green: 0.045, blue: 0.03 };
 const open = new Set();
+
+/** Menu icon texture (RP/textures/mining_tycoon/ui/icons); none when that icon is not painted yet. */
+export const icon = (name) => (MENU.icons.includes(name) ? `textures/mining_tycoon/ui/icons/${name}` : undefined);
 const covered = new Set();
 
 /** Hide the world and HUD behind a dark screen. Fades hold for at most 10 s, so covered players are refreshed. */
@@ -37,7 +40,8 @@ function uncover(player) {
 }
 
 /**
- * Show a full-screen menu. form: a key of MENU.forms. buttons: [{ list, text, run }] with list a key of MENU.lists.
+ * Show a full-screen menu. form: a key of MENU.forms. buttons: [{ list, text, icon, run }] with list a key of
+ * MENU.lists and icon a texture path (icons: icon('play')).
  * flags: keys of MENU.flags to set. Closing it with Back runs onClose (if any); when the player is just busy (still
  * loading, chat open) the same menu comes back a moment later.
  */
@@ -48,7 +52,7 @@ export function fullScreenMenu(player, menu, onClose) {
   const { form, flags = [], body, buttons } = menu;
   const title = MENU.forms[form] + flags.map((f) => MENU.flags[f]).join('') + CONFIG.title;
   const data = new ActionFormData().title(title).body(body);
-  for (const b of buttons) data.button(MENU.lists[b.list] + b.text);
+  for (const b of buttons) data.button(MENU.lists[b.list] + b.text, b.icon);
   data
     .show(player)
     .then((res) => {
@@ -112,16 +116,16 @@ export function showStartMenu(player) {
   const has = hasSessions(player.id);
   const slots = sessionsOf(player.id);
   const active = activeSession(player);
-  const buttons = [{ list: 'start_top', text: 'Play', run: play }];
-  if (!has) buttons.push({ list: 'start_top', text: 'Create session', run: (p) => enter(p, 0) });
-  buttons.push({ list: 'start_bottom', text: 'Exit', run: exit });
+  const buttons = [{ list: 'start_top', text: 'Play', icon: icon('play'), run: play }];
+  if (!has) buttons.push({ list: 'start_top', text: 'Create session', icon: icon('new_slot'), run: (p) => enter(p, 0) });
+  buttons.push({ list: 'start_bottom', text: 'Exit', icon: icon('exit'), run: exit });
   const flags = has ? ['hasSessions'] : [];
   slots.forEach((record, i) => {
     if (!has) return;
-    if (!record) return buttons.push({ list: 'start_slots', text: `Slot ${i + 1} - Empty\n§7Tap to create a session`, run: (p) => enter(p, i) });
+    if (!record) return buttons.push({ list: 'start_slots', text: `Slot ${i + 1} - Empty\n§7Tap to create a session`, icon: icon('new_slot'), run: (p) => enter(p, i) });
     flags.push(`slot${i}`);
-    buttons.push({ list: 'start_slots', text: `Session ${i + 1}${i === active ? ' §a(playing)' : ''}\n§7${summary(player, i)}`, run: (p) => enter(p, i) });
-    buttons.push({ list: `start_delete_${i}`, text: `Yes, delete Session ${i + 1}`, run: (p) => remove(p, i) });
+    buttons.push({ list: 'start_slots', text: `Session ${i + 1}${i === active ? ' §a(playing)' : ''}\n§7${summary(player, i)}`, icon: icon('session'), run: (p) => enter(p, i) });
+    buttons.push({ list: `start_delete_${i}`, text: `Yes, delete Session ${i + 1}`, icon: icon('delete'), run: (p) => remove(p, i) });
   });
   const body = !has
     ? 'Claim your own mine, dig up ores and get rich.'

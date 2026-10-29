@@ -4,7 +4,7 @@ import { formatNumber, getNumber, setNumber, getJson, setJson, giveItem, hasItem
 import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete, plotAt, plotCenter } from './sessions.js';
 import { stat, setStat, addStat, pickTier, mineLevel, valueMultiplier, valueCost, rebirthCost } from './economy.js';
 import { inField, rerollField, syncPick, popupUntil } from './mining.js';
-import { showStartMenu, fullScreenMenu } from './menu.js';
+import { showStartMenu, fullScreenMenu, icon } from './menu.js';
 
 const NS = CONFIG.namespace;
 const GENERATORS_KEY = `${NS}:generators`;
@@ -99,6 +99,12 @@ function rebirth(player, slot) {
   world.sendMessage(`§d${player.name} reached rebirth ${rebirths + 1}!`);
 }
 
+/** Button icons from item / ore textures: "mining_tycoon:pick_3" -> textures/mining_tycoon/items/pick_3. */
+const itemIcon = (id) => `textures/mining_tycoon/items/${id.split(':')[1]}`;
+const oreIcon = (ore) => `textures/mining_tycoon/blocks/ore_${ore.id}`;
+/** The most valuable ore a mine level has. */
+const newestOre = (level) => CONFIG.ores.filter((o) => o.id in CONFIG.mines[level - 1].weights).at(-1);
+
 /** Names of the ores that need a pick tier / that a mine level adds. */
 const oresNeeding = (tier) => CONFIG.ores.filter((o) => o.pick === tier).map((o) => o.name);
 const oresAddedBy = (level) => {
@@ -118,24 +124,24 @@ function openMenu(player) {
   const nextMine = CONFIG.mines[level];
   const buttons = [
     nextPick
-      ? { list: 'tablet_upgrades', text: `Pick: ${nextPick.name} - $${formatNumber(nextPick.cost)}\n§7Faster${oresNeeding(tier + 1).length ? `, mines ${oresNeeding(tier + 1).join(', ')}` : ''}`, run: upgradePick }
-      : { list: 'tablet_upgrades', text: `Pick: ${CONFIG.picks[tier - 1].name}\n§7Best pick there is`, run: () => {} },
+      ? { list: 'tablet_upgrades', text: `Pick: ${nextPick.name} - $${formatNumber(nextPick.cost)}\n§7Faster${oresNeeding(tier + 1).length ? `, mines ${oresNeeding(tier + 1).join(', ')}` : ''}`, icon: itemIcon(nextPick.item), run: upgradePick }
+      : { list: 'tablet_upgrades', text: `Pick: ${CONFIG.picks[tier - 1].name}\n§7Best pick there is`, icon: itemIcon(CONFIG.picks[tier - 1].item), run: () => {} },
     nextMine
-      ? { list: 'tablet_upgrades', text: `Mine: ${nextMine.name} - $${formatNumber(nextMine.cost)}\n§7Adds ${oresAddedBy(level + 1).join(', ')}`, run: upgradeMine }
-      : { list: 'tablet_upgrades', text: `Mine: ${CONFIG.mines[level - 1].name}\n§7Deepest mine there is`, run: () => {} },
-    { list: 'tablet_upgrades', text: `Ore value: level ${value + 1} - $${formatNumber(valueCost(value))}\n§7+${Math.round(CONFIG.upgrade.incomeBonusPerLevel * 100)}% cash from ores and drills`, run: upgradeValue },
+      ? { list: 'tablet_upgrades', text: `Mine: ${nextMine.name} - $${formatNumber(nextMine.cost)}\n§7Adds ${oresAddedBy(level + 1).join(', ')}`, icon: oreIcon(newestOre(level + 1)), run: upgradeMine }
+      : { list: 'tablet_upgrades', text: `Mine: ${CONFIG.mines[level - 1].name}\n§7Deepest mine there is`, icon: oreIcon(newestOre(level)), run: () => {} },
+    { list: 'tablet_upgrades', text: `Ore value: level ${value + 1} - $${formatNumber(valueCost(value))}\n§7+${Math.round(CONFIG.upgrade.incomeBonusPerLevel * 100)}% cash from ores and drills`, icon: icon('coin'), run: upgradeValue },
   ];
   if (drillsUnlocked(player)) {
     for (const g of CONFIG.generators) {
-      buttons.push({ list: 'tablet_shop', text: `${g.name} - $${formatNumber(g.cost)}\n§7+$${formatNumber(g.income)}/s each`, run: (p) => buyDrill(p, g) });
+      buttons.push({ list: 'tablet_shop', text: `${g.name} - $${formatNumber(g.cost)}\n§7+$${formatNumber(g.income)}/s each`, icon: g.icon, run: (p) => buyDrill(p, g) });
     }
   } else {
     const unlock = CONFIG.mines[CONFIG.drillsUnlockMine - 1].name;
-    buttons.push({ list: 'tablet_shop', text: `Locked\n§7Upgrade your mine to the ${unlock}`, run: (p) => p.sendMessage(`§eDrills unlock when your mine reaches the ${unlock}.`) });
+    buttons.push({ list: 'tablet_shop', text: `Locked\n§7Upgrade your mine to the ${unlock}`, icon: icon('lock'), run: (p) => p.sendMessage(`§eDrills unlock when your mine reaches the ${unlock}.`) });
   }
   buttons.push(
-    { list: 'tablet_rebirth', text: `Rebirth! - $${formatNumber(rebirthCost(rebirths))}\n§7Bonus x${+(1 + (rebirths + 1) * CONFIG.rebirth.bonusPerRebirth).toFixed(2)}`, run: (p) => rebirth(p, slot) },
-    { list: 'tablet_bottom', text: 'Main menu', run: showStartMenu },
+    { list: 'tablet_rebirth', text: `Rebirth! - $${formatNumber(rebirthCost(rebirths))}\n§7Bonus x${+(1 + (rebirths + 1) * CONFIG.rebirth.bonusPerRebirth).toFixed(2)}`, icon: icon('rebirth'), run: (p) => rebirth(p, slot) },
+    { list: 'tablet_bottom', text: 'Main menu', icon: icon('home'), run: showStartMenu },
   );
   const income = incomePerSecond(player);
   const body =
