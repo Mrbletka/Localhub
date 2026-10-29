@@ -174,6 +174,7 @@ function projectSheet() {
   );
   openSheet('Projects', el('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
     el('button', { class: 'btn primary block', onclick: newProjectSheet }, '＋ New project'),
+    el('button', { class: 'btn block', onclick: () => { closeSheet(); setView('ship'); } }, "⟳ Get projects Claude made"),
     S.projects.length ? list : el('p', { class: 'hint' }, 'No projects yet. Create your first add-on!'),
   ));
 }
@@ -540,7 +541,12 @@ function renderChatEmpty() {
   chat.replaceChildren(el('div', { class: 'welcome' },
     el('h3', {}, S.project ? a.name : 'Welcome to Bedrock Studio'),
     el('p', {}, S.project ? a.blurb || '' : 'Create a project (tap the title above), describe your idea and the AI studio team builds it: scripts, items, blocks, textures, balance and a ready-to-import .mcaddon.'),
-    S.config && !S.config.apiKeySet ? el('p', {}, el('button', { class: 'btn sm primary', onclick: settingsSheet }, 'Add your Anthropic API key')) : null,
+    S.config && !S.config.apiKeySet ? el('div', { class: 'card' },
+      el('h3', {}, 'Use your Claude subscription'),
+      el('p', {}, 'Open the Claude app > Code, pick this GitHub repo and describe your add-on. Claude works as this studio team, then you get its work in Build > Sync with Claude.'),
+      el('div', { class: 'row', style: { flexWrap: 'wrap' } },
+        el('button', { class: 'btn sm primary', onclick: () => setView('ship') }, "Get Claude's work"),
+        el('button', { class: 'btn sm', onclick: settingsSheet }, 'Or add an API key'))) : null,
   ));
   updateMeter(null);
 }
@@ -1009,6 +1015,7 @@ function connectWorkspaceEvents() {
   es.onmessage = (msg) => {
     const e = JSON.parse(msg.data);
     if (e.type === 'file_changed') onFileChanged(e);
+    if (e.type === 'synced') loadProjects().then(() => (S.project ? loadTree() : null)).catch(() => {});
     if (e.type === 'file_changed' && e.path && !e.path.includes('/') && e.action !== 'write') loadProjects().catch(() => {});
   };
 }
@@ -1026,9 +1033,87 @@ function issueList(report) {
     issues.some((i) => i.level === 'error') ? el('button', { class: 'btn sm', onclick: () => { selectAgent('qa'); setView('agents'); $('#prompt').value = 'Fix every validation error and warning, then validate again.'; autoGrow(); } }, 'Ask QA to fix these') : null);
 }
 
+const ago = (iso) => {
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (!Number.isFinite(s)) return '';
+  if (s < 90) return 'just now';
+  if (s < 5400) return `${Math.round(s / 60)} min ago`;
+  if (s < 129600) return `${Math.round(s / 3600)} h ago`;
+  return `${Math.round(s / 86400)} days ago`;
+};
+
+/** GitHub sync card: get what Claude Code pushed (claude/* branches or main), push phone edits. */
+function syncPanel() {
+  const box = el('div', { class: 'card' }, el('h3', {}, 'Sync with Claude (GitHub)'), el('p', {}, 'Checking…'));
+  let status = null;
+  const after = async (msg) => {
+    toast(msg);
+    const before = S.project;
+    await loadProjects();
+    // A first project (or a different one) arrived: open it everywhere, which also redraws this tab.
+    if (S.project && S.project !== before) return selectProject(S.project);
+    await loadTree().catch(() => {});
+    await load(false);
+  };
+  const action = (label, fn, cls = 'btn sm') => {
+    const b = el('button', { class: cls, onclick: guard(async () => {
+      b.disabled = true;
+      b.textContent = '…';
+      try {
+        await fn();
+      } finally {
+        b.disabled = false;
+        b.textContent = label;
+      }
+    }) }, label);
+    return b;
+  };
+  const render = () => {
+    const st = status;
+    const head = el('h3', {}, 'Sync with Claude (GitHub)');
+    if (!st.isRepo) return box.replaceChildren(head, el('p', {}, 'This studio folder is not a git clone, so it cannot sync. Clone the repo with git to use Claude from the Claude app.'));
+    const parts = [`Branch ${st.branch}`];
+    if (st.behind) parts.push(`${st.behind} new on GitHub`);
+    if (st.ahead) parts.push(`${st.ahead} not pushed`);
+    if (st.localChanges) parts.push(`${st.localChanges} changed file${st.localChanges === 1 ? '' : 's'} here`);
+    if (!st.behind && !st.ahead && !st.localChanges) parts.push('up to date');
+    box.replaceChildren(...[head,
+      el('p', {}, 'Ask Claude in the Claude app (Code tab, this repo) to build or change an add-on. When it has pushed, get it here.'),
+      el('p', {}, parts.join(' · ')),
+      st.fetchError ? el('p', { class: 'hint', style: { color: 'var(--danger)' } }, st.fetchError) : null,
+      st.claude.length ? el('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+        el('b', { style: { fontSize: '13px' } }, "Claude's work"),
+        st.claude.map((c) => el('div', { class: 'download' },
+          el('span', { style: { display: 'flex', flexDirection: 'column', minWidth: 0 } }, el('b', { style: { fontFamily: 'inherit' } }, c.subject),
+            el('small', { class: 'hint' }, `${c.branch} · ${c.commits} commit${c.commits === 1 ? '' : 's'} · ${c.projectFiles} project files · ${ago(c.date)}`)),
+          action('Get it', async () => {
+            await api('POST', '/api/git/merge', { branch: c.branch });
+            await after(`Got "${c.subject}"`);
+          }, 'btn sm primary')))) : null,
+      el('div', { class: 'row', style: { flexWrap: 'wrap' } },
+        action('Check for updates', () => load(true)),
+        st.behind ? action(`Pull ${st.behind} update${st.behind === 1 ? '' : 's'}`, async () => {
+          await api('POST', '/api/git/pull');
+          await after('Updated from GitHub');
+        }, 'btn sm primary') : null,
+        st.ahead || st.localChanges ? action('Push my changes', async () => {
+          const res = await api('POST', '/api/git/push');
+          toast(res.committed ? `Pushed ${res.committed} changed files` : 'Pushed');
+          await load(false);
+        }) : null)].filter(Boolean));
+  };
+  const load = async (fetch) => {
+    status = await api('GET', `/api/git/status${fetch ? '?fetch=1' : ''}`);
+    render();
+  };
+  // Show the local state right away, then refresh from GitHub.
+  load(false).then(() => load(true)).catch((err) => box.replaceChildren(el('h3', {}, 'Sync with Claude (GitHub)'), el('p', {}, err.message)));
+  return box;
+}
+
 async function renderShip() {
   const root = $('#ship');
-  if (!S.project) return root.replaceChildren(el('p', { class: 'empty' }, 'Create a project first.'));
+  if (!S.project) return root.replaceChildren(syncPanel(), el('p', { class: 'empty' }, 'Create a project, or get one Claude made.'));
   const p = S.projects.find((x) => x.slug === S.project) || {};
   const builds = await api('GET', `/api/projects/${encodeURIComponent(S.project)}/builds`).catch(() => []);
   const library = await api('GET', '/api/library').catch(() => ({ items: [] }));
@@ -1060,6 +1145,7 @@ async function renderShip() {
   }) }, 'Deploy to Minecraft (dev packs)') : null;
 
   root.replaceChildren(
+    syncPanel(),
     el('div', { class: 'card' },
       el('h3', {}, `${p.name || S.project}`),
       el('p', {}, `${p.type || 'addon'} · v${p.version || '1.0.0'} · namespace ${p.namespace || '?'}`),

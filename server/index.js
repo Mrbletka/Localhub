@@ -23,12 +23,14 @@ import { exportLibrary } from './library.js';
 import { STUDIO_VERSION } from './bedrock/versions.js';
 import { CORE_RULES } from './bedrock/knowledge.js';
 import { createActivity, shouldStop, openInBrowser } from './lifecycle.js';
+import { resolveDataDir, projectsDir } from './paths.js';
+import { GitSync } from './git.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(here, '..', 'public');
 
 function parseArgs(argv) {
-  const args = { port: Number(process.env.PORT) || 3737, host: process.env.HOST || '127.0.0.1', data: process.env.LOCALHUB_DATA || process.cwd(), token: process.env.LOCALHUB_TOKEN || '' };
+  const args = { port: Number(process.env.PORT) || 3737, host: process.env.HOST || '127.0.0.1', data: '', token: process.env.LOCALHUB_TOKEN || '' };
   for (let i = 0; i < argv.length; i++) {
     const [k, inline] = argv[i].split('=');
     const val = () => inline ?? argv[++i];
@@ -57,7 +59,7 @@ const MIME = {
 const isLoopback = (host) => ['127.0.0.1', 'localhost', '::1'].includes(host);
 
 export function createServer({ dataDir, host = '127.0.0.1', token = '', activity = createActivity() }) {
-  const ws = new Workspace(path.join(dataDir, 'workspace'));
+  const ws = new Workspace(projectsDir(dataDir));
   const distDir = path.join(dataDir, 'dist');
   fs.mkdirSync(distDir, { recursive: true });
   const config = new Config(dataDir);
@@ -65,12 +67,11 @@ export function createServer({ dataDir, host = '127.0.0.1', token = '', activity
   bus.setMaxListeners(100);
   const sessions = new SessionStore(ws);
   const agents = new AgentService({ config, ws, distDir, sessions, bus });
+  const sync = new GitSync(ws.root, { author: () => config.get('author') });
   const requireToken = Boolean(token);
-  // Guide for coding agents that open the workspace folder directly (Claude Code reads CLAUDE.md).
-  for (const name of ['AGENTS.md', 'CLAUDE.md']) {
-    const file = path.join(ws.root, name);
-    if (!fs.existsSync(file)) fs.writeFileSync(file, workspaceGuide());
-  }
+  // Guide for other coding agents that open the projects folder directly (Claude Code uses the repo's CLAUDE.md).
+  const guide = path.join(ws.root, 'AGENTS.md');
+  if (!fs.existsSync(guide)) fs.writeFileSync(guide, workspaceGuide());
 
   // ---- helpers -------------------------------------------------------------
   const send = (res, status, body, headers = {}) => {
@@ -321,6 +322,16 @@ export function createServer({ dataDir, host = '127.0.0.1', token = '', activity
     return runTool(params.name, body.input ?? body, ctx);
   });
 
+  // GitHub sync: get what Claude Code pushed, push what was changed on the phone.
+  const synced = (res) => {
+    bus.emit('workspace', { type: 'synced' });
+    return res;
+  };
+  route('GET', '/api/git/status', async ({ url }) => sync.status({ fetch: url.searchParams.get('fetch') === '1' }));
+  route('POST', '/api/git/pull', async () => synced(await sync.pull()));
+  route('POST', '/api/git/merge', async ({ body }) => synced(await sync.merge(body.branch)));
+  route('POST', '/api/git/push', async () => sync.push());
+
   // Library
   route('POST', '/api/library/export', async ({ body }) => {
     const res = await exportLibrary(ws, { distDir, studio: { name: config.get('studioName'), url: config.get('studioUrl'), author: config.get('author') }, only: body.projects });
@@ -414,14 +425,14 @@ async function main() {
     console.log(`Usage: node server/index.js [options]
   --port 3737              port to listen on
   --host 127.0.0.1         use 0.0.0.0 for LAN access (a token is then required)
-  --data <dir>             where workspace/, dist/ and settings live (default: current folder)
+  --data <dir>             where projects/, dist/ and settings live (default: this repo)
   --token <secret>         access token for LAN mode
   --open                   open the IDE in the browser once the server is up
   --exit-when-idle [sec]   stop when no IDE window has been open for this long (default 45)
   --app                    --open + --exit-when-idle (what the Termux widget runs)`);
     return;
   }
-  const dataDir = path.resolve(args.data);
+  const dataDir = resolveDataDir(args.data);
   let token = args.token;
   if (!isLoopback(args.host) && !token) {
     // Listening on the network: always require a token. Persist it so bookmarks keep working.

@@ -46,7 +46,7 @@ Prefer stable APIs; never use -beta modules unless the brief says so. Re-read th
     blurb: 'Items, blocks, entities, recipes, loot tables and their resource-pack wiring.',
     role: `You create data-driven content: items, blocks, entities (behavior + client entity + geometry),
 recipes, loot tables, spawn rules and functions - each fully wired: texture registries, lang entries,
-textures painted with paint_texture (or delegated in the brief), and consistent identifiers.
+textures painted with the studio's paint tool (or delegated in the brief), and consistent identifiers.
 You check the reference for the exact JSON shape of every file type before writing it.`,
   },
   artist: {
@@ -57,10 +57,10 @@ You check the reference for the exact JSON shape of every file type before writi
     maxTurns: 50,
     tools: [...SHARED, 'paint_texture'],
     blurb: 'Textures, pack icons and visual identity, painted pixel by pixel.',
-    role: `You are a pixel artist with a strong, cohesive style. You paint textures with paint_texture: 16x16
+    role: `You are a pixel artist with a strong, cohesive style. You paint textures with the studio's paint tool: 16x16
 for items and blocks, entity textures that match the geometry UV layout, and square pack icons (64x64 or 128x128).
 Use a small consistent palette per material (3-4 shades), a darker-hue outline, light from the top-left and
-readable silhouettes. After painting, read_file the PNG to look at it and repaint anything that reads poorly.
+readable silhouettes. After painting, look at the enlarged PNG and repaint anything that reads poorly.
 Register every texture (item_texture.json / terrain_texture.json) and keep paths under textures/<namespace>/.`,
   },
   economy: {
@@ -84,7 +84,7 @@ with a short table of the first 30 minutes of play. Read the economy_design refe
     maxTurns: 50,
     tools: [...SHARED, 'build_project'],
     blurb: 'Finds and fixes bugs: validation, API misuse, broken wiring, exploits.',
-    role: `You are a meticulous QA engineer for Bedrock add-ons. Run validate_project, then review scripts and data
+    role: `You are a meticulous QA engineer for Bedrock add-ons. Run the project validator, then review scripts and data
 like a code reviewer: wrong API usage for the declared @minecraft/server version, world access during early execution,
 before-event mutations, missing null checks, unbounded loops, economy exploits (negative purchases, double spending),
 broken identifier/texture/lang wiring, and mismatches between DESIGN.md and the code. Fix what you find (smallest correct change),

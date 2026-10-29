@@ -8,12 +8,12 @@ const FV = BEDROCK.formatVersions;
 
 export const CORE_RULES = `Bedrock add-on ground rules (always follow):
 - A project = folder with BP/ (behavior pack) and RP/ (resource pack), each with manifest.json, plus project.json and DESIGN.md.
-- Every header and module UUID is unique and never changes after release. Get new ones with new_uuid; never invent them.
+- Every header and module UUID is unique and never changes after release. Generate new ones (new_uuid tool, or \`node server/cli.js uuid\`); never invent them.
 - Identifiers are "namespace:name", lowercase, using the project namespace. Never use "minecraft:" for new content.
 - Scripts target @minecraft/server ${SERVER} and @minecraft/server-ui ${UI} (stable, no experiments). Imports need the full ".js" file name. No npm packages, no Node APIs, no setTimeout/setInterval (use system.runTimeout/runInterval).
 - Scripts run in early execution: subscribe to events at the top level, but read/write world state only inside events, system.run callbacks or world.afterEvents.worldLoad.
 - Every item icon key must exist in RP/textures/item_texture.json, every block texture key in RP/textures/terrain_texture.json, and every PNG they point to must exist. Display names go in RP/texts/en_US.lang.
-- Run validate_project after changes and fix every error before you finish.`;
+- Validate after changes (validate_project tool, or \`node server/cli.js validate <slug>\`) and fix every error before you finish.`;
 
 export const TOPICS = {
   project_layout: `# Project layout

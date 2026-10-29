@@ -277,7 +277,7 @@ export const TOOLS = [
         }
         out.push(`${dir.path}: ${meta.name ?? dir.path} [${meta.type ?? 'unknown'}] ns=${meta.namespace ?? '?'} v${(meta.version || [1, 0, 0]).join('.')}`);
       }
-      return out.join('\n') || 'No projects yet - use create_project.';
+      return out.join('\n') || 'No projects yet.';
     },
   },
   {

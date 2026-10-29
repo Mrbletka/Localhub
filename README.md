@@ -5,7 +5,8 @@ modpacks, simulators, tycoons and anything else you can describe. It runs on you
 keeps every file on your device, and exports a ready-to-upload library for your own website.
 
 - **AI studio team**: a Studio Director that designs the add-on and delegates, in parallel, to a Script Engineer,
-  Content Designer, Pixel Artist, Economy Designer and QA Tester. They run on Claude (Opus 5.5 by default).
+  Content Designer, Pixel Artist, Economy Designer and QA Tester. Use them from the **Claude app with your
+  Claude subscription** (Code tab, this repo), or inside the studio app with an Anthropic API key.
 - **Agents read and write your workspace** through sandboxed tools: files, search, validation, packaging, a
   pixel-art texture painter and a built-in Bedrock reference. External agents (Claude Code, Claude Desktop, any
   MCP client) get the same tools over MCP or plain HTTP.
@@ -16,7 +17,9 @@ keeps every file on your device, and exports a ready-to-upload library for your 
 
 ## Quick start
 
-You need Node.js 20 or newer and an [Anthropic API key](https://console.anthropic.com/).
+You need Node.js 20 or newer. For the AI team you need either a Claude subscription (Pro/Max, used through the
+Claude app, see [below](#use-your-claude-subscription-claude-app--code)) or an
+[Anthropic API key](https://console.anthropic.com/) for the agents built into the studio app.
 
 ### Android (Termux)
 
@@ -78,6 +81,26 @@ npm run lan             # same as: node server/index.js --host 0.0.0.0
 The terminal prints a LAN link with an access token (`http://192.168.x.x:3737/?token=...`). Open it once on
 the phone; the token is remembered. Network mode always requires the token.
 
+## Use your Claude subscription (Claude app > Code)
+
+The repo is set up so Claude Code works as the studio team: `CLAUDE.md` makes the main session the Studio
+Director, `.claude/agents/` holds the five specialists as sub-agents, and `node server/cli.js` gives them the
+validator, packager, texture painter and Bedrock reference. Projects live in `projects/` and are committed, so
+work done in the cloud reaches your phone through GitHub.
+
+1. In the Claude app, open **Code**, pick this repository and describe what you want, for example
+   *"Make a volcano tycoon with lava generators and eruption events"*. Shortcuts: `/new-addon <idea>`,
+   `/qa <project>`, `/ship <project> minor`.
+2. Claude designs it, builds it in `projects/<slug>/` (handing parts to the specialists), validates it and
+   pushes, usually to a `claude/...` branch.
+3. In the studio app on your phone: **Build > Sync with Claude > Get it**. The project appears; build the
+   `.mcaddon` and tap it to import into Minecraft.
+
+Edits you make on the phone go back with **Push my changes**. Pulling works without signing in for a public
+repo; pushing (and pulling a private repo) needs your GitHub login once in Termux:
+`git config --global credential.helper store`, then `git pull` with your username and a
+[personal access token](https://github.com/settings/tokens) as the password.
+
 ## The studio team
 
 | Agent | What they do |
@@ -89,8 +112,8 @@ the phone; the token is remembered. Network mode always requires the token.
 | **Economy Designer** | Prices, income curves, rebirths and balance tables for simulators and tycoons, all in `config.js`. |
 | **QA Tester** | Validates, reviews scripts for API misuse and exploits, fixes bugs and writes an in-game test checklist. |
 
-You can talk to any agent directly; the chip row at the top of the Agents tab switches between them, and each
-keeps its own chat history per project. Chats keep running on the server if your phone locks or loses the
+In the studio app (with an API key) you can talk to any agent directly; the chip row at the top of the Agents tab
+switches between them, and each keeps its own chat history per project. Chats keep running on the server if your phone locks or loses the
 connection; reopening the app reattaches to the live run.
 
 ## Projects and templates
@@ -104,14 +127,15 @@ connection; reopening the app reattaches to the live run.
 | Simulator | Power wand, simulator menu, sell / upgrade / rebirth loop, coins leaderboard. |
 | Tycoon | Three generator tiers that pay every second, ownership protection, tablet shop, upgrades, rebirths. |
 
-Every project lives in `workspace/<slug>/`:
+Every project lives in `projects/<slug>/` (committed to git; an older `workspace/` folder is moved there
+automatically):
 
 ```
 project.json   name, type, namespace, version, library metadata
 DESIGN.md      living design doc the agents keep current
 BP/            behavior pack: manifest, scripts, items, blocks, entities, recipes, loot tables
 RP/            resource pack: manifest, textures (+ registries), texts/en_US.lang
-.studio/       agent chats (never packaged)
+.studio/       in-app agent chats (never packaged or committed)
 ```
 
 ## Build, import, publish
@@ -139,9 +163,9 @@ claude mcp add --transport http localhub http://localhost:3737/mcp
 ```
 
 Agents that don't speak MCP can use plain HTTP: `GET /api/tools` lists tools with JSON schemas, and
-`POST /api/tools/<name>` with `{ "input": { ... } }` runs one. The workspace also contains `AGENTS.md` /
-`CLAUDE.md` describing the layout and rules for agents that edit files directly. Changes made by any agent show
-up live in the IDE.
+`POST /api/tools/<name>` with `{ "input": { ... } }` runs one, or the CLI: `node server/cli.js help`.
+`projects/AGENTS.md` describes the layout and rules for agents that edit files directly. Changes made by any
+agent show up live in the IDE.
 
 ## Settings and cost
 
@@ -164,8 +188,10 @@ quick tweaks.
 - The server binds to `127.0.0.1` by default and only answers requests addressed to localhost from the same
   origin (protects against malicious websites and DNS rebinding).
 - Network mode (`--host 0.0.0.0`) always requires a token (header, `?token=` or an HttpOnly cookie).
-- Every file operation is confined to the workspace; built-in agents are confined to their project folder.
-- Deleting a project moves it to `workspace/.trash/`.
+- Every file operation is confined to `projects/`; built-in agents are confined to their project folder.
+- Deleting a project moves it to `projects/.trash/` (not committed).
+- GitHub sync only runs fixed git commands (fetch, pull, merge of an existing `claude/...` branch, commit of
+  `projects/`, push) and never asks for credentials itself.
 
 ## Development
 
@@ -180,8 +206,13 @@ server/
   agents/               tool registry, agent roster, Claude agent loop, chat storage
   bedrock/              templates, pixel art, validator, packager, knowledge base, versions
   mcp.js                MCP endpoint
+  cli.js                command-line tools (used by Claude Code)
+  git.js                GitHub sync for the phone
+  lifecycle.js          app mode: open on start, stop when closed
   library.js            website library export
 public/                 the IDE (plain ES modules, no build step)
+projects/               the add-ons (committed)
+.claude/, CLAUDE.md     Claude Code setup - generated by scripts/gen-claude.mjs from the roster
 test/                   tests and the mock Claude API
 ```
 

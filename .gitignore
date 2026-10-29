@@ -1,5 +1,9 @@
 node_modules/
-# Local user data: projects, builds, API keys and agent chat history
-workspace/
+# Builds, API keys and settings stay on this device
 dist/
 .localhub/
+# Projects are committed (shared with Claude Code); agent chats and deleted projects are not
+projects/.trash/
+projects/*/.studio/
+# Older layout
+workspace/
