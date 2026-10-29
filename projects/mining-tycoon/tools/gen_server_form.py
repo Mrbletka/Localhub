@@ -161,7 +161,7 @@ RAIL = 59  # rail row: the minecart's wheels roll on it
 
 chain('mining_tycoon_logo_float', 'offset', [(1.6, [0, 0], [0, -2]), (1.6, [0, -2], [0, 0])], 'in_out_sine')
 # Sparkles on the logo (positions in % of the 128x40 logo art).
-LOGO_SPARKLE_AT = [(12, 22), (88, 72)]
+LOGO_SPARKLE_AT = [(3.5, 68.8), (93.4, 68.8), (78.5, 6.3)]  # ruby glint, diamond glint, top of the G (128x40 art)
 LOGO_SPARKLES = [{f'logo_sparkle_{i}': {'type': 'image', 'texture': f'{UI}/fx_sparkle', 'size': [14, 14], 'layer': 1,
                                         'anchor_from': 'top_left', 'anchor_to': 'center', 'offset': [f'{x}%', f'{y}%'],
                                         'alpha': chain(f'mining_tycoon_logo_twinkle_{i}', 'alpha',

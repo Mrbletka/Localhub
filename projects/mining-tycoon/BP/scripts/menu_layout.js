@@ -21,5 +21,19 @@ export const MENU = {
     "slot0": "§f§1",
     "slot1": "§f§2"
   },
-  "icons": []
+  "icons": [
+    "back",
+    "coin",
+    "delete",
+    "drills",
+    "exit",
+    "home",
+    "lock",
+    "new_slot",
+    "play",
+    "rebirth",
+    "session",
+    "sessions",
+    "upgrades"
+  ]
 };
