@@ -13,8 +13,6 @@ export const CONFIG = {
   ],
   upgrade: { baseCost: 100, costGrowth: 1.75, incomeBonusPerLevel: 0.25 },
   rebirth: { baseCost: 50000, costGrowth: 4, bonusPerRebirth: 0.5 },
-  // Join menu. Forms whose title starts with this tag get the full-screen look from RP/ui/server_form.json.
-  menu: { tag: '§m§t§s' },
   // Save slots per player. Each session has its own mine plot, money, upgrades, rebirths and drills.
   sessions: { slots: 2 },
   // Private mine plots in a grid far from spawn: plot i sits at origin + (i % perRow, i / perRow) x spacing.

@@ -40,7 +40,7 @@
           },
           {
             "binding_type": "view",
-            "source_property_name": "((#title_text - '§m§t§s') = #title_text)",
+            "source_property_name": "((#title_text - '§m§t§s' - '§m§t§t') = #title_text)",
             "target_property_name": "#visible"
           }
         ]
@@ -55,7 +55,13 @@
     ],
     "controls": [
       {
-        "start_menu@server_form.mining_tycoon_start_menu": {
+        "start_menu": {
+          "type": "panel",
+          "size": [
+            "100%",
+            "100%"
+          ],
+          "layer": 10,
           "bindings": [
             {
               "binding_name": "#title_text"
@@ -65,97 +71,69 @@
               "source_property_name": "(not ((#title_text - '§m§t§s') = #title_text))",
               "target_property_name": "#visible"
             }
-          ]
-        }
-      }
-    ]
-  },
-  "mining_tycoon_start_menu": {
-    "type": "panel",
-    "size": [
-      "100%",
-      "100%"
-    ],
-    "layer": 10,
-    "controls": [
-      {
-        "background": {
-          "type": "image",
-          "texture": "textures/mining_tycoon/ui/menu_bg",
-          "size": [
-            "100% + 64px",
-            "100% + 32px"
           ],
-          "anchor_from": "center",
-          "anchor_to": "center",
-          "layer": 1
-        }
-      },
-      {
-        "content": {
-          "type": "stack_panel",
-          "orientation": "vertical",
-          "size": [
-            190,
-            "100%c"
-          ],
-          "anchor_from": "center",
-          "anchor_to": "center",
-          "layer": 2,
           "controls": [
             {
-              "logo": {
-                "type": "label",
-                "text": "MINING TYCOON",
-                "color": [
-                  1.0,
-                  0.82,
-                  0.28
-                ],
-                "shadow": true,
-                "text_alignment": "center",
+              "background": {
+                "type": "image",
+                "texture": "textures/mining_tycoon/ui/menu_bg",
                 "size": [
-                  "100%",
-                  "default"
+                  "100% + 64px",
+                  "100% + 32px"
                 ],
-                "font_type": "MinecraftTen",
-                "font_scale_factor": 2.0
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "layer": 1
               }
             },
             {
-              "logo_gap": {
-                "type": "panel",
-                "size": [
-                  "100%",
-                  6
-                ]
-              }
-            },
-            {
-              "page_start": {
+              "content": {
                 "type": "stack_panel",
                 "orientation": "vertical",
                 "size": [
-                  "100%",
+                  190,
                   "100%c"
                 ],
-                "bindings": [
-                  {
-                    "binding_type": "view",
-                    "source_control_name": "mining_tycoon_go_sessions",
-                    "source_property_name": "(not #toggle_state)",
-                    "target_property_name": "#visible"
-                  }
-                ],
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "layer": 2,
                 "controls": [
+                  {
+                    "logo": {
+                      "type": "label",
+                      "text": "MINING TYCOON",
+                      "color": [
+                        1.0,
+                        0.82,
+                        0.28
+                      ],
+                      "shadow": true,
+                      "text_alignment": "center",
+                      "size": [
+                        "100%",
+                        "default"
+                      ],
+                      "font_type": "MinecraftTen",
+                      "font_scale_factor": 2.0
+                    }
+                  },
+                  {
+                    "logo_gap": {
+                      "type": "panel",
+                      "size": [
+                        "100%",
+                        6
+                      ]
+                    }
+                  },
                   {
                     "body": {
                       "type": "label",
                       "text": "#form_text",
                       "color": [
-                        0.92,
-                        0.92,
-                        0.92
+                        0.95,
+                        0.95,
+                        0.95
                       ],
                       "shadow": true,
                       "text_alignment": "center",
@@ -180,77 +158,1304 @@
                     }
                   },
                   {
-                    "list_1@server_form.mining_tycoon_list_1": {}
-                  },
-                  {
-                    "sessions_row": {
-                      "type": "panel",
+                    "w1": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
                       "size": [
                         "100%",
-                        34
-                      ],
-                      "bindings": [
-                        {
-                          "binding_name": "#title_text"
-                        },
-                        {
-                          "binding_type": "view",
-                          "source_property_name": "(not ((#title_text - '§h§s') = #title_text))",
-                          "target_property_name": "#visible"
-                        }
+                        "100%c"
                       ],
                       "controls": [
                         {
-                          "mining_tycoon_go_sessions@server_form.mining_tycoon_nav_toggle": {
-                            "$nav_text": "Sessions",
-                            "$toggle_group_forced_index": 1
+                          "start_top": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "list@server_form.mining_tycoon_list_start_top": {}
+                              }
+                            ]
                           }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
                         }
                       ]
                     }
                   },
                   {
-                    "list_2@server_form.mining_tycoon_list_2": {}
+                    "w3": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w2": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "heading": {
+                                  "type": "label",
+                                  "text": "Your sessions: each one is its own mine and its own save.",
+                                  "color": [
+                                    0.85,
+                                    0.85,
+                                    0.85
+                                  ],
+                                  "shadow": true,
+                                  "text_alignment": "center",
+                                  "size": [
+                                    "100%",
+                                    "default"
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w5": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w4": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "heading_gap": {
+                                  "type": "panel",
+                                  "size": [
+                                    "100%",
+                                    8
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w7": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w6": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "start_slots": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "list@server_form.mining_tycoon_list_start_slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w11": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w10": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w9": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "w8": {
+                                        "type": "stack_panel",
+                                        "orientation": "vertical",
+                                        "size": [
+                                          "100%",
+                                          "100%c"
+                                        ],
+                                        "controls": [
+                                          {
+                                            "heading": {
+                                              "type": "label",
+                                              "text": "Pick the session to delete.",
+                                              "color": [
+                                                0.85,
+                                                0.85,
+                                                0.85
+                                              ],
+                                              "shadow": true,
+                                              "text_alignment": "center",
+                                              "size": [
+                                                "100%",
+                                                "default"
+                                              ]
+                                            }
+                                          }
+                                        ],
+                                        "bindings": [
+                                          {
+                                            "binding_type": "view",
+                                            "source_control_name": "mining_tycoon_go_delete_1",
+                                            "source_property_name": "(not #toggle_state)",
+                                            "target_property_name": "#visible"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_0",
+                                      "source_property_name": "(not #toggle_state)",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w15": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w14": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w13": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "w12": {
+                                        "type": "stack_panel",
+                                        "orientation": "vertical",
+                                        "size": [
+                                          "100%",
+                                          "100%c"
+                                        ],
+                                        "controls": [
+                                          {
+                                            "heading_gap": {
+                                              "type": "panel",
+                                              "size": [
+                                                "100%",
+                                                8
+                                              ]
+                                            }
+                                          }
+                                        ],
+                                        "bindings": [
+                                          {
+                                            "binding_type": "view",
+                                            "source_control_name": "mining_tycoon_go_delete_1",
+                                            "source_property_name": "(not #toggle_state)",
+                                            "target_property_name": "#visible"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_0",
+                                      "source_property_name": "(not #toggle_state)",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w18": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w17": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w16": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "heading": {
+                                        "type": "label",
+                                        "text": "Delete Session 1? Its mine, money, upgrades, rebirths and drills are gone for good.",
+                                        "color": [
+                                          0.85,
+                                          0.85,
+                                          0.85
+                                        ],
+                                        "shadow": true,
+                                        "text_alignment": "center",
+                                        "size": [
+                                          "100%",
+                                          "default"
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_0",
+                                      "source_property_name": "#toggle_state",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w21": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w20": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w19": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "heading_gap": {
+                                        "type": "panel",
+                                        "size": [
+                                          "100%",
+                                          8
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_0",
+                                      "source_property_name": "#toggle_state",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w24": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w23": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w22": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "start_delete_0": {
+                                        "type": "stack_panel",
+                                        "orientation": "vertical",
+                                        "size": [
+                                          "100%",
+                                          "100%c"
+                                        ],
+                                        "controls": [
+                                          {
+                                            "list@server_form.mining_tycoon_list_start_delete_0": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_0",
+                                      "source_property_name": "#toggle_state",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w28": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w27": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w26": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "w25": {
+                                        "type": "stack_panel",
+                                        "orientation": "vertical",
+                                        "size": [
+                                          "100%",
+                                          "100%c"
+                                        ],
+                                        "controls": [
+                                          {
+                                            "mining_tycoon_go_delete_0_row": {
+                                              "type": "panel",
+                                              "size": [
+                                                "100%",
+                                                34
+                                              ],
+                                              "controls": [
+                                                {
+                                                  "mining_tycoon_go_delete_0@server_form.mining_tycoon_nav_toggle": {
+                                                    "$toggle_name": "mining_tycoon_go_delete_0",
+                                                    "$nav_text": "Delete Session 1",
+                                                    "$nav_back_text": "Keep it"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ],
+                                        "bindings": [
+                                          {
+                                            "binding_name": "#title_text"
+                                          },
+                                          {
+                                            "binding_type": "view",
+                                            "source_property_name": "(not ((#title_text - '§f§1') = #title_text))",
+                                            "target_property_name": "#visible"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_1",
+                                      "source_property_name": "(not #toggle_state)",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w31": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w30": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w29": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "heading": {
+                                        "type": "label",
+                                        "text": "Delete Session 2? Its mine, money, upgrades, rebirths and drills are gone for good.",
+                                        "color": [
+                                          0.85,
+                                          0.85,
+                                          0.85
+                                        ],
+                                        "shadow": true,
+                                        "text_alignment": "center",
+                                        "size": [
+                                          "100%",
+                                          "default"
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_1",
+                                      "source_property_name": "#toggle_state",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w34": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w33": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w32": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "heading_gap": {
+                                        "type": "panel",
+                                        "size": [
+                                          "100%",
+                                          8
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_1",
+                                      "source_property_name": "#toggle_state",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w37": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w36": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w35": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "start_delete_1": {
+                                        "type": "stack_panel",
+                                        "orientation": "vertical",
+                                        "size": [
+                                          "100%",
+                                          "100%c"
+                                        ],
+                                        "controls": [
+                                          {
+                                            "list@server_form.mining_tycoon_list_start_delete_1": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_1",
+                                      "source_property_name": "#toggle_state",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w41": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w40": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w39": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "w38": {
+                                        "type": "stack_panel",
+                                        "orientation": "vertical",
+                                        "size": [
+                                          "100%",
+                                          "100%c"
+                                        ],
+                                        "controls": [
+                                          {
+                                            "mining_tycoon_go_delete_1_row": {
+                                              "type": "panel",
+                                              "size": [
+                                                "100%",
+                                                34
+                                              ],
+                                              "controls": [
+                                                {
+                                                  "mining_tycoon_go_delete_1@server_form.mining_tycoon_nav_toggle": {
+                                                    "$toggle_name": "mining_tycoon_go_delete_1",
+                                                    "$nav_text": "Delete Session 2",
+                                                    "$nav_back_text": "Keep it"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ],
+                                        "bindings": [
+                                          {
+                                            "binding_name": "#title_text"
+                                          },
+                                          {
+                                            "binding_type": "view",
+                                            "source_property_name": "(not ((#title_text - '§f§2') = #title_text))",
+                                            "target_property_name": "#visible"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_0",
+                                      "source_property_name": "(not #toggle_state)",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete",
+                                "source_property_name": "#toggle_state",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w44": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w43": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w42": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "mining_tycoon_go_delete_row": {
+                                        "type": "panel",
+                                        "size": [
+                                          "100%",
+                                          34
+                                        ],
+                                        "controls": [
+                                          {
+                                            "mining_tycoon_go_delete@server_form.mining_tycoon_nav_toggle": {
+                                              "$toggle_name": "mining_tycoon_go_delete",
+                                              "$nav_text": "Delete a session",
+                                              "$nav_back_text": "Back"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_delete_1",
+                                      "source_property_name": "(not #toggle_state)",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_delete_0",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w46": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w45": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "mining_tycoon_go_sessions_row": {
+                                  "type": "panel",
+                                  "size": [
+                                    "100%",
+                                    34
+                                  ],
+                                  "controls": [
+                                    {
+                                      "mining_tycoon_go_sessions@server_form.mining_tycoon_nav_toggle": {
+                                        "$toggle_name": "mining_tycoon_go_sessions",
+                                        "$nav_text": "Sessions",
+                                        "$nav_back_text": "Back"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_name": "#title_text"
+                              },
+                              {
+                                "binding_type": "view",
+                                "source_property_name": "(not ((#title_text - '§h§s') = #title_text))",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_delete",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w47": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "start_bottom": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "list@server_form.mining_tycoon_list_start_bottom": {}
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_sessions",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
                   }
                 ]
               }
+            }
+          ]
+        }
+      },
+      {
+        "tablet_menu": {
+          "type": "panel",
+          "size": [
+            "100%",
+            "100%"
+          ],
+          "layer": 10,
+          "bindings": [
+            {
+              "binding_name": "#title_text"
             },
             {
-              "page_sessions": {
+              "binding_type": "view",
+              "source_property_name": "(not ((#title_text - '§m§t§t') = #title_text))",
+              "target_property_name": "#visible"
+            }
+          ],
+          "controls": [
+            {
+              "background": {
+                "type": "image",
+                "texture": "textures/mining_tycoon/ui/menu_bg",
+                "size": [
+                  "100% + 64px",
+                  "100% + 32px"
+                ],
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "layer": 1
+              }
+            },
+            {
+              "content": {
                 "type": "stack_panel",
                 "orientation": "vertical",
                 "size": [
-                  "100%",
+                  190,
                   "100%c"
                 ],
-                "bindings": [
-                  {
-                    "binding_type": "view",
-                    "source_control_name": "mining_tycoon_go_sessions",
-                    "source_property_name": "#toggle_state",
-                    "target_property_name": "#visible"
-                  }
-                ],
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "layer": 2,
                 "controls": [
                   {
-                    "heading": {
+                    "logo": {
                       "type": "label",
-                      "text": "Your sessions: each one is its own mine and its own save.",
+                      "text": "MINING TYCOON",
                       "color": [
-                        0.92,
-                        0.92,
-                        0.92
+                        1.0,
+                        0.82,
+                        0.28
                       ],
                       "shadow": true,
                       "text_alignment": "center",
                       "size": [
                         "100%",
                         "default"
+                      ],
+                      "font_type": "MinecraftTen",
+                      "font_scale_factor": 2.0
+                    }
+                  },
+                  {
+                    "logo_gap": {
+                      "type": "panel",
+                      "size": [
+                        "100%",
+                        6
                       ]
                     }
                   },
                   {
-                    "heading_gap": {
+                    "body": {
+                      "type": "label",
+                      "text": "#form_text",
+                      "color": [
+                        0.95,
+                        0.95,
+                        0.95
+                      ],
+                      "shadow": true,
+                      "text_alignment": "center",
+                      "size": [
+                        "100%",
+                        "default"
+                      ],
+                      "bindings": [
+                        {
+                          "binding_name": "#form_text"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "body_gap": {
                       "type": "panel",
                       "size": [
                         "100%",
@@ -259,21 +1464,389 @@
                     }
                   },
                   {
-                    "list_3@server_form.mining_tycoon_list_3": {}
-                  },
-                  {
-                    "back_row": {
-                      "type": "panel",
+                    "w48": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
                       "size": [
                         "100%",
-                        34
+                        "100%c"
                       ],
                       "controls": [
                         {
-                          "mining_tycoon_go_start@server_form.mining_tycoon_nav_toggle": {
-                            "$nav_text": "Back",
-                            "$toggle_group_forced_index": 0
+                          "heading": {
+                            "type": "label",
+                            "text": "Tap a drill to buy it.",
+                            "color": [
+                              0.85,
+                              0.85,
+                              0.85
+                            ],
+                            "shadow": true,
+                            "text_alignment": "center",
+                            "size": [
+                              "100%",
+                              "default"
+                            ]
                           }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w49": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "heading_gap": {
+                            "type": "panel",
+                            "size": [
+                              "100%",
+                              8
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w50": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "tablet_shop": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "list@server_form.mining_tycoon_list_tablet_shop": {}
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w51": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "mining_tycoon_go_shop_row": {
+                            "type": "panel",
+                            "size": [
+                              "100%",
+                              34
+                            ],
+                            "controls": [
+                              {
+                                "mining_tycoon_go_shop@server_form.mining_tycoon_nav_toggle": {
+                                  "$toggle_name": "mining_tycoon_go_shop",
+                                  "$nav_text": "Buy drills",
+                                  "$nav_back_text": "Back"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_rebirth",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w53": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w52": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "tablet_upgrade": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "list@server_form.mining_tycoon_list_tablet_upgrade": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_rebirth",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w54": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "heading": {
+                            "type": "label",
+                            "text": "Rebirth? Money, upgrades and drills of this session reset. You keep a permanent income bonus.",
+                            "color": [
+                              0.85,
+                              0.85,
+                              0.85
+                            ],
+                            "shadow": true,
+                            "text_alignment": "center",
+                            "size": [
+                              "100%",
+                              "default"
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_rebirth",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w55": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "heading_gap": {
+                            "type": "panel",
+                            "size": [
+                              "100%",
+                              8
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_rebirth",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w56": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "tablet_rebirth": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "list@server_form.mining_tycoon_list_tablet_rebirth": {}
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_rebirth",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w57": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "mining_tycoon_go_rebirth_row": {
+                            "type": "panel",
+                            "size": [
+                              "100%",
+                              34
+                            ],
+                            "controls": [
+                              {
+                                "mining_tycoon_go_rebirth@server_form.mining_tycoon_nav_toggle": {
+                                  "$toggle_name": "mining_tycoon_go_rebirth",
+                                  "$nav_text": "Rebirth",
+                                  "$nav_back_text": "Not yet"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w59": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w58": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "tablet_bottom": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "list@server_form.mining_tycoon_list_tablet_bottom": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_rebirth",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
                         }
                       ]
                     }
@@ -286,7 +1859,7 @@
       }
     ]
   },
-  "mining_tycoon_list_1": {
+  "mining_tycoon_list_start_top": {
     "type": "stack_panel",
     "orientation": "vertical",
     "size": [
@@ -296,7 +1869,7 @@
     "factory": {
       "name": "buttons",
       "control_ids": {
-        "button": "@server_form.mining_tycoon_item_1"
+        "button": "@server_form.mining_tycoon_item_start_top"
       }
     },
     "collection_name": "form_buttons",
@@ -307,7 +1880,7 @@
       }
     ]
   },
-  "mining_tycoon_item_1": {
+  "mining_tycoon_item_start_top": {
     "type": "panel",
     "size": [
       "100%",
@@ -325,7 +1898,7 @@
       },
       {
         "binding_type": "view",
-        "source_property_name": "(not ((#form_button_text - '§p§1§r') = #form_button_text))",
+        "source_property_name": "(not ((#form_button_text - '§p§1§1§r') = #form_button_text))",
         "target_property_name": "#visible"
       }
     ],
@@ -335,7 +1908,7 @@
       }
     ]
   },
-  "mining_tycoon_list_2": {
+  "mining_tycoon_list_start_slots": {
     "type": "stack_panel",
     "orientation": "vertical",
     "size": [
@@ -345,7 +1918,7 @@
     "factory": {
       "name": "buttons",
       "control_ids": {
-        "button": "@server_form.mining_tycoon_item_2"
+        "button": "@server_form.mining_tycoon_item_start_slots"
       }
     },
     "collection_name": "form_buttons",
@@ -356,7 +1929,7 @@
       }
     ]
   },
-  "mining_tycoon_item_2": {
+  "mining_tycoon_item_start_slots": {
     "type": "panel",
     "size": [
       "100%",
@@ -374,7 +1947,7 @@
       },
       {
         "binding_type": "view",
-        "source_property_name": "(not ((#form_button_text - '§p§2§r') = #form_button_text))",
+        "source_property_name": "(not ((#form_button_text - '§p§1§2§r') = #form_button_text))",
         "target_property_name": "#visible"
       }
     ],
@@ -384,7 +1957,7 @@
       }
     ]
   },
-  "mining_tycoon_list_3": {
+  "mining_tycoon_list_start_delete_0": {
     "type": "stack_panel",
     "orientation": "vertical",
     "size": [
@@ -394,7 +1967,7 @@
     "factory": {
       "name": "buttons",
       "control_ids": {
-        "button": "@server_form.mining_tycoon_item_3"
+        "button": "@server_form.mining_tycoon_item_start_delete_0"
       }
     },
     "collection_name": "form_buttons",
@@ -405,7 +1978,7 @@
       }
     ]
   },
-  "mining_tycoon_item_3": {
+  "mining_tycoon_item_start_delete_0": {
     "type": "panel",
     "size": [
       "100%",
@@ -423,7 +1996,301 @@
       },
       {
         "binding_type": "view",
-        "source_property_name": "(not ((#form_button_text - '§p§3§r') = #form_button_text))",
+        "source_property_name": "(not ((#form_button_text - '§p§1§3§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_start_delete_1": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_start_delete_1"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_start_delete_1": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§1§4§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_start_bottom": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_start_bottom"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_start_bottom": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§1§5§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_tablet_shop": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_tablet_shop"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_tablet_shop": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§1§6§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_tablet_upgrade": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_tablet_upgrade"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_tablet_upgrade": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§1§7§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_tablet_rebirth": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_tablet_rebirth"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_tablet_rebirth": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§1§8§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_tablet_bottom": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_tablet_bottom"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_tablet_bottom": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§1§9§r') = #form_button_text))",
         "target_property_name": "#visible"
       }
     ],
@@ -521,7 +2388,7 @@
             },
             {
               "binding_type": "view",
-              "source_property_name": "(#form_button_text - '§p§1§r' - '§p§2§r' - '§p§3§r')",
+              "source_property_name": "(#form_button_text - '§p§1§1§r' - '§p§1§2§r' - '§p§1§3§r' - '§p§1§4§r' - '§p§1§5§r' - '§p§1§6§r' - '§p§1§7§r' - '§p§1§8§r' - '§p§1§9§r')",
               "target_property_name": "#text"
             }
           ]
@@ -536,20 +2403,17 @@
     ],
     "anchor_from": "top_middle",
     "anchor_to": "top_middle",
-    "$toggle_name": "mining_tycoon_page",
-    "$radio_toggle_group": true,
-    "$toggle_group_default_selected": 0,
     "$toggle_binding_type": "none",
-    "$unchecked_control": "server_form.mining_tycoon_nav_default",
-    "$checked_control": "server_form.mining_tycoon_nav_default",
-    "$unchecked_hover_control": "server_form.mining_tycoon_nav_hover",
-    "$checked_hover_control": "server_form.mining_tycoon_nav_hover",
-    "$unchecked_locked_control": "server_form.mining_tycoon_nav_default",
-    "$unchecked_locked_hover_control": "server_form.mining_tycoon_nav_default",
-    "$checked_locked_control": "server_form.mining_tycoon_nav_default",
-    "$checked_locked_hover_control": "server_form.mining_tycoon_nav_default"
+    "$unchecked_control": "server_form.mining_tycoon_nav_open",
+    "$unchecked_hover_control": "server_form.mining_tycoon_nav_open_hover",
+    "$checked_control": "server_form.mining_tycoon_nav_back",
+    "$checked_hover_control": "server_form.mining_tycoon_nav_back_hover",
+    "$unchecked_locked_control": "server_form.mining_tycoon_nav_open",
+    "$unchecked_locked_hover_control": "server_form.mining_tycoon_nav_open",
+    "$checked_locked_control": "server_form.mining_tycoon_nav_back",
+    "$checked_locked_hover_control": "server_form.mining_tycoon_nav_back"
   },
-  "mining_tycoon_nav_default": {
+  "mining_tycoon_nav_open": {
     "type": "image",
     "texture": "textures/mining_tycoon/ui/button",
     "size": [
@@ -577,7 +2441,7 @@
       }
     ]
   },
-  "mining_tycoon_nav_hover": {
+  "mining_tycoon_nav_open_hover": {
     "type": "image",
     "texture": "textures/mining_tycoon/ui/button_hover",
     "size": [
@@ -589,6 +2453,62 @@
         "label": {
           "type": "label",
           "text": "$nav_text",
+          "color": [
+            1.0,
+            0.96,
+            0.75
+          ],
+          "shadow": true,
+          "text_alignment": "center",
+          "size": [
+            "100% - 12px",
+            "default"
+          ],
+          "layer": 1
+        }
+      }
+    ]
+  },
+  "mining_tycoon_nav_back": {
+    "type": "image",
+    "texture": "textures/mining_tycoon/ui/button",
+    "size": [
+      "100%",
+      "100%"
+    ],
+    "controls": [
+      {
+        "label": {
+          "type": "label",
+          "text": "$nav_back_text",
+          "color": [
+            1.0,
+            0.84,
+            0.35
+          ],
+          "shadow": true,
+          "text_alignment": "center",
+          "size": [
+            "100% - 12px",
+            "default"
+          ],
+          "layer": 1
+        }
+      }
+    ]
+  },
+  "mining_tycoon_nav_back_hover": {
+    "type": "image",
+    "texture": "textures/mining_tycoon/ui/button_hover",
+    "size": [
+      "100%",
+      "100%"
+    ],
+    "controls": [
+      {
+        "label": {
+          "type": "label",
+          "text": "$nav_back_text",
           "color": [
             1.0,
             0.96,

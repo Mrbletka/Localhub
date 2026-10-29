@@ -1,9 +1,8 @@
 import { world, system, DisplaySlotId, ObjectiveSortOrder } from '@minecraft/server';
-import { ActionFormData, MessageFormData } from '@minecraft/server-ui';
 import { CONFIG } from './config.js';
 import { formatNumber, getNumber, setNumber, getJson, setJson, giveItem, hasItem, ensureObjective, toScore } from './lib/util.js';
 import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete } from './sessions.js';
-import { showStartMenu } from './menu.js';
+import { showStartMenu, fullScreenMenu } from './menu.js';
 
 const NS = CONFIG.namespace;
 const GENERATORS_KEY = `${NS}:generators`;
@@ -55,18 +54,12 @@ function removeDrills(entries) {
   save();
 }
 
-function buyMenu(player) {
-  const form = new ActionFormData().title('Buy drills').body(`§7Money: §a$${formatNumber(stat(player, 'money'))}`);
-  for (const g of CONFIG.generators) form.button(`${g.name}\n§8$${formatNumber(g.cost)} - $${formatNumber(g.income)}/s`, g.icon);
-  form.show(player).then((res) => {
-    if (res.canceled || res.selection === undefined) return;
-    const g = CONFIG.generators[res.selection];
-    if (stat(player, 'money') < g.cost) return player.sendMessage(`§cYou need §a$${formatNumber(g.cost)}§c.`);
-    addStat(player, 'money', -g.cost);
-    giveItem(player, g.block);
-    player.playSound('random.orb');
-    player.sendMessage(`§aBought a ${g.name}. Place it to start mining!`);
-  });
+function buy(player, g) {
+  if (stat(player, 'money') < g.cost) return player.sendMessage(`§cYou need §a$${formatNumber(g.cost)}§c for a ${g.name}.`);
+  addStat(player, 'money', -g.cost);
+  giveItem(player, g.block);
+  player.playSound('random.orb');
+  player.sendMessage(`§aBought a ${g.name}. Place it to start mining!`);
 }
 
 function upgrade(player) {
@@ -79,51 +72,40 @@ function upgrade(player) {
   player.sendMessage(`§aIncome upgraded to level ${level + 1} (+${Math.round(CONFIG.upgrade.incomeBonusPerLevel * 100)}% each).`);
 }
 
-function rebirth(player) {
-  const slot = activeSession(player);
+function rebirth(player, slot) {
+  if (activeSession(player) !== slot) return;
   const rebirths = stat(player, 'rebirths');
   const cost = rebirthCost(rebirths);
   if (stat(player, 'money') < cost) return player.sendMessage(`§cRebirth needs §a$${formatNumber(cost)}§c.`);
-  new MessageFormData()
-    .title('Rebirth?')
-    .body('Your money, upgrades and drills in this session reset. You keep a permanent income bonus.')
-    .button1('Rebirth!')
-    .button2('Not yet')
-    .show(player)
-    .then((res) => {
-      if (res.canceled || res.selection !== 0 || activeSession(player) !== slot) return;
-      removeDrills(owned(player.id, slot));
-      setStat(player, 'money', CONFIG.startingMoney);
-      setStat(player, 'income_level', 0);
-      setStat(player, 'rebirths', rebirths + 1);
-      giveItem(player, CONFIG.generators[0].block);
-      player.playSound('random.totem');
-      world.sendMessage(`§d${player.name} reached rebirth ${rebirths + 1}!`);
-    });
+  removeDrills(owned(player.id, slot));
+  setStat(player, 'money', CONFIG.startingMoney);
+  setStat(player, 'income_level', 0);
+  setStat(player, 'rebirths', rebirths + 1);
+  giveItem(player, CONFIG.generators[0].block);
+  player.playSound('random.totem');
+  world.sendMessage(`§d${player.name} reached rebirth ${rebirths + 1}!`);
 }
 
+/** Miner's Tablet: one full-screen form with the shop and the rebirth confirmation as sub-pages. */
 function openMenu(player) {
   const slot = activeSession(player);
   if (slot === undefined) return showStartMenu(player);
   const level = stat(player, 'income_level');
   const rebirths = stat(player, 'rebirths');
-  new ActionFormData()
-    .title(`${CONFIG.title} - Session ${slot + 1}`)
-    .body(
-      `§7Money: §a$${formatNumber(stat(player, 'money'))}\n` +
-        `§7Income: §a$${formatNumber(incomePerSecond(player))}/s\n` +
-        `§7Drills: §f${owned(player.id, slot).length}/${CONFIG.maxGeneratorsPerPlayer}\n` +
-        `§7Rebirths: §d${rebirths}`,
-    )
-    .button('Buy drills', CONFIG.generators[0].icon)
-    .button(`Upgrade income\n§8$${formatNumber(upgradeCost(level))}`)
-    .button(`Rebirth\n§8$${formatNumber(rebirthCost(rebirths))}`)
-    .button('Main menu')
-    .show(player)
-    .then((res) => {
-      if (res.canceled || res.selection === undefined) return;
-      [buyMenu, upgrade, rebirth, showStartMenu][res.selection]?.(player);
-    });
+  const buttons = CONFIG.generators.map((g) => ({
+    list: 'tablet_shop',
+    text: `${g.name} - $${formatNumber(g.cost)}\n§7+$${formatNumber(g.income)}/s each`,
+    run: (p) => buy(p, g),
+  }));
+  buttons.push(
+    { list: 'tablet_upgrade', text: `Upgrade income\n§7Level ${level + 1} - $${formatNumber(upgradeCost(level))}`, run: upgrade },
+    { list: 'tablet_rebirth', text: `Rebirth! - $${formatNumber(rebirthCost(rebirths))}\n§7Bonus x${+(1 + (rebirths + 1) * CONFIG.rebirth.bonusPerRebirth).toFixed(2)}`, run: (p) => rebirth(p, slot) },
+    { list: 'tablet_bottom', text: 'Main menu', run: showStartMenu },
+  );
+  const body =
+    `Session ${slot + 1} - Money §a$${formatNumber(stat(player, 'money'))}§r\n` +
+    `Income §a$${formatNumber(incomePerSecond(player))}/s§r - Drills ${owned(player.id, slot).length}/${CONFIG.maxGeneratorsPerPlayer} - Rebirths §d${rebirths}`;
+  fullScreenMenu(player, { form: 'tablet', body, buttons });
 }
 
 world.afterEvents.itemUse.subscribe(({ source: player, itemStack }) => {

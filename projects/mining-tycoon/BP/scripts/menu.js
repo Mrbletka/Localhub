@@ -1,18 +1,15 @@
 // Start menu shown when a player joins: Play, Create session (no sessions yet) or Sessions, Exit.
-// Forms whose title starts with CONFIG.menu.tag are drawn full screen by RP/ui/server_form.json. The start menu and
-// the Sessions page are one form: every button carries a LIST prefix saying where it is drawn, and the UI switches
-// between the two pages itself (Sessions / Back are UI toggles), so the form never has to close and reopen.
+// Full-screen menus are drawn by RP/ui/server_form.json. Each menu is ONE form holding all of its pages: every
+// button starts with a list code saying where it is drawn, title flags show or hide options, and the UI opens
+// sub-pages and goes back by itself, so the form never closes to change page. Codes: menu_layout.js (generated).
 // From joining until the player stands in their mine, a dark camera fade hides the world (menus draw above it).
 import { world, system, HudVisibility } from '@minecraft/server';
-import { ActionFormData, MessageFormData, FormCancelationReason } from '@minecraft/server-ui';
+import { ActionFormData, FormCancelationReason } from '@minecraft/server-ui';
 import { CONFIG } from './config.js';
 import { formatNumber } from './lib/util.js';
+import { MENU } from './menu_layout.js';
 import { sessionsOf, hasSessions, activeSession, lastSession, sessionStats, playSession, createSession, deleteSession } from './sessions.js';
 
-const TAG = CONFIG.menu.tag;
-// Must match RP/ui/server_form.json. They are formatting codes, so they stay invisible without the resource pack too.
-const LIST = { top: '§p§1§r', bottom: '§p§2§r', sessions: '§p§3§r' };
-const HAS_SESSIONS = '§h§s'; // title flag: the start page offers the Sessions toggle
 const SHADE = { red: 0.06, green: 0.045, blue: 0.03 };
 const open = new Set();
 const covered = new Set();
@@ -40,25 +37,27 @@ function uncover(player) {
 }
 
 /**
- * Show a full-screen menu. buttons: [{ list, text, run }]. Closing it with Back runs onClose; when the player is
- * just busy (still loading, chat open) the same menu comes back a moment later.
+ * Show a full-screen menu. form: a key of MENU.forms. buttons: [{ list, text, run }] with list a key of MENU.lists.
+ * flags: keys of MENU.flags to set. Closing it with Back runs onClose (if any); when the player is just busy (still
+ * loading, chat open) the same menu comes back a moment later.
  */
-function fullScreenMenu(player, { flags = '', body, buttons }, onClose) {
+export function fullScreenMenu(player, menu, onClose) {
   if (!player.isValid || open.has(player.id)) return;
   if (covered.has(player.id)) cover(player); // re-sent on every attempt: the first one can arrive while still loading
   open.add(player.id);
-  const form = new ActionFormData().title(`${TAG}${flags}${CONFIG.title}`).body(body);
-  for (const b of buttons) form.button(`${b.list}${b.text}`);
-  form
+  const { form, flags = [], body, buttons } = menu;
+  const title = MENU.forms[form] + flags.map((f) => MENU.flags[f]).join('') + CONFIG.title;
+  const data = new ActionFormData().title(title).body(body);
+  for (const b of buttons) data.button(MENU.lists[b.list] + b.text);
+  data
     .show(player)
     .then((res) => {
       open.delete(player.id);
       if (!player.isValid) return;
       if (res.canceled) {
-        if (res.cancelationReason === FormCancelationReason.UserBusy) {
-          return system.runTimeout(() => fullScreenMenu(player, { flags, body, buttons }, onClose), 5);
-        }
-        return system.runTimeout(() => onClose(player), 5);
+        if (res.cancelationReason === FormCancelationReason.UserBusy) return system.runTimeout(() => fullScreenMenu(player, menu, onClose), 5);
+        if (onClose) system.runTimeout(() => onClose(player), 5);
+        return;
       }
       buttons[res.selection]?.run(player);
     })
@@ -102,54 +101,34 @@ function exit(player) {
   }
 }
 
-/** Start page (Play / Create session or Sessions / Exit) plus the Sessions page, in one form. */
+function remove(player, slot) {
+  deleteSession(player, slot);
+  player.sendMessage(`§cSession ${slot + 1} deleted.`);
+  showStartMenu(player);
+}
+
+/** The start menu with its Sessions, Delete and confirm pages, all in one form. */
 export function showStartMenu(player) {
   const has = hasSessions(player.id);
-  const slot = activeSession(player);
-  const buttons = [{ list: LIST.top, text: 'Play', run: play }];
-  if (!has) buttons.push({ list: LIST.bottom, text: 'Create session', run: (p) => enter(p, 0) });
-  buttons.push({ list: LIST.bottom, text: 'Exit', run: exit });
-  if (has) {
-    sessionsOf(player.id).forEach((record, i) =>
-      buttons.push(
-        record
-          ? { list: LIST.sessions, text: `Session ${i + 1}${i === slot ? ' §a(playing)' : ''}\n§7${summary(player, i)}`, run: (p) => enter(p, i) }
-          : { list: LIST.sessions, text: `Slot ${i + 1} - Empty\n§7Tap to create a session`, run: (p) => enter(p, i) },
-      ),
-    );
-    buttons.push({ list: LIST.sessions, text: 'Delete a session', run: showDeleteMenu });
-  }
+  const slots = sessionsOf(player.id);
+  const active = activeSession(player);
+  const buttons = [{ list: 'start_top', text: 'Play', run: play }];
+  if (!has) buttons.push({ list: 'start_top', text: 'Create session', run: (p) => enter(p, 0) });
+  buttons.push({ list: 'start_bottom', text: 'Exit', run: exit });
+  const flags = has ? ['hasSessions'] : [];
+  slots.forEach((record, i) => {
+    if (!has) return;
+    if (!record) return buttons.push({ list: 'start_slots', text: `Slot ${i + 1} - Empty\n§7Tap to create a session`, run: (p) => enter(p, i) });
+    flags.push(`slot${i}`);
+    buttons.push({ list: 'start_slots', text: `Session ${i + 1}${i === active ? ' §a(playing)' : ''}\n§7${summary(player, i)}`, run: (p) => enter(p, i) });
+    buttons.push({ list: `start_delete_${i}`, text: `Yes, delete Session ${i + 1}`, run: (p) => remove(p, i) });
+  });
   const body = !has
     ? 'Claim your own mine, place drills and get rich.'
-    : slot === undefined
+    : active === undefined
       ? 'Pick Play to continue, or open Sessions.'
-      : `Session ${slot + 1}: ${summary(player, slot)}`;
-  fullScreenMenu(player, { flags: has ? HAS_SESSIONS : '', body, buttons }, showStartMenu); // the start menu can't be skipped
-}
-
-function showDeleteMenu(player) {
-  const buttons = [];
-  sessionsOf(player.id).forEach((record, i) => {
-    if (record) buttons.push({ list: LIST.top, text: `Delete Session ${i + 1}\n§7${summary(player, i)}`, run: (p) => confirmDelete(p, i) });
-  });
-  buttons.push({ list: LIST.bottom, text: 'Back', run: showStartMenu });
-  fullScreenMenu(player, { body: "Tap a session to delete it. This can't be undone.", buttons }, showStartMenu);
-}
-
-function confirmDelete(player, slot) {
-  new MessageFormData()
-    .title(`Delete Session ${slot + 1}?`)
-    .body('Its mine, money, upgrades, rebirths and drills are gone for good.')
-    .button1('Delete')
-    .button2('Keep it')
-    .show(player)
-    .then((res) => {
-      if (!player.isValid) return;
-      if (res.selection !== 0) return showDeleteMenu(player);
-      deleteSession(player, slot);
-      player.sendMessage(`§cSession ${slot + 1} deleted.`);
-      showStartMenu(player);
-    });
+      : `Session ${active + 1}: ${summary(player, active)}`;
+  fullScreenMenu(player, { form: 'start', flags, body, buttons }, showStartMenu); // the start menu can't be skipped
 }
 
 world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
