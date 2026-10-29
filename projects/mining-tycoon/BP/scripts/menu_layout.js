@@ -3,7 +3,8 @@
 export const MENU = {
   "forms": {
     "start": "§m§t§s",
-    "tablet": "§m§t§t"
+    "tablet": "§m§t§t",
+    "loading": "§m§t§l"
   },
   "lists": {
     "start_top": "§p§1§1§r",

@@ -87,6 +87,9 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
 - Join cover: from the moment a player joins until they stand in their mine, a dark camera fade (re-sent so it never
   runs out) hides the world and the HUD is hidden; menus draw above it. Entering a session also covers the teleport
   and plot building, then fades the world in.
+- Loading screen: entering a session shows a third full-screen form (tag `§m§t§l`, no buttons): cave, logo,
+  "Building your mine..." / "Heading into Session N..." and a gold pick striking a shaking gold ore. It stays at
+  least 1.5 s and closes (`uiManager.closeAllForms`) 1 s after the player stands in the mine; then the world fades in.
 - Sessions (`BP/scripts/sessions.js`, world property `mining_tycoon:sessions`): 2 save slots per player (config
   `sessions.slots`). Each session is its own save: own mine plot, money, income level, rebirths (player properties
   `mining_tycoon:s<slot>:<name>`), placed drills (`slot` in each drill record) and unplaced drill items (stashed when
@@ -122,8 +125,8 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
     `menu_layout.js` via `fullScreenMenu(player, { form, flags, body, buttons: [{ list, text, run }] })` in `menu.js`.
   - Without the resource pack every button shows in one plain list (including the delete confirmations).
   - Look and motion (all generated): pixel-art logo `ui/logo.png` (drops in with a bounce, then floats, two twinkling
-    sparkles); the cave background (96px wider / 8px taller than the screen, so it also covers the phone's safe area; it stays
-    still - a slow pan uncovered the screen edges) has
+    sparkles); the cave background (sized 250% of its height wide and 8px taller than the menu area, because that area stops at
+    the phone's safe area while the screen goes on; it stays still) has
     flickering lantern glows (`ui/fx_glow`), gems that twinkle on their own rhythm (`ui/fx_sparkle`), drifting dust
     (`ui/fx_dust`) and a minecart (`ui/fx_minecart`, cut out of the background) rolling smoothly along the rail every ~18 s.
     The menu content slides up when a menu opens. Effect positions are texel coordinates of `menu_bg.png`

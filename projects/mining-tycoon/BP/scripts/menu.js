@@ -4,7 +4,7 @@
 // sub-pages and goes back by itself, so the form never closes to change page. Codes: menu_layout.js (generated).
 // From joining until the player stands in their mine, a dark camera fade hides the world (menus draw above it).
 import { world, system, HudVisibility } from '@minecraft/server';
-import { ActionFormData, FormCancelationReason } from '@minecraft/server-ui';
+import { ActionFormData, FormCancelationReason, uiManager } from '@minecraft/server-ui';
 import { CONFIG } from './config.js';
 import { formatNumber } from './lib/util.js';
 import { MENU } from './menu_layout.js';
@@ -73,20 +73,52 @@ function summary(player, slot) {
   return `$${formatNumber(s.money)} - Rebirth ${s.rebirths}`;
 }
 
+/** Players on the loading screen -> tick before which it may not close (so it never just flashes). */
+const loading = new Map();
+
+/** Full-screen loading screen (a pick striking ore) while a mine is built or loaded. */
+function showLoading(player, text) {
+  loading.set(player.id, system.currentTick + 30);
+  const attempt = () => {
+    if (!player.isValid || !loading.has(player.id)) return;
+    new ActionFormData()
+      .title(MENU.forms.loading + CONFIG.title)
+      .body(text)
+      .show(player)
+      .then((res) => {
+        // The previous menu was still closing: try again. Closed by hideLoading (or Back): nothing to do.
+        if (res.canceled && res.cancelationReason === FormCancelationReason.UserBusy) system.runTimeout(attempt, 2);
+      })
+      .catch(() => {});
+  };
+  attempt();
+}
+
+/** Close the loading screen once it has shown long enough and the area around the player had a moment to render. */
+function hideLoading(player, then) {
+  const wait = Math.max(20, (loading.get(player.id) ?? 0) - system.currentTick);
+  system.runTimeout(() => {
+    loading.delete(player.id);
+    if (!player.isValid) return;
+    uiManager.closeAllForms(player);
+    then();
+  }, wait);
+}
+
 /** Play a session, or create it first when the slot is empty. */
 function enter(player, slot) {
   const fresh = !sessionsOf(player.id)[slot];
   cover(player); // hides the teleport and the mine being built
-  const done = (ok) => {
+  showLoading(player, fresh ? 'Building your mine...' : `Heading into Session ${slot + 1}...`);
+  const done = (ok) => hideLoading(player, () => {
     uncover(player);
     if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
     if (!fresh) return player.sendMessage(`§aWelcome back to Session ${slot + 1}!`);
     player.playSound('random.levelup');
     player.onScreenDisplay.setTitle(`§6Session ${slot + 1}`, { subtitle: 'Break the ores for cash', fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
     player.sendMessage("§aYour new mine is ready! Break the ores with your Wooden Pick, then open the Miner's Tablet for upgrades.");
-  };
+  });
   if (!fresh) return playSession(player, slot, done);
-  player.onScreenDisplay.setActionBar('§7Building your mine...');
   createSession(player, slot, done);
 }
 
@@ -143,6 +175,7 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
 
 world.afterEvents.playerLeave.subscribe(({ playerId }) => {
   open.delete(playerId);
+  loading.delete(playerId);
   covered.delete(playerId);
 });
 

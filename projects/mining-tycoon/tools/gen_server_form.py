@@ -50,6 +50,8 @@ FORMS = {
         List('tablet_bottom'),  # Main menu
     ])),
 }
+# Loading screen while a mine is built / loaded: no buttons, the script closes it once the player stands in the mine.
+FORMS['loading'] = ('§m§t§l', Page([]))
 FLAGS = {'hasSessions': '§h§s', **{f'slot{i}': f'§f§{i + 1}' for i in range(SLOTS)}}
 UI = 'textures/mining_tycoon/ui'
 ICONS = f'{UI}/icons'
@@ -149,8 +151,8 @@ def anim(name, kind, duration, frm, to, nxt=None, easing='linear'):
 def chain(prefix, kind, steps, easing='linear'):
     """steps: [(duration, from, to)], looping back to the first step."""
     names = [f'{prefix}_{i}' for i in range(len(steps))]
-    for i, (dur, frm, to) in enumerate(steps):
-        anim(names[i], kind, dur, frm, to, names[(i + 1) % len(steps)], easing)
+    for i, (dur, frm, to, *ease) in enumerate(steps):
+        anim(names[i], kind, dur, frm, to, names[(i + 1) % len(steps)], ease[0] if ease else easing)
     return f'@server_form.{names[0]}'
 
 def pct(v, total): return f'{v / total * 100:.2f}%'
@@ -197,6 +199,14 @@ def background_fx():
                             'controls': [{'cart': {'type': 'image', 'texture': f'{UI}/fx_minecart', 'size': ['100%', '100%']}}]}})
     return fx
 
+# Loader: a gold pick strikes a gold ore that shakes on every hit (both loops last 0.67 s, so they stay in step).
+LOADER = [{'loader': {'type': 'panel', 'size': ['100%', 44], 'controls': [
+    {'ore': {'type': 'image', 'texture': 'textures/mining_tycoon/blocks/ore_gold', 'size': [28, 28], 'offset': chain('mining_tycoon_loader_ore', 'offset',
+        [(0.12, [6, 4], [6, 4]), (0.05, [6, 4], [8, 4]), (0.05, [8, 4], [4, 4]), (0.05, [4, 4], [6, 4]), (0.4, [6, 4], [6, 4])])}},
+    {'pick': {'type': 'image', 'texture': 'textures/mining_tycoon/items/pick_5', 'size': [28, 28], 'layer': 1, 'offset': chain('mining_tycoon_loader_pick', 'offset',
+        [(0.12, [-14, -12], [-6, -2], 'in_quad'), (0.35, [-6, -2], [-14, -12], 'out_cubic'), (0.2, [-14, -12], [-14, -12])])}},
+]}}]
+
 screens = []
 for key, (tag, root) in FORMS.items():
     rows = render(root, [])
@@ -204,7 +214,7 @@ for key, (tag, root) in FORMS.items():
         'type': 'panel', 'size': ['100%', '100%'], 'layer': 10,
         'bindings': title_has(tag),
         'controls': [
-            {'background': {'type': 'image', 'texture': f'{UI}/menu_bg', 'size': ['100% + 96px', '100% + 8px'],
+            {'background': {'type': 'image', 'texture': f'{UI}/menu_bg', 'size': ['250%y', '100% + 8px'],
                             'anchor_from': 'center', 'anchor_to': 'center', 'layer': 1,
                             'controls': background_fx()}},
             {'content': {'type': 'stack_panel', 'orientation': 'vertical', 'size': [190, '100%c'], 'anchor_from': 'center',
@@ -222,6 +232,7 @@ for key, (tag, root) in FORMS.items():
                 {'body': label('#form_text', [0.95, 0.95, 0.95], bindings=[{'binding_name': '#form_text'}])},
                 {'body_gap': {'type': 'panel', 'size': ['100%', 10]}},
                 *rows,
+                *(LOADER if key == 'loading' else []),
             ]}},
         ]}})
 ui['mining_tycoon_long_form'] = {'type': 'panel', 'size': ['100%', '100%'], 'controls': screens}
