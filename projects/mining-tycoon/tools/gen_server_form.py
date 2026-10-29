@@ -194,8 +194,7 @@ def background_fx():
                             'offset': chain('mining_tycoon_cart', 'offset',
                                             [(2.5, ['-12%', cart_y], ['-12%', cart_y]), (12, ['-12%', cart_y], ['104%', cart_y]),
                                              (4, ['104%', cart_y], ['104%', cart_y])]),
-                            'controls': [{'cart': {'type': 'image', 'texture': f'{UI}/fx_minecart', 'size': ['100%', '100%'],
-                                                   'offset': chain('mining_tycoon_cart_bump', 'offset', [(0.18, [0, 0], [0, '-11%']), (0.18, [0, '-11%'], [0, 0])])}}]}})
+                            'controls': [{'cart': {'type': 'image', 'texture': f'{UI}/fx_minecart', 'size': ['100%', '100%']}}]}})
     return fx
 
 screens = []
@@ -207,7 +206,6 @@ for key, (tag, root) in FORMS.items():
         'controls': [
             {'background': {'type': 'image', 'texture': f'{UI}/menu_bg', 'size': ['100% + 96px', '100% + 8px'],
                             'anchor_from': 'center', 'anchor_to': 'center', 'layer': 1,
-                            'offset': chain(f'mining_tycoon_pan_{key}', 'offset', [(16, [-18, 0], [18, 0]), (16, [18, 0], [-18, 0])], 'in_out_sine'),
                             'controls': background_fx()}},
             {'content': {'type': 'stack_panel', 'orientation': 'vertical', 'size': [190, '100%c'], 'anchor_from': 'center',
                          'anchor_to': 'center', 'layer': 20,

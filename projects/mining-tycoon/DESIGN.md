@@ -122,9 +122,10 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
     `menu_layout.js` via `fullScreenMenu(player, { form, flags, body, buttons: [{ list, text, run }] })` in `menu.js`.
   - Without the resource pack every button shows in one plain list (including the delete confirmations).
   - Look and motion (all generated): pixel-art logo `ui/logo.png` (drops in with a bounce, then floats, two twinkling
-    sparkles); the cave background (now 96px wider / 8px taller than the screen) pans slowly left and right, with
+    sparkles); the cave background (96px wider / 8px taller than the screen, so it also covers the phone's safe area; it stays
+    still - a slow pan uncovered the screen edges) has
     flickering lantern glows (`ui/fx_glow`), gems that twinkle on their own rhythm (`ui/fx_sparkle`), drifting dust
-    (`ui/fx_dust`) and a minecart (`ui/fx_minecart`, cut out of the background) rolling along the rail every ~18 s.
+    (`ui/fx_dust`) and a minecart (`ui/fx_minecart`, cut out of the background) rolling smoothly along the rail every ~18 s.
     The menu content slides up when a menu opens. Effect positions are texel coordinates of `menu_bg.png`
     (`LIGHTS`, `GEMS`, `RAIL` in the generator) - update them if the background is repainted.
   - Icons: every button has a 16x16 icon on the left that bobs while the button is selected. Real buttons pass a

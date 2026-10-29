@@ -147,34 +147,6 @@
     "to": 0,
     "next": "@server_form.mining_tycoon_logo_twinkle_2_0"
   },
-  "mining_tycoon_pan_start_0": {
-    "anim_type": "offset",
-    "easing": "in_out_sine",
-    "duration": 16,
-    "from": [
-      -18,
-      0
-    ],
-    "to": [
-      18,
-      0
-    ],
-    "next": "@server_form.mining_tycoon_pan_start_1"
-  },
-  "mining_tycoon_pan_start_1": {
-    "anim_type": "offset",
-    "easing": "in_out_sine",
-    "duration": 16,
-    "from": [
-      18,
-      0
-    ],
-    "to": [
-      -18,
-      0
-    ],
-    "next": "@server_form.mining_tycoon_pan_start_0"
-  },
   "mining_tycoon_flicker_0_0": {
     "anim_type": "alpha",
     "easing": "in_out_sine",
@@ -737,34 +709,6 @@
     ],
     "next": "@server_form.mining_tycoon_cart_0"
   },
-  "mining_tycoon_cart_bump_0": {
-    "anim_type": "offset",
-    "easing": "linear",
-    "duration": 0.18,
-    "from": [
-      0,
-      0
-    ],
-    "to": [
-      0,
-      "-11%"
-    ],
-    "next": "@server_form.mining_tycoon_cart_bump_1"
-  },
-  "mining_tycoon_cart_bump_1": {
-    "anim_type": "offset",
-    "easing": "linear",
-    "duration": 0.18,
-    "from": [
-      0,
-      "-11%"
-    ],
-    "to": [
-      0,
-      0
-    ],
-    "next": "@server_form.mining_tycoon_cart_bump_0"
-  },
   "mining_tycoon_content_in_start": {
     "anim_type": "offset",
     "easing": "out_cubic",
@@ -791,34 +735,6 @@
       0
     ],
     "next": "@server_form.mining_tycoon_logo_float_0"
-  },
-  "mining_tycoon_pan_tablet_0": {
-    "anim_type": "offset",
-    "easing": "in_out_sine",
-    "duration": 16,
-    "from": [
-      -18,
-      0
-    ],
-    "to": [
-      18,
-      0
-    ],
-    "next": "@server_form.mining_tycoon_pan_tablet_1"
-  },
-  "mining_tycoon_pan_tablet_1": {
-    "anim_type": "offset",
-    "easing": "in_out_sine",
-    "duration": 16,
-    "from": [
-      18,
-      0
-    ],
-    "to": [
-      -18,
-      0
-    ],
-    "next": "@server_form.mining_tycoon_pan_tablet_0"
   },
   "mining_tycoon_content_in_tablet": {
     "anim_type": "offset",
@@ -884,7 +800,6 @@
                 "anchor_from": "center",
                 "anchor_to": "center",
                 "layer": 1,
-                "offset": "@server_form.mining_tycoon_pan_start_0",
                 "controls": [
                   {
                     "glow_0": {
@@ -1193,8 +1108,7 @@
                             "size": [
                               "100%",
                               "100%"
-                            ],
-                            "offset": "@server_form.mining_tycoon_cart_bump_0"
+                            ]
                           }
                         }
                       ]
@@ -2583,7 +2497,6 @@
                 "anchor_from": "center",
                 "anchor_to": "center",
                 "layer": 1,
-                "offset": "@server_form.mining_tycoon_pan_tablet_0",
                 "controls": [
                   {
                     "glow_0": {
@@ -2892,8 +2805,7 @@
                             "size": [
                               "100%",
                               "100%"
-                            ],
-                            "offset": "@server_form.mining_tycoon_cart_bump_0"
+                            ]
                           }
                         }
                       ]
