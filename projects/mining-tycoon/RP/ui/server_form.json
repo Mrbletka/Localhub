@@ -74,7 +74,9 @@
         "background": {
           "type": "image",
           "texture": "textures/mining_tycoon/ui/menu_bg",
-          "size": ["100%", "100%"],
+          "size": ["100% + 64px", "100% + 32px"],
+          "anchor_from": "center",
+          "anchor_to": "center",
           "layer": 1
         }
       },

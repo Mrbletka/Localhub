@@ -32,7 +32,7 @@ resets but you keep a permanent cash multiplier and push even deeper next time.
   - **Exit**: disconnects the player with a goodbye message. The host of a local world can't be disconnected, so they
     get a hint to leave from the pause menu instead.
 - Full-screen look (`RP/ui/server_form.json`): any action form whose title starts with `§m§t§s` (config `menu.tag`) is
-  drawn full screen: cave background `textures/mining_tycoon/ui/menu_bg` (128x64), gold MINING TYCOON logo, body
+  drawn full screen: cave background `textures/mining_tycoon/ui/menu_bg` (128x64, drawn 32px past each edge so it also covers the screen safe area), gold MINING TYCOON logo, body
   text, stacked buttons. All other forms (the tablet) keep the normal look. If the resource pack is missing, the menu
   still works as a normal form.
 - Mine plots (`BP/scripts/plots.js`, stored in world property `mining_tycoon:plots`): 25x25 polished-deepslate
