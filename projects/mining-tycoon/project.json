@@ -1,0 +1,23 @@
+{
+  "name": "Mining Tycoon",
+  "slug": "mining-tycoon",
+  "type": "tycoon",
+  "namespace": "mining_tycoon",
+  "version": [
+    1,
+    0,
+    0
+  ],
+  "description": "Place drills, mine ore for cash, dig deeper and rebirth.",
+  "author": "",
+  "tags": [
+    "tycoon",
+    "mining"
+  ],
+  "created": "2026-10-29T00:22:34.225Z",
+  "library": {
+    "summary": "Place drills that mine ore for cash every second, upgrade them and rebirth for permanent multipliers.",
+    "featured": false,
+    "icon": "RP/pack_icon.png"
+  }
+}

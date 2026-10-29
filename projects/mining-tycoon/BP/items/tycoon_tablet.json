@@ -1,0 +1,18 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:item": {
+    "description": {
+      "identifier": "mining_tycoon:tycoon_tablet",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:icon": "mining_tycoon_tycoon_tablet",
+      "minecraft:display_name": {
+        "value": "item.mining_tycoon:tycoon_tablet.name"
+      },
+      "minecraft:max_stack_size": 1
+    }
+  }
+}

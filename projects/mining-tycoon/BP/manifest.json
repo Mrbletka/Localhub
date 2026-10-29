@@ -1,0 +1,66 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Mining Tycoon BP",
+    "description": "Mining Tycoon behavior pack",
+    "uuid": "77826650-a486-4a16-82a5-b6ac666311a6",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      90
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "51ecbfab-71f5-4739-a7d6-8a7271e2e975",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "74cce902-7d88-4baf-8119-ed00119fa12e",
+      "version": [
+        1,
+        0,
+        0
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "2ef776bd-4b88-4a8d-92cd-0e1495b83064",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    }
+  ],
+  "metadata": {
+    "authors": [],
+    "generated_with": {
+      "localhub_bedrock_studio": [
+        "0.1.0"
+      ]
+    }
+  }
+}

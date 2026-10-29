@@ -1,0 +1,27 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:block": {
+    "description": {
+      "identifier": "mining_tycoon:generator_t2",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "tile.mining_tycoon:generator_t2.name",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "mining_tycoon_generator_t2",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 0.5
+      },
+      "minecraft:map_color": "#3d9ddc",
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:light_emission": 6
+    }
+  }
+}

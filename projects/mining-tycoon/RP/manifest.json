@@ -1,0 +1,47 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Mining Tycoon RP",
+    "description": "Mining Tycoon resource pack",
+    "uuid": "2ef776bd-4b88-4a8d-92cd-0e1495b83064",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      90
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "70fe5630-b4dc-4ea0-bcb7-d9c6efc04206",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "77826650-a486-4a16-82a5-b6ac666311a6",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [],
+    "generated_with": {
+      "localhub_bedrock_studio": [
+        "0.1.0"
+      ]
+    }
+  }
+}
