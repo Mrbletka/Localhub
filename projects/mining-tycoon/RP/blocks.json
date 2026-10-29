@@ -12,5 +12,26 @@
   },
   "mining_tycoon:generator_t3": {
     "sound": "metal"
+  },
+  "mining_tycoon:ore_rock": {
+    "sound": "stone"
+  },
+  "mining_tycoon:ore_coal": {
+    "sound": "stone"
+  },
+  "mining_tycoon:ore_copper": {
+    "sound": "stone"
+  },
+  "mining_tycoon:ore_iron": {
+    "sound": "stone"
+  },
+  "mining_tycoon:ore_gold": {
+    "sound": "stone"
+  },
+  "mining_tycoon:ore_ruby": {
+    "sound": "stone"
+  },
+  "mining_tycoon:ore_diamond": {
+    "sound": "stone"
   }
 }

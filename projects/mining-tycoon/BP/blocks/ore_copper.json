@@ -1,0 +1,28 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:block": {
+    "description": {
+      "identifier": "mining_tycoon:ore_copper",
+      "menu_category": {
+        "category": "nature"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "tile.mining_tycoon:ore_copper.name",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "mining_tycoon_ore_copper",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 3.5
+      },
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:loot": "loot_tables/blocks/ore_empty.json",
+      "minecraft:map_color": "#c4703a",
+      "tag:mining_tycoon_ore": {}
+    }
+  }
+}

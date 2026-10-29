@@ -8,7 +8,7 @@
     0,
     0
   ],
-  "description": "Place drills, mine ore for cash, dig deeper and rebirth.",
+  "description": "Mine ores by hand, upgrade your pick and your mine, unlock drills and rebirth.",
   "author": "",
   "tags": [
     "tycoon",
@@ -16,7 +16,7 @@
   ],
   "created": "2026-10-29T00:22:34.225Z",
   "library": {
-    "summary": "Place drills that mine ore for cash every second, upgrade them and rebirth for permanent multipliers.",
+    "summary": "Start with a wooden pick in your own mine: break ores for cash, upgrade your pick and mine for richer ores, unlock drills for automation and rebirth for permanent bonuses.",
     "featured": false,
     "icon": "RP/pack_icon.png"
   }

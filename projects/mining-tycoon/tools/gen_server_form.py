@@ -41,10 +41,10 @@ FORMS = {
         List('start_bottom'),  # Exit
     ])),
     'tablet': ('§m§t§t', Page([
-        Nav('go_shop', 'Buy drills', 'Back', page=Page(heading='Tap a drill to buy it.', items=[List('tablet_shop')])),
-        List('tablet_upgrade'),
+        Nav('go_upgrades', 'Upgrades', 'Back', page=Page(heading='Mine faster and dig up richer ores.', items=[List('tablet_upgrades')])),
+        Nav('go_shop', 'Drills', 'Back', page=Page(heading='Drills earn cash every second while you keep mining.', items=[List('tablet_shop')])),
         Nav('go_rebirth', 'Rebirth', 'Not yet', page=Page(
-            heading='Rebirth? Money, upgrades and drills of this session reset. You keep a permanent income bonus.',
+            heading='Rebirth? Money, pick, mine, ore value and drills of this session reset. You keep a permanent cash bonus.',
             items=[List('tablet_rebirth')])),
         List('tablet_bottom'),  # Main menu
     ])),

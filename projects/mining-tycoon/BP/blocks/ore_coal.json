@@ -1,0 +1,28 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:block": {
+    "description": {
+      "identifier": "mining_tycoon:ore_coal",
+      "menu_category": {
+        "category": "nature"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "tile.mining_tycoon:ore_coal.name",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "mining_tycoon_ore_coal",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 2
+      },
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:loot": "loot_tables/blocks/ore_empty.json",
+      "minecraft:map_color": "#2a2a2a",
+      "tag:mining_tycoon_ore": {}
+    }
+  }
+}

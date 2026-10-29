@@ -1,7 +1,9 @@
 import { world, system, DisplaySlotId, ObjectiveSortOrder } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { formatNumber, getNumber, setNumber, getJson, setJson, giveItem, hasItem, ensureObjective, toScore } from './lib/util.js';
-import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete } from './sessions.js';
+import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete, plotAt, plotCenter } from './sessions.js';
+import { stat, setStat, addStat, pickTier, mineLevel, valueMultiplier, valueCost, rebirthCost } from './economy.js';
+import { inField, rerollField, syncPick, popupUntil } from './mining.js';
 import { showStartMenu, fullScreenMenu } from './menu.js';
 
 const NS = CONFIG.namespace;
@@ -15,30 +17,14 @@ let moneyBoard;
 const locKey = (dimensionId, { x, y, z }) => `${dimensionId}|${x}|${y}|${z}`;
 const save = () => setJson(world, GENERATORS_KEY, generators);
 const owned = (playerId, slot) => Object.entries(generators).filter(([, g]) => g.owner === playerId && (g.slot ?? 0) === slot);
-
-// Money, income level and rebirths of the player's active session (0 when not in a session).
-const stat = (player, name) => {
-  const slot = activeSession(player);
-  return slot === undefined ? 0 : getNumber(player, sessionKey(slot, name));
-};
-const setStat = (player, name, value) => {
-  const slot = activeSession(player);
-  if (slot !== undefined) setNumber(player, sessionKey(slot, name), value);
-  return value;
-};
-const addStat = (player, name, delta) => setStat(player, name, stat(player, name) + delta);
-
-const rebirthBonus = (p) => 1 + stat(p, 'rebirths') * CONFIG.rebirth.bonusPerRebirth;
-const incomeMultiplier = (p) => (1 + stat(p, 'income_level') * CONFIG.upgrade.incomeBonusPerLevel) * rebirthBonus(p);
-const upgradeCost = (level) => Math.floor(CONFIG.upgrade.baseCost * CONFIG.upgrade.costGrowth ** level);
-const rebirthCost = (rebirths) => Math.floor(CONFIG.rebirth.baseCost * CONFIG.rebirth.costGrowth ** rebirths);
+const drillsUnlocked = (player) => mineLevel(player) >= CONFIG.drillsUnlockMine;
 
 function incomePerSecond(player) {
   const slot = activeSession(player);
   if (slot === undefined) return 0;
   let base = 0;
   for (const [, g] of owned(player.id, slot)) base += TIERS.get(g.block)?.income ?? 0;
-  return base * incomeMultiplier(player);
+  return base * valueMultiplier(player);
 }
 
 function removeDrills(entries) {
@@ -54,57 +40,108 @@ function removeDrills(entries) {
   save();
 }
 
-function buy(player, g) {
-  if (stat(player, 'money') < g.cost) return player.sendMessage(`§cYou need §a$${formatNumber(g.cost)}§c for a ${g.name}.`);
-  addStat(player, 'money', -g.cost);
-  giveItem(player, g.block);
-  player.playSound('random.orb');
-  player.sendMessage(`§aBought a ${g.name}. Place it to start mining!`);
+/** Pay a price from the active session, or say what is missing. */
+function pay(player, cost) {
+  if (stat(player, 'money') >= cost) {
+    addStat(player, 'money', -cost);
+    return true;
+  }
+  player.sendMessage(`§cYou need §a$${formatNumber(cost)}§c (you have $${formatNumber(stat(player, 'money'))}).`);
+  return false;
 }
 
-function upgrade(player) {
+function buyDrill(player, g) {
+  if (!drillsUnlocked(player) || !pay(player, g.cost)) return;
+  giveItem(player, g.block);
+  player.playSound('random.orb');
+  player.sendMessage(`§aBought a ${g.name}. Place it in your mine, next to the ore field.`);
+}
+
+function upgradePick(player) {
+  const next = CONFIG.picks[pickTier(player)];
+  if (!next || !pay(player, next.cost)) return;
+  setStat(player, 'pick', pickTier(player) + 1);
+  syncPick(player);
+  player.playSound('random.levelup');
+  player.sendMessage(`§aYou got the ${next.name}!`);
+}
+
+function upgradeMine(player) {
+  const next = CONFIG.mines[mineLevel(player)];
+  if (!next || !pay(player, next.cost)) return;
+  setStat(player, 'mine_level', mineLevel(player) + 1);
+  rerollField(player);
+  player.playSound('random.levelup');
+  player.sendMessage(`§aYour mine reached the ${next.name}!${mineLevel(player) === CONFIG.drillsUnlockMine ? ' §eDrills are unlocked!' : ''}`);
+}
+
+function upgradeValue(player) {
   const level = stat(player, 'income_level');
-  const cost = upgradeCost(level);
-  if (stat(player, 'money') < cost) return player.sendMessage(`§cYou need §a$${formatNumber(cost)}§c.`);
-  addStat(player, 'money', -cost);
+  if (!pay(player, valueCost(level))) return;
   setStat(player, 'income_level', level + 1);
   player.playSound('random.levelup');
-  player.sendMessage(`§aIncome upgraded to level ${level + 1} (+${Math.round(CONFIG.upgrade.incomeBonusPerLevel * 100)}% each).`);
+  player.sendMessage(`§aOre value level ${level + 1}: cash x${+valueMultiplier(player).toFixed(2)}.`);
 }
 
 function rebirth(player, slot) {
   if (activeSession(player) !== slot) return;
   const rebirths = stat(player, 'rebirths');
-  const cost = rebirthCost(rebirths);
-  if (stat(player, 'money') < cost) return player.sendMessage(`§cRebirth needs §a$${formatNumber(cost)}§c.`);
+  if (!pay(player, rebirthCost(rebirths))) return;
   removeDrills(owned(player.id, slot));
   setStat(player, 'money', CONFIG.startingMoney);
   setStat(player, 'income_level', 0);
+  setStat(player, 'pick', 1);
+  setStat(player, 'mine_level', 1);
   setStat(player, 'rebirths', rebirths + 1);
-  giveItem(player, CONFIG.generators[0].block);
+  syncPick(player);
+  rerollField(player);
   player.playSound('random.totem');
   world.sendMessage(`§d${player.name} reached rebirth ${rebirths + 1}!`);
 }
 
-/** Miner's Tablet: one full-screen form with the shop and the rebirth confirmation as sub-pages. */
+/** Names of the ores that need a pick tier / that a mine level adds. */
+const oresNeeding = (tier) => CONFIG.ores.filter((o) => o.pick === tier).map((o) => o.name);
+const oresAddedBy = (level) => {
+  const before = CONFIG.mines[level - 2]?.weights ?? {};
+  return Object.keys(CONFIG.mines[level - 1].weights).filter((id) => !(id in before)).map((id) => CONFIG.ores.find((o) => o.id === id).name);
+};
+
+/** Miner's Tablet: one full-screen form with Upgrades, Drills and the rebirth confirmation as sub-pages. */
 function openMenu(player) {
   const slot = activeSession(player);
   if (slot === undefined) return showStartMenu(player);
-  const level = stat(player, 'income_level');
+  const tier = pickTier(player);
+  const level = mineLevel(player);
+  const value = stat(player, 'income_level');
   const rebirths = stat(player, 'rebirths');
-  const buttons = CONFIG.generators.map((g) => ({
-    list: 'tablet_shop',
-    text: `${g.name} - $${formatNumber(g.cost)}\n§7+$${formatNumber(g.income)}/s each`,
-    run: (p) => buy(p, g),
-  }));
+  const nextPick = CONFIG.picks[tier];
+  const nextMine = CONFIG.mines[level];
+  const buttons = [
+    nextPick
+      ? { list: 'tablet_upgrades', text: `Pick: ${nextPick.name} - $${formatNumber(nextPick.cost)}\n§7Faster${oresNeeding(tier + 1).length ? `, mines ${oresNeeding(tier + 1).join(', ')}` : ''}`, run: upgradePick }
+      : { list: 'tablet_upgrades', text: `Pick: ${CONFIG.picks[tier - 1].name}\n§7Best pick there is`, run: () => {} },
+    nextMine
+      ? { list: 'tablet_upgrades', text: `Mine: ${nextMine.name} - $${formatNumber(nextMine.cost)}\n§7Adds ${oresAddedBy(level + 1).join(', ')}`, run: upgradeMine }
+      : { list: 'tablet_upgrades', text: `Mine: ${CONFIG.mines[level - 1].name}\n§7Deepest mine there is`, run: () => {} },
+    { list: 'tablet_upgrades', text: `Ore value: level ${value + 1} - $${formatNumber(valueCost(value))}\n§7+${Math.round(CONFIG.upgrade.incomeBonusPerLevel * 100)}% cash from ores and drills`, run: upgradeValue },
+  ];
+  if (drillsUnlocked(player)) {
+    for (const g of CONFIG.generators) {
+      buttons.push({ list: 'tablet_shop', text: `${g.name} - $${formatNumber(g.cost)}\n§7+$${formatNumber(g.income)}/s each`, run: (p) => buyDrill(p, g) });
+    }
+  } else {
+    const unlock = CONFIG.mines[CONFIG.drillsUnlockMine - 1].name;
+    buttons.push({ list: 'tablet_shop', text: `Locked\n§7Upgrade your mine to the ${unlock}`, run: (p) => p.sendMessage(`§eDrills unlock when your mine reaches the ${unlock}.`) });
+  }
   buttons.push(
-    { list: 'tablet_upgrade', text: `Upgrade income\n§7Level ${level + 1} - $${formatNumber(upgradeCost(level))}`, run: upgrade },
     { list: 'tablet_rebirth', text: `Rebirth! - $${formatNumber(rebirthCost(rebirths))}\n§7Bonus x${+(1 + (rebirths + 1) * CONFIG.rebirth.bonusPerRebirth).toFixed(2)}`, run: (p) => rebirth(p, slot) },
     { list: 'tablet_bottom', text: 'Main menu', run: showStartMenu },
   );
+  const income = incomePerSecond(player);
   const body =
     `Session ${slot + 1} - Money §a$${formatNumber(stat(player, 'money'))}§r\n` +
-    `Income §a$${formatNumber(incomePerSecond(player))}/s§r - Drills ${owned(player.id, slot).length}/${CONFIG.maxGeneratorsPerPlayer} - Rebirths §d${rebirths}`;
+    `${CONFIG.picks[tier - 1].name} - ${CONFIG.mines[level - 1].name} - Cash x${+valueMultiplier(player).toFixed(2)}` +
+    (income > 0 ? `\nDrills ${owned(player.id, slot).length}/${CONFIG.maxGeneratorsPerPlayer}: §a+$${formatNumber(income)}/s` : '');
   fullScreenMenu(player, { form: 'tablet', body, buttons });
 }
 
@@ -121,6 +158,11 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
     giveItem(player, tier.block);
     return player.sendMessage('§cDrills only work in the mine of the session you are playing.');
   }
+  if (inField(plotCenter(plotAt(dimension.id, block.location).index), block.location)) {
+    block.setType('minecraft:air');
+    giveItem(player, tier.block);
+    return player.sendMessage('§cKeep the ore field free: place drills next to it.');
+  }
   if (owned(player.id, slot).length >= CONFIG.maxGeneratorsPerPlayer) {
     block.setType('minecraft:air');
     giveItem(player, tier.block);
@@ -128,7 +170,7 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   }
   generators[locKey(dimension.id, block.location)] = { owner: player.id, slot, block: block.typeId };
   save();
-  player.onScreenDisplay.setActionBar(`§a${tier.name} drilling: +$${formatNumber(tier.income * incomeMultiplier(player))}/s`);
+  player.onScreenDisplay.setActionBar(`§a${tier.name} drilling: +$${formatNumber(tier.income * valueMultiplier(player))}/s`);
 });
 
 // Drills can only be broken by their owner, from the session they belong to (so they can't move between saves).
@@ -182,7 +224,8 @@ world.afterEvents.worldLoad.subscribe(() => {
       const income = incomePerSecond(player);
       const money = income > 0 ? addStat(player, 'money', income) : stat(player, 'money');
       moneyBoard.setScore(player, toScore(money));
-      player.onScreenDisplay.setActionBar(`§a$${formatNumber(money)}  §7(+$${formatNumber(income)}/s)`);
+      if (system.currentTick < (popupUntil.get(player.id) ?? 0)) continue; // a mining popup is showing
+      player.onScreenDisplay.setActionBar(`§a$${formatNumber(money)}${income > 0 ? `  §7(+$${formatNumber(income)}/s)` : ''}`);
     }
   }, 20);
 

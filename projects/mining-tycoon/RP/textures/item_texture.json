@@ -4,6 +4,24 @@
   "texture_data": {
     "mining_tycoon_tycoon_tablet": {
       "textures": "textures/mining_tycoon/tycoon_tablet"
+    },
+    "mining_tycoon_pick_1": {
+      "textures": "textures/mining_tycoon/items/pick_1"
+    },
+    "mining_tycoon_pick_2": {
+      "textures": "textures/mining_tycoon/items/pick_2"
+    },
+    "mining_tycoon_pick_3": {
+      "textures": "textures/mining_tycoon/items/pick_3"
+    },
+    "mining_tycoon_pick_4": {
+      "textures": "textures/mining_tycoon/items/pick_4"
+    },
+    "mining_tycoon_pick_5": {
+      "textures": "textures/mining_tycoon/items/pick_5"
+    },
+    "mining_tycoon_pick_6": {
+      "textures": "textures/mining_tycoon/items/pick_6"
     }
   }
 }

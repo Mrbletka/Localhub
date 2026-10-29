@@ -1475,7 +1475,7 @@
                         {
                           "heading": {
                             "type": "label",
-                            "text": "Tap a drill to buy it.",
+                            "text": "Mine faster and dig up richer ores.",
                             "color": [
                               0.85,
                               0.85,
@@ -1493,7 +1493,7 @@
                       "bindings": [
                         {
                           "binding_type": "view",
-                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_control_name": "mining_tycoon_go_upgrades",
                           "source_property_name": "#toggle_state",
                           "target_property_name": "#visible"
                         }
@@ -1522,7 +1522,7 @@
                       "bindings": [
                         {
                           "binding_type": "view",
-                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_control_name": "mining_tycoon_go_upgrades",
                           "source_property_name": "#toggle_state",
                           "target_property_name": "#visible"
                         }
@@ -1531,6 +1531,165 @@
                   },
                   {
                     "w50": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "tablet_upgrades": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "list@server_form.mining_tycoon_list_tablet_upgrades": {}
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_upgrades",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w52": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w51": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "mining_tycoon_go_upgrades_row": {
+                                  "type": "panel",
+                                  "size": [
+                                    "100%",
+                                    34
+                                  ],
+                                  "controls": [
+                                    {
+                                      "mining_tycoon_go_upgrades@server_form.mining_tycoon_nav_toggle": {
+                                        "$toggle_name": "mining_tycoon_go_upgrades",
+                                        "$nav_text": "Upgrades",
+                                        "$nav_back_text": "Back"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_rebirth",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w53": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "heading": {
+                            "type": "label",
+                            "text": "Drills earn cash every second while you keep mining.",
+                            "color": [
+                              0.85,
+                              0.85,
+                              0.85
+                            ],
+                            "shadow": true,
+                            "text_alignment": "center",
+                            "size": [
+                              "100%",
+                              "default"
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w54": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "heading_gap": {
+                            "type": "panel",
+                            "size": [
+                              "100%",
+                              8
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_property_name": "#toggle_state",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w55": {
                       "type": "stack_panel",
                       "orientation": "vertical",
                       "size": [
@@ -1565,7 +1724,7 @@
                     }
                   },
                   {
-                    "w51": {
+                    "w57": {
                       "type": "stack_panel",
                       "orientation": "vertical",
                       "size": [
@@ -1574,45 +1733,7 @@
                       ],
                       "controls": [
                         {
-                          "mining_tycoon_go_shop_row": {
-                            "type": "panel",
-                            "size": [
-                              "100%",
-                              34
-                            ],
-                            "controls": [
-                              {
-                                "mining_tycoon_go_shop@server_form.mining_tycoon_nav_toggle": {
-                                  "$toggle_name": "mining_tycoon_go_shop",
-                                  "$nav_text": "Buy drills",
-                                  "$nav_back_text": "Back"
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ],
-                      "bindings": [
-                        {
-                          "binding_type": "view",
-                          "source_control_name": "mining_tycoon_go_rebirth",
-                          "source_property_name": "(not #toggle_state)",
-                          "target_property_name": "#visible"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "w53": {
-                      "type": "stack_panel",
-                      "orientation": "vertical",
-                      "size": [
-                        "100%",
-                        "100%c"
-                      ],
-                      "controls": [
-                        {
-                          "w52": {
+                          "w56": {
                             "type": "stack_panel",
                             "orientation": "vertical",
                             "size": [
@@ -1621,16 +1742,19 @@
                             ],
                             "controls": [
                               {
-                                "tablet_upgrade": {
-                                  "type": "stack_panel",
-                                  "orientation": "vertical",
+                                "mining_tycoon_go_shop_row": {
+                                  "type": "panel",
                                   "size": [
                                     "100%",
-                                    "100%c"
+                                    34
                                   ],
                                   "controls": [
                                     {
-                                      "list@server_form.mining_tycoon_list_tablet_upgrade": {}
+                                      "mining_tycoon_go_shop@server_form.mining_tycoon_nav_toggle": {
+                                        "$toggle_name": "mining_tycoon_go_shop",
+                                        "$nav_text": "Drills",
+                                        "$nav_back_text": "Back"
+                                      }
                                     }
                                   ]
                                 }
@@ -1650,7 +1774,7 @@
                       "bindings": [
                         {
                           "binding_type": "view",
-                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_control_name": "mining_tycoon_go_upgrades",
                           "source_property_name": "(not #toggle_state)",
                           "target_property_name": "#visible"
                         }
@@ -1658,7 +1782,7 @@
                     }
                   },
                   {
-                    "w54": {
+                    "w58": {
                       "type": "stack_panel",
                       "orientation": "vertical",
                       "size": [
@@ -1669,7 +1793,7 @@
                         {
                           "heading": {
                             "type": "label",
-                            "text": "Rebirth? Money, upgrades and drills of this session reset. You keep a permanent income bonus.",
+                            "text": "Rebirth? Money, pick, mine, ore value and drills of this session reset. You keep a permanent cash bonus.",
                             "color": [
                               0.85,
                               0.85,
@@ -1695,7 +1819,7 @@
                     }
                   },
                   {
-                    "w55": {
+                    "w59": {
                       "type": "stack_panel",
                       "orientation": "vertical",
                       "size": [
@@ -1724,7 +1848,7 @@
                     }
                   },
                   {
-                    "w56": {
+                    "w60": {
                       "type": "stack_panel",
                       "orientation": "vertical",
                       "size": [
@@ -1759,7 +1883,7 @@
                     }
                   },
                   {
-                    "w57": {
+                    "w62": {
                       "type": "stack_panel",
                       "orientation": "vertical",
                       "size": [
@@ -1768,45 +1892,7 @@
                       ],
                       "controls": [
                         {
-                          "mining_tycoon_go_rebirth_row": {
-                            "type": "panel",
-                            "size": [
-                              "100%",
-                              34
-                            ],
-                            "controls": [
-                              {
-                                "mining_tycoon_go_rebirth@server_form.mining_tycoon_nav_toggle": {
-                                  "$toggle_name": "mining_tycoon_go_rebirth",
-                                  "$nav_text": "Rebirth",
-                                  "$nav_back_text": "Not yet"
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ],
-                      "bindings": [
-                        {
-                          "binding_type": "view",
-                          "source_control_name": "mining_tycoon_go_shop",
-                          "source_property_name": "(not #toggle_state)",
-                          "target_property_name": "#visible"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "w59": {
-                      "type": "stack_panel",
-                      "orientation": "vertical",
-                      "size": [
-                        "100%",
-                        "100%c"
-                      ],
-                      "controls": [
-                        {
-                          "w58": {
+                          "w61": {
                             "type": "stack_panel",
                             "orientation": "vertical",
                             "size": [
@@ -1815,16 +1901,19 @@
                             ],
                             "controls": [
                               {
-                                "tablet_bottom": {
-                                  "type": "stack_panel",
-                                  "orientation": "vertical",
+                                "mining_tycoon_go_rebirth_row": {
+                                  "type": "panel",
                                   "size": [
                                     "100%",
-                                    "100%c"
+                                    34
                                   ],
                                   "controls": [
                                     {
-                                      "list@server_form.mining_tycoon_list_tablet_bottom": {}
+                                      "mining_tycoon_go_rebirth@server_form.mining_tycoon_nav_toggle": {
+                                        "$toggle_name": "mining_tycoon_go_rebirth",
+                                        "$nav_text": "Rebirth",
+                                        "$nav_back_text": "Not yet"
+                                      }
                                     }
                                   ]
                                 }
@@ -1833,7 +1922,7 @@
                             "bindings": [
                               {
                                 "binding_type": "view",
-                                "source_control_name": "mining_tycoon_go_rebirth",
+                                "source_control_name": "mining_tycoon_go_shop",
                                 "source_property_name": "(not #toggle_state)",
                                 "target_property_name": "#visible"
                               }
@@ -1844,7 +1933,82 @@
                       "bindings": [
                         {
                           "binding_type": "view",
-                          "source_control_name": "mining_tycoon_go_shop",
+                          "source_control_name": "mining_tycoon_go_upgrades",
+                          "source_property_name": "(not #toggle_state)",
+                          "target_property_name": "#visible"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "w65": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "w64": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
+                            "size": [
+                              "100%",
+                              "100%c"
+                            ],
+                            "controls": [
+                              {
+                                "w63": {
+                                  "type": "stack_panel",
+                                  "orientation": "vertical",
+                                  "size": [
+                                    "100%",
+                                    "100%c"
+                                  ],
+                                  "controls": [
+                                    {
+                                      "tablet_bottom": {
+                                        "type": "stack_panel",
+                                        "orientation": "vertical",
+                                        "size": [
+                                          "100%",
+                                          "100%c"
+                                        ],
+                                        "controls": [
+                                          {
+                                            "list@server_form.mining_tycoon_list_tablet_bottom": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "bindings": [
+                                    {
+                                      "binding_type": "view",
+                                      "source_control_name": "mining_tycoon_go_rebirth",
+                                      "source_property_name": "(not #toggle_state)",
+                                      "target_property_name": "#visible"
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "bindings": [
+                              {
+                                "binding_type": "view",
+                                "source_control_name": "mining_tycoon_go_shop",
+                                "source_property_name": "(not #toggle_state)",
+                                "target_property_name": "#visible"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "bindings": [
+                        {
+                          "binding_type": "view",
+                          "source_control_name": "mining_tycoon_go_upgrades",
                           "source_property_name": "(not #toggle_state)",
                           "target_property_name": "#visible"
                         }
@@ -2104,7 +2268,7 @@
       }
     ]
   },
-  "mining_tycoon_list_tablet_shop": {
+  "mining_tycoon_list_tablet_upgrades": {
     "type": "stack_panel",
     "orientation": "vertical",
     "size": [
@@ -2114,7 +2278,7 @@
     "factory": {
       "name": "buttons",
       "control_ids": {
-        "button": "@server_form.mining_tycoon_item_tablet_shop"
+        "button": "@server_form.mining_tycoon_item_tablet_upgrades"
       }
     },
     "collection_name": "form_buttons",
@@ -2125,7 +2289,7 @@
       }
     ]
   },
-  "mining_tycoon_item_tablet_shop": {
+  "mining_tycoon_item_tablet_upgrades": {
     "type": "panel",
     "size": [
       "100%",
@@ -2153,7 +2317,7 @@
       }
     ]
   },
-  "mining_tycoon_list_tablet_upgrade": {
+  "mining_tycoon_list_tablet_shop": {
     "type": "stack_panel",
     "orientation": "vertical",
     "size": [
@@ -2163,7 +2327,7 @@
     "factory": {
       "name": "buttons",
       "control_ids": {
-        "button": "@server_form.mining_tycoon_item_tablet_upgrade"
+        "button": "@server_form.mining_tycoon_item_tablet_shop"
       }
     },
     "collection_name": "form_buttons",
@@ -2174,7 +2338,7 @@
       }
     ]
   },
-  "mining_tycoon_item_tablet_upgrade": {
+  "mining_tycoon_item_tablet_shop": {
     "type": "panel",
     "size": [
       "100%",

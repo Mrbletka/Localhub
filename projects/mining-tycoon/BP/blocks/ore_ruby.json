@@ -1,0 +1,28 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:block": {
+    "description": {
+      "identifier": "mining_tycoon:ore_ruby",
+      "menu_category": {
+        "category": "nature"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "tile.mining_tycoon:ore_ruby.name",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "mining_tycoon_ore_ruby",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 16
+      },
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:loot": "loot_tables/blocks/ore_empty.json",
+      "minecraft:map_color": "#c3122a",
+      "tag:mining_tycoon_ore": {}
+    }
+  }
+}

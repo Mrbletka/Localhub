@@ -12,6 +12,27 @@
     },
     "mining_tycoon_generator_t3": {
       "textures": "textures/mining_tycoon/blocks/generator_t3"
+    },
+    "mining_tycoon_ore_rock": {
+      "textures": "textures/mining_tycoon/blocks/ore_rock"
+    },
+    "mining_tycoon_ore_coal": {
+      "textures": "textures/mining_tycoon/blocks/ore_coal"
+    },
+    "mining_tycoon_ore_copper": {
+      "textures": "textures/mining_tycoon/blocks/ore_copper"
+    },
+    "mining_tycoon_ore_iron": {
+      "textures": "textures/mining_tycoon/blocks/ore_iron"
+    },
+    "mining_tycoon_ore_gold": {
+      "textures": "textures/mining_tycoon/blocks/ore_gold"
+    },
+    "mining_tycoon_ore_ruby": {
+      "textures": "textures/mining_tycoon/blocks/ore_ruby"
+    },
+    "mining_tycoon_ore_diamond": {
+      "textures": "textures/mining_tycoon/blocks/ore_diamond"
     }
   }
 }

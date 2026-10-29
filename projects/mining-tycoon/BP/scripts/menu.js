@@ -78,8 +78,8 @@ function enter(player, slot) {
     if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
     if (!fresh) return player.sendMessage(`§aWelcome back to Session ${slot + 1}!`);
     player.playSound('random.levelup');
-    player.onScreenDisplay.setTitle(`§6Session ${slot + 1}`, { subtitle: 'Place drills here to earn cash', fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
-    player.sendMessage("§aYour new mine is ready! Place your Stone Drill and open the Miner's Tablet to buy more.");
+    player.onScreenDisplay.setTitle(`§6Session ${slot + 1}`, { subtitle: 'Break the ores for cash', fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
+    player.sendMessage("§aYour new mine is ready! Break the ores with your Wooden Pick, then open the Miner's Tablet for upgrades.");
   };
   if (!fresh) return playSession(player, slot, done);
   player.onScreenDisplay.setActionBar('§7Building your mine...');
@@ -124,7 +124,7 @@ export function showStartMenu(player) {
     buttons.push({ list: `start_delete_${i}`, text: `Yes, delete Session ${i + 1}`, run: (p) => remove(p, i) });
   });
   const body = !has
-    ? 'Claim your own mine, place drills and get rich.'
+    ? 'Claim your own mine, dig up ores and get rich.'
     : active === undefined
       ? 'Pick Play to continue, or open Sessions.'
       : `Session ${active + 1}: ${summary(player, active)}`;

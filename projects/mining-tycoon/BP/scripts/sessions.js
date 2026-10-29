@@ -14,6 +14,7 @@ const DRILLS = new Set(CONFIG.generators.map((g) => g.block));
 /** { players: { playerId: { name, slots: [{ index, built } | null, ...] } }, free: plotIndex[], next: plotIndex } */
 let state = { players: {}, free: [], next: 0 };
 const deleteHooks = [];
+const enterHooks = [];
 
 const save = () => setJson(world, STATE_KEY, state);
 
@@ -64,6 +65,9 @@ export function sessionStats(player, slot) {
 
 /** Called with (playerId, slot) when a session is deleted, so other systems can drop its data. */
 export const onSessionDelete = (fn) => deleteHooks.push(fn);
+
+/** Called with (player, slot, plotCenter) once a player stands in the mine of the session they play. */
+export const onSessionEnter = (fn) => enterHooks.push(fn);
 
 // ---- plots -----------------------------------------------------------------------------------------------------
 
@@ -177,10 +181,13 @@ export function playSession(player, slot, done = () => {}) {
     player.setDynamicProperty(ACTIVE_KEY, slot);
     unstashDrills(player, slot);
   }
-  goToPlot(player, record, done);
+  goToPlot(player, record, (ok) => {
+    if (ok) for (const fn of enterHooks) fn(player, slot, plotCenter(record.index));
+    done(ok);
+  });
 }
 
-/** Start a fresh session in an empty slot: new plot, starting money and a Stone Drill. */
+/** Start a fresh session in an empty slot: new plot, starting money, Wooden Pick, Shallow Mine. */
 export function createSession(player, slot, done) {
   const p = (state.players[player.id] ??= { name: player.name, slots: Array(SLOTS).fill(null) });
   p.name = player.name;
@@ -189,7 +196,9 @@ export function createSession(player, slot, done) {
   setNumber(player, sessionKey(slot, 'money'), CONFIG.startingMoney);
   setNumber(player, sessionKey(slot, 'income_level'), 0);
   setNumber(player, sessionKey(slot, 'rebirths'), 0);
-  setJson(player, sessionKey(slot, 'drill_items'), { [CONFIG.generators[0].block]: 1 });
+  setNumber(player, sessionKey(slot, 'pick'), 1);
+  setNumber(player, sessionKey(slot, 'mine_level'), 1);
+  setJson(player, sessionKey(slot, 'drill_items'), {});
   playSession(player, slot, done);
 }
 
@@ -205,19 +214,33 @@ export function deleteSession(player, slot) {
   p.slots[slot] = null;
   state.free.push(record.index);
   save();
-  for (const name of ['money', 'income_level', 'rebirths', 'drill_items']) player.setDynamicProperty(sessionKey(slot, name), undefined);
+  for (const name of ['money', 'income_level', 'rebirths', 'pick', 'mine_level', 'drill_items']) player.setDynamicProperty(sessionKey(slot, name), undefined);
   for (const fn of deleteHooks) fn(player.id, slot);
 }
 
 // ---- protection ------------------------------------------------------------------------------------------------
 
-/** Other players may not break blocks inside someone's mine. Before-events are read-only: messages go through system.run. */
+/** True for the floor and rim of a plot, which nobody may break. */
+function isStructure(index, { x, y, z }) {
+  const c = plotCenter(index);
+  return y === c.y || (y <= c.y + 2 && (Math.abs(x - c.x) === P.radius || Math.abs(z - c.z) === P.radius));
+}
+
+/**
+ * Other players may not break blocks inside someone's mine, and nobody breaks its floor or rim.
+ * Before-events are read-only: messages go through system.run.
+ */
 world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const plot = plotAt(event.dimension.id, event.block.location);
-  if (!plot || plot.owner === event.player.id) return;
-  event.cancel = true;
+  if (!plot) return;
   const player = event.player;
-  system.run(() => player.onScreenDisplay.setActionBar(`§cThis is ${plot.name}'s mine.`));
+  if (plot.owner !== player.id) {
+    event.cancel = true;
+    system.run(() => player.onScreenDisplay.setActionBar(`§cThis is ${plot.name}'s mine.`));
+  } else if (isStructure(plot.index, event.block.location)) {
+    event.cancel = true;
+    system.run(() => player.onScreenDisplay.setActionBar('§7The floor and walls of your mine are unbreakable.'));
+  }
 });
 
 /** ...or build in it: the block is removed again and handed back. Drills are handled in main.js. */
