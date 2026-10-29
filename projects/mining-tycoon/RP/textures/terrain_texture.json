@@ -1,0 +1,17 @@
+{
+  "resource_pack_name": "mining-tycoon",
+  "texture_name": "atlas.terrain",
+  "padding": 8,
+  "num_mip_levels": 4,
+  "texture_data": {
+    "mining_tycoon_generator_t1": {
+      "textures": "textures/mining_tycoon/blocks/generator_t1"
+    },
+    "mining_tycoon_generator_t2": {
+      "textures": "textures/mining_tycoon/blocks/generator_t2"
+    },
+    "mining_tycoon_generator_t3": {
+      "textures": "textures/mining_tycoon/blocks/generator_t3"
+    }
+  }
+}

@@ -103,6 +103,20 @@ test('GitHub sync: get Claude branches, pull main, push phone edits', async () =
   assert.equal(st.claude.length, 0, 'merged branch is no longer offered');
   assert.equal(st.ahead, 1);
 
+  // Cloud sessions push to ccr-<id> branches; those are offered too.
+  git(cloud, 'checkout', '-b', 'ccr-6a62d74d-abc123');
+  fs.writeFileSync(path.join(cloud, 'projects', 'volcano-tycoon', 'DESIGN.md'), '# Volcano Tycoon\n\nStep 2\n');
+  git(cloud, 'commit', '-am', 'Volcano step 2');
+  git(cloud, 'push', 'origin', 'ccr-6a62d74d-abc123');
+  st = await sync.status({ fetch: true });
+  assert.equal(st.claude.length, 1);
+  assert.equal(st.claude[0].branch, 'ccr-6a62d74d-abc123');
+  assert.equal(st.claude[0].projectFiles, 1);
+  await sync.merge('ccr-6a62d74d-abc123');
+  assert.match(fs.readFileSync(path.join(phone, 'projects', 'volcano-tycoon', 'DESIGN.md'), 'utf8'), /Step 2/);
+  st = await sync.status();
+  assert.equal(st.claude.length, 0);
+
   // Claude pushes straight to main later; the phone pulls it.
   git(cloud, 'checkout', 'main');
   git(cloud, 'pull', 'origin', 'main');

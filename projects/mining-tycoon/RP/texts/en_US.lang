@@ -1,0 +1,6 @@
+pack.name=Mining Tycoon
+pack.description=Place drills, mine ore for cash, dig deeper and rebirth.
+item.mining_tycoon:tycoon_tablet.name=Miner's Tablet
+tile.mining_tycoon:generator_t1.name=Stone Drill
+tile.mining_tycoon:generator_t2.name=Iron Drill
+tile.mining_tycoon:generator_t3.name=Diamond Drill
