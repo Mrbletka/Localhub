@@ -107,8 +107,6 @@
               "logo": {
                 "type": "label",
                 "text": "MINING TYCOON",
-                "font_type": "MinecraftTen",
-                "font_scale_factor": 2.0,
                 "color": [
                   1.0,
                   0.82,
@@ -119,7 +117,9 @@
                 "size": [
                   "100%",
                   "default"
-                ]
+                ],
+                "font_type": "MinecraftTen",
+                "font_scale_factor": 2.0
               }
             },
             {
@@ -132,45 +132,161 @@
               }
             },
             {
-              "body": {
-                "type": "label",
-                "text": "#form_text",
-                "color": [
-                  0.92,
-                  0.92,
-                  0.92
-                ],
-                "shadow": true,
-                "text_alignment": "center",
+              "page_start": {
+                "type": "stack_panel",
+                "orientation": "vertical",
                 "size": [
                   "100%",
-                  "default"
+                  "100%c"
                 ],
                 "bindings": [
                   {
-                    "binding_name": "#form_text"
+                    "binding_type": "view",
+                    "source_control_name": "mining_tycoon_go_sessions",
+                    "source_property_name": "(not #toggle_state)",
+                    "target_property_name": "#visible"
+                  }
+                ],
+                "controls": [
+                  {
+                    "body": {
+                      "type": "label",
+                      "text": "#form_text",
+                      "color": [
+                        0.92,
+                        0.92,
+                        0.92
+                      ],
+                      "shadow": true,
+                      "text_alignment": "center",
+                      "size": [
+                        "100%",
+                        "default"
+                      ],
+                      "bindings": [
+                        {
+                          "binding_name": "#form_text"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "body_gap": {
+                      "type": "panel",
+                      "size": [
+                        "100%",
+                        10
+                      ]
+                    }
+                  },
+                  {
+                    "list_1@server_form.mining_tycoon_list_1": {}
+                  },
+                  {
+                    "sessions_row": {
+                      "type": "panel",
+                      "size": [
+                        "100%",
+                        34
+                      ],
+                      "bindings": [
+                        {
+                          "binding_name": "#title_text"
+                        },
+                        {
+                          "binding_type": "view",
+                          "source_property_name": "(not ((#title_text - '§h§s') = #title_text))",
+                          "target_property_name": "#visible"
+                        }
+                      ],
+                      "controls": [
+                        {
+                          "mining_tycoon_go_sessions@server_form.mining_tycoon_nav_toggle": {
+                            "$nav_text": "Sessions",
+                            "$toggle_group_forced_index": 1
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "list_2@server_form.mining_tycoon_list_2": {}
                   }
                 ]
               }
             },
             {
-              "body_gap": {
-                "type": "panel",
+              "page_sessions": {
+                "type": "stack_panel",
+                "orientation": "vertical",
                 "size": [
                   "100%",
-                  10
+                  "100%c"
+                ],
+                "bindings": [
+                  {
+                    "binding_type": "view",
+                    "source_control_name": "mining_tycoon_go_sessions",
+                    "source_property_name": "#toggle_state",
+                    "target_property_name": "#visible"
+                  }
+                ],
+                "controls": [
+                  {
+                    "heading": {
+                      "type": "label",
+                      "text": "Your sessions: each one is its own mine and its own save.",
+                      "color": [
+                        0.92,
+                        0.92,
+                        0.92
+                      ],
+                      "shadow": true,
+                      "text_alignment": "center",
+                      "size": [
+                        "100%",
+                        "default"
+                      ]
+                    }
+                  },
+                  {
+                    "heading_gap": {
+                      "type": "panel",
+                      "size": [
+                        "100%",
+                        10
+                      ]
+                    }
+                  },
+                  {
+                    "list_3@server_form.mining_tycoon_list_3": {}
+                  },
+                  {
+                    "back_row": {
+                      "type": "panel",
+                      "size": [
+                        "100%",
+                        34
+                      ],
+                      "controls": [
+                        {
+                          "mining_tycoon_go_start@server_form.mining_tycoon_nav_toggle": {
+                            "$nav_text": "Back",
+                            "$toggle_group_forced_index": 0
+                          }
+                        }
+                      ]
+                    }
+                  }
                 ]
               }
-            },
-            {
-              "buttons@server_form.mining_tycoon_menu_buttons": {}
             }
           ]
         }
       }
     ]
   },
-  "mining_tycoon_menu_buttons": {
+  "mining_tycoon_list_1": {
     "type": "stack_panel",
     "orientation": "vertical",
     "size": [
@@ -180,7 +296,7 @@
     "factory": {
       "name": "buttons",
       "control_ids": {
-        "button": "@server_form.mining_tycoon_menu_button"
+        "button": "@server_form.mining_tycoon_item_1"
       }
     },
     "collection_name": "form_buttons",
@@ -191,63 +307,178 @@
       }
     ]
   },
-  "mining_tycoon_menu_button": {
+  "mining_tycoon_item_1": {
     "type": "panel",
     "size": [
       "100%",
       34
     ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§1§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
     "controls": [
       {
-        "form_button@common.button": {
-          "$pressed_button_name": "button.form_button_click",
-          "size": [
-            "100%",
-            30
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_2": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_2"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_2": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§2§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_list_3": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": [
+      "100%",
+      "100%c"
+    ],
+    "factory": {
+      "name": "buttons",
+      "control_ids": {
+        "button": "@server_form.mining_tycoon_item_3"
+      }
+    },
+    "collection_name": "form_buttons",
+    "bindings": [
+      {
+        "binding_name": "#form_button_contents",
+        "binding_name_override": "#collection_length"
+      }
+    ]
+  },
+  "mining_tycoon_item_3": {
+    "type": "panel",
+    "size": [
+      "100%",
+      34
+    ],
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_name": "#form_button_text",
+        "binding_type": "collection",
+        "binding_collection_name": "form_buttons"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#form_button_text - '§p§3§r') = #form_button_text))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "form_button@server_form.mining_tycoon_form_button": {}
+      }
+    ]
+  },
+  "mining_tycoon_form_button@common.button": {
+    "$pressed_button_name": "button.form_button_click",
+    "size": [
+      "100%",
+      30
+    ],
+    "anchor_from": "top_middle",
+    "anchor_to": "top_middle",
+    "bindings": [
+      {
+        "binding_type": "collection_details",
+        "binding_collection_name": "form_buttons"
+      }
+    ],
+    "controls": [
+      {
+        "default@server_form.mining_tycoon_button_state": {
+          "$state_texture": "textures/mining_tycoon/ui/button",
+          "$state_text_color": [
+            1.0,
+            0.84,
+            0.35
+          ]
+        }
+      },
+      {
+        "hover@server_form.mining_tycoon_button_state": {
+          "$state_texture": "textures/mining_tycoon/ui/button_hover",
+          "$state_text_color": [
+            1.0,
+            0.96,
+            0.75
+          ]
+        }
+      },
+      {
+        "pressed@server_form.mining_tycoon_button_state": {
+          "$state_texture": "textures/mining_tycoon/ui/button_pressed",
+          "$state_text_color": [
+            1.0,
+            0.96,
+            0.75
           ],
-          "anchor_from": "top_middle",
-          "anchor_to": "top_middle",
-          "bindings": [
-            {
-              "binding_type": "collection_details",
-              "binding_collection_name": "form_buttons"
-            }
-          ],
-          "controls": [
-            {
-              "default@server_form.mining_tycoon_button_state": {
-                "$state_texture": "textures/mining_tycoon/ui/button",
-                "$state_text_color": [
-                  1.0,
-                  0.84,
-                  0.35
-                ]
-              }
-            },
-            {
-              "hover@server_form.mining_tycoon_button_state": {
-                "$state_texture": "textures/mining_tycoon/ui/button_hover",
-                "$state_text_color": [
-                  1.0,
-                  0.96,
-                  0.75
-                ]
-              }
-            },
-            {
-              "pressed@server_form.mining_tycoon_button_state": {
-                "$state_texture": "textures/mining_tycoon/ui/button_pressed",
-                "$state_text_color": [
-                  1.0,
-                  0.96,
-                  0.75
-                ],
-                "$state_text_offset": [
-                  0,
-                  1
-                ]
-              }
-            }
+          "$state_text_offset": [
+            0,
+            1
           ]
         }
       }
@@ -268,15 +499,15 @@
       {
         "label": {
           "type": "label",
-          "text": "#form_button_text",
+          "text": "#text",
           "color": "$state_text_color",
           "shadow": true,
           "text_alignment": "center",
-          "offset": "$state_text_offset",
           "size": [
             "100% - 12px",
             "default"
           ],
+          "offset": "$state_text_offset",
           "max_size": [
             "100% - 12px",
             22
@@ -287,8 +518,89 @@
               "binding_name": "#form_button_text",
               "binding_type": "collection",
               "binding_collection_name": "form_buttons"
+            },
+            {
+              "binding_type": "view",
+              "source_property_name": "(#form_button_text - '§p§1§r' - '§p§2§r' - '§p§3§r')",
+              "target_property_name": "#text"
             }
           ]
+        }
+      }
+    ]
+  },
+  "mining_tycoon_nav_toggle@common.toggle": {
+    "size": [
+      "100%",
+      30
+    ],
+    "anchor_from": "top_middle",
+    "anchor_to": "top_middle",
+    "$toggle_name": "mining_tycoon_page",
+    "$radio_toggle_group": true,
+    "$toggle_group_default_selected": 0,
+    "$toggle_binding_type": "none",
+    "$unchecked_control": "server_form.mining_tycoon_nav_default",
+    "$checked_control": "server_form.mining_tycoon_nav_default",
+    "$unchecked_hover_control": "server_form.mining_tycoon_nav_hover",
+    "$checked_hover_control": "server_form.mining_tycoon_nav_hover",
+    "$unchecked_locked_control": "server_form.mining_tycoon_nav_default",
+    "$unchecked_locked_hover_control": "server_form.mining_tycoon_nav_default",
+    "$checked_locked_control": "server_form.mining_tycoon_nav_default",
+    "$checked_locked_hover_control": "server_form.mining_tycoon_nav_default"
+  },
+  "mining_tycoon_nav_default": {
+    "type": "image",
+    "texture": "textures/mining_tycoon/ui/button",
+    "size": [
+      "100%",
+      "100%"
+    ],
+    "controls": [
+      {
+        "label": {
+          "type": "label",
+          "text": "$nav_text",
+          "color": [
+            1.0,
+            0.84,
+            0.35
+          ],
+          "shadow": true,
+          "text_alignment": "center",
+          "size": [
+            "100% - 12px",
+            "default"
+          ],
+          "layer": 1
+        }
+      }
+    ]
+  },
+  "mining_tycoon_nav_hover": {
+    "type": "image",
+    "texture": "textures/mining_tycoon/ui/button_hover",
+    "size": [
+      "100%",
+      "100%"
+    ],
+    "controls": [
+      {
+        "label": {
+          "type": "label",
+          "text": "$nav_text",
+          "color": [
+            1.0,
+            0.96,
+            0.75
+          ],
+          "shadow": true,
+          "text_alignment": "center",
+          "size": [
+            "100% - 12px",
+            "default"
+          ],
+          "layer": 1
         }
       }
     ]
