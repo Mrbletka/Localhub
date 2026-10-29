@@ -207,6 +207,7 @@ a { color: var(--accent); }
 .offline h2 { font-size: 20px; }
 .offline p { color: var(--muted); max-width: 340px; margin: 0; }
 .offline code { font-family: var(--mono); font-size: 13px; }
+.offline .offline-wait { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tab-h) + 16px + env(safe-area-inset-bottom)); background: var(--panel2); border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; z-index: 30; max-width: calc(100vw - 32px); font-size: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
 .toast.err { border-color: var(--danger); }
 

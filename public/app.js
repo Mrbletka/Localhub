@@ -1003,8 +1003,7 @@ function connectWorkspaceEvents() {
   es.onerror = () => {
     clearTimeout(connectWorkspaceEvents.check);
     connectWorkspaceEvents.check = setTimeout(async () => {
-      const alive = await fetch('/api/status', { headers: TOKEN ? { 'x-localhub-token': TOKEN } : {} }).then((r) => r.ok).catch(() => false);
-      if (!alive) $('#offline').hidden = false;
+      if (!(await serverAlive())) showOffline();
     }, 1500);
   };
   es.onmessage = (msg) => {
@@ -1151,6 +1150,20 @@ function settingsSheet() {
 $('#btn-settings').addEventListener('click', settingsSheet);
 $('#btn-reconnect').addEventListener('click', () => location.reload());
 
+const serverAlive = () => fetch('/api/status', { headers: TOKEN ? { 'x-localhub-token': TOKEN } : {} }).then((r) => r.ok).catch(() => false);
+
+/** Server is off: show the start screen and open the studio as soon as it answers again. */
+function showOffline() {
+  $('#offline').hidden = false;
+  clearInterval(showOffline.poll);
+  showOffline.poll = setInterval(async () => {
+    if (await serverAlive()) location.reload();
+  }, 2000);
+}
+
+// The service worker keeps the app shell cached so the installed app still opens when the server is off.
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
 function applyTheme() {
   const t = store.get('theme', 'auto');
   if (t === 'auto') delete document.documentElement.dataset.theme;
@@ -1166,8 +1179,8 @@ async function boot() {
   applyTheme();
   try {
     [S.status, S.templates, S.roster] = await Promise.all([api('GET', '/api/status'), api('GET', '/api/templates'), api('GET', '/api/agents')]);
-  } catch (err) {
-    $('#chat').replaceChildren(el('div', { class: 'sys err' }, `Cannot reach the studio server: ${err.message}`));
+  } catch {
+    showOffline();
     return;
   }
   S.config = S.status.config;

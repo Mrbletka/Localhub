@@ -101,9 +101,10 @@
 <div class="toast" id="toast" role="status" hidden></div>
 <div class="offline" id="offline" role="alertdialog" aria-labelledby="offline-title" hidden>
   <img src="/icon.svg" alt="" width="72" height="72">
-  <h2 id="offline-title">Studio server stopped</h2>
-  <p>It stops by itself when the app is closed. Tap the <b>Bedrock Studio</b> widget (or run <code>npm start</code>) to start it again.</p>
-  <button class="btn primary" id="btn-reconnect">Try again</button>
+  <h2 id="offline-title">Studio server is off</h2>
+  <p>Tap the <b>Bedrock Studio</b> widget (or run <code>npm start</code> in Termux). This screen opens the studio as soon as the server is up.</p>
+  <p class="offline-wait"><span class="spin"></span> Waiting for the server…</p>
+  <button class="btn" id="btn-reconnect">Try again now</button>
 </div>
 
 <script type="module" src="/app.js"></script>
