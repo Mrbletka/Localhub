@@ -45,7 +45,7 @@ FORMS = {
         Nav('go_upgrades', 'Upgrades', 'Back', icon='upgrades', page=Page(heading='Mine faster and dig up richer ores.', items=[List('tablet_upgrades')])),
         Nav('go_shop', 'Drills', 'Back', icon='drills', page=Page(heading='Drills earn cash every second while you keep mining.', items=[List('tablet_shop')])),
         Nav('go_rebirth', 'Rebirth', 'Not yet', icon='rebirth', page=Page(
-            heading='Rebirth? Money, pick, mine, ore value and drills of this session reset. You keep a permanent cash bonus.',
+            heading='Rebirth? Money, pick, mine, ore value, drills and machines of this session reset. You keep a permanent cash bonus.',
             items=[List('tablet_rebirth')])),
         List('tablet_bottom'),  # Main menu
     ])),

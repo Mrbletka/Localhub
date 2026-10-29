@@ -225,7 +225,7 @@ export function deleteSession(player, slot) {
   p.slots[slot] = null;
   state.free.push(record.index);
   save();
-  for (const name of ['money', 'income_level', 'rebirths', 'pick', 'mine_level', 'drill_items']) player.setDynamicProperty(sessionKey(slot, name), undefined);
+  for (const name of ['money', 'income_level', 'rebirths', 'pick', 'mine_level', 'drill_items', 'machines']) player.setDynamicProperty(sessionKey(slot, name), undefined);
   for (const fn of deleteHooks) fn(player.id, slot);
 }
 

@@ -53,6 +53,47 @@ export const CONFIG = {
     { id: 'ruby', item: 'mining_tycoon:res_ruby', name: 'Rough Ruby', sell: 380 },
     { id: 'diamond', item: 'mining_tycoon:res_diamond', name: 'Rough Diamond', sell: 1100 },
   ],
+  // Products: what the machines make from resources (the Ore Trader buys them too).
+  products: [
+    { id: 'crushed_copper', item: 'mining_tycoon:crushed_copper', name: 'Crushed Copper', sell: 10 },
+    { id: 'crushed_iron', item: 'mining_tycoon:crushed_iron', name: 'Crushed Iron', sell: 28 },
+    { id: 'crushed_gold', item: 'mining_tycoon:crushed_gold', name: 'Crushed Gold', sell: 80 },
+    { id: 'copper_bar', item: 'mining_tycoon:copper_bar', name: 'Copper Bar', sell: 40 },
+    { id: 'iron_bar', item: 'mining_tycoon:iron_bar', name: 'Iron Bar', sell: 110 },
+    { id: 'gold_bar', item: 'mining_tycoon:gold_bar', name: 'Gold Bar', sell: 320 },
+    { id: 'cut_ruby', item: 'mining_tycoon:cut_ruby', name: 'Cut Ruby', sell: 1000 },
+    { id: 'cut_diamond', item: 'mining_tycoon:cut_diamond', name: 'Cut Diamond', sell: 3000 },
+  ],
+  // Machines (BP/scripts/machines.js): one of each per session, built in its bay on the landing of the mine (bay: x, y,
+  // z from the plot centre; the block's north face is its front). seconds: time per item at each speed level; the
+  // next level costs upgradeCost x machineUpgradeGrowth^(level - 1). recipes: in -> out (count per item, default 1).
+  machines: [
+    {
+      id: 'smelter', block: 'mining_tycoon:smelter', name: 'Smelter', cost: 250, bay: [-6, 1, 11],
+      about: 'Smelts chunks and crushed ore into bars, worth about 2.5x. Burns Coal Chunks.',
+      seconds: [6, 4.5, 3.4, 2.5, 1.8], upgradeCost: 400,
+      fuel: { id: 'coal', items: 4 }, // one Coal Chunk smelts 4 items
+      recipes: [
+        { in: 'crushed_copper', out: 'copper_bar' }, { in: 'crushed_iron', out: 'iron_bar' }, { in: 'crushed_gold', out: 'gold_bar' },
+        { in: 'copper', out: 'copper_bar' }, { in: 'iron', out: 'iron_bar' }, { in: 'gold', out: 'gold_bar' },
+      ],
+    },
+    {
+      id: 'crusher', block: 'mining_tycoon:crusher', name: 'Crusher', cost: 3000, bay: [-4, 1, 11],
+      about: 'Crushes a metal chunk into 2 crushed ore: smelted, that is 2 bars instead of 1.',
+      seconds: [5, 3.8, 2.8, 2, 1.4], upgradeCost: 4000,
+      recipes: [{ in: 'copper', out: 'crushed_copper', count: 2 }, { in: 'iron', out: 'crushed_iron', count: 2 }, { in: 'gold', out: 'crushed_gold', count: 2 }],
+    },
+    {
+      id: 'cutter', block: 'mining_tycoon:gem_cutter', name: 'Gem Cutter', cost: 8000, bay: [-2, 1, 11],
+      about: 'Cuts rough gems into jewels, worth about 2.7x.',
+      seconds: [15, 11, 8, 6, 4], upgradeCost: 10000,
+      recipes: [{ in: 'ruby', out: 'cut_ruby' }, { in: 'diamond', out: 'cut_diamond' }],
+    },
+  ],
+  machineUpgradeGrowth: 2.2,
+  machineFrame: 'mining_tycoon:machine_frame', // an empty bay: tap it to build its machine
+
   // Expeditions: a fresh cave per run (BP/scripts/cave_builder.js), one slot per player far from the mines.
   expedition: {
     origin: { x: -20000, y: 150, z: 10000 },

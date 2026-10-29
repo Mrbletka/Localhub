@@ -7,6 +7,8 @@ import { rerollField, syncPick, popupUntil } from './mining.js';
 import { padBlockId } from './mine_builder.js';
 import { showStartMenu, fullScreenMenu, icon } from './menu.js';
 import { onExpedition, showRunMenu } from './expedition.js';
+import { resetMachines } from './machines.js';
+import './trader.js';
 
 const NS = CONFIG.namespace;
 const GENERATORS_KEY = `${NS}:generators`;
@@ -89,6 +91,7 @@ function rebirth(player, slot) {
   const rebirths = stat(player, 'rebirths');
   if (!pay(player, rebirthCost(rebirths))) return;
   removeDrills(owned(player.id, slot));
+  resetMachines(player, slot);
   setStat(player, 'money', CONFIG.startingMoney);
   setStat(player, 'income_level', 0);
   setStat(player, 'pick', 1);

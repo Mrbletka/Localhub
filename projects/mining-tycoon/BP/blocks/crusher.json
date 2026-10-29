@@ -1,0 +1,36 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:block": {
+    "description": {
+      "identifier": "mining_tycoon:crusher",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "tile.mining_tycoon:crusher.name",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "mining_tycoon_crusher_side",
+          "render_method": "opaque"
+        },
+        "north": {
+          "texture": "mining_tycoon_crusher_front",
+          "render_method": "opaque"
+        },
+        "up": {
+          "texture": "mining_tycoon_crusher_top",
+          "render_method": "opaque"
+        },
+        "down": {
+          "texture": "mining_tycoon_crusher_top",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:destructible_by_mining": false,
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:map_color": "#6e7682"
+    }
+  }
+}

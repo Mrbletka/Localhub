@@ -1,13 +1,13 @@
 // Expeditions: the lift at the end of your mine's tunnel takes you down into a cave that is new every run. Your
 // lantern's light is the clock: mine what you can and ride the lift back up before it runs out. Die down there (or
 // leave the game) and everything you mined on that run is lost. Creatures come for you, more of them as the light
-// fades. Back home the Ore Trader buys what you brought up.
+// fades. Back home the Ore Trader (trader.js) buys what you brought up, or the machines (machines.js) refine it.
 import { world, system, EntityDamageCause } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { formatNumber, getJson, setJson, giveItem } from './lib/util.js';
 import { activeSession, sessionsOf, plotAt, playSession } from './sessions.js';
 import { buildCave, planCave, safetyFloor, caveArrival, caveLookAt } from './cave_builder.js';
-import { addStat, pickTier, valueMultiplier } from './economy.js';
+import { pickTier, valueMultiplier } from './economy.js';
 import { pickProblem, popup, popupUntil } from './mining.js';
 import { fullScreenMenu, icon, travel } from './menu.js';
 
@@ -343,73 +343,17 @@ function useLift(player, dimensionId, location) {
   showDescend(player);
 }
 
-/** Resources in the inventory, in config order: [{ res, amount }]. */
-function carried(player) {
-  const container = player.getComponent('minecraft:inventory')?.container;
-  const counts = new Map();
-  for (let i = 0; i < (container?.size ?? 0); i++) {
-    const item = container.getItem(i);
-    const res = item && RESOURCE_ITEMS.get(item.typeId);
-    if (res) counts.set(res, (counts.get(res) ?? 0) + item.amount);
-  }
-  return CONFIG.resources.filter((r) => counts.has(r)).map((res) => ({ res, amount: counts.get(res) }));
-}
-
-/** Sell every resource (or only one kind) for sell x cash multiplier, into the active session. */
-function sell(player, only) {
-  if (activeSession(player) === undefined || runs.has(player.id)) return;
-  const container = player.getComponent('minecraft:inventory')?.container;
-  if (!container) return;
-  let cash = 0;
-  let count = 0;
-  for (let i = 0; i < container.size; i++) {
-    const item = container.getItem(i);
-    const res = item && RESOURCE_ITEMS.get(item.typeId);
-    if (!res || (only && res !== only)) continue;
-    cash += res.sell * item.amount;
-    count += item.amount;
-    container.setItem(i);
-  }
-  if (!count) return;
-  cash *= valueMultiplier(player);
-  const money = addStat(player, 'money', cash);
-  player.playSound('random.orb');
-  popup(player, `§a$${formatNumber(money)}  §e+$${formatNumber(cash)}`);
-  player.sendMessage(`§aSold ${count} resource${count > 1 ? 's' : ''} for $${formatNumber(cash)}.`);
-}
-
-function showTrader(player) {
-  if (activeSession(player) === undefined || runs.has(player.id)) return;
-  const goods = carried(player);
-  const multiplier = valueMultiplier(player);
-  const price = (res, amount) => res.sell * amount * multiplier;
-  const buttons = [];
-  if (goods.length > 1) {
-    const total = goods.reduce((sum, g) => sum + price(g.res, g.amount), 0);
-    buttons.push({ list: 'notice', text: `Sell everything - $${formatNumber(total)}`, icon: icon('sell'), run: (p) => sell(p) });
-  }
-  for (const { res, amount } of goods) {
-    buttons.push({ list: 'notice', text: `${amount} ${res.name} - $${formatNumber(price(res, amount))}\n§7$${formatNumber(res.sell * multiplier)} each`, icon: `textures/mining_tycoon/items/res_${res.id}`, run: (p) => sell(p, res) });
-  }
-  buttons.push({ list: 'notice', text: 'Close', icon: icon('back'), run: () => {} });
-  const body = goods.length
-    ? `§6Ore Trader§r\nI buy everything you bring up from the caves.${multiplier > 1 ? `\n§7Your cash bonus: x${+multiplier.toFixed(2)}` : ''}`
-    : '§6Ore Trader§r\nNothing to sell yet. Bring resources up from an expedition: tap the lift at the end of the tunnel.';
-  fullScreenMenu(player, { form: 'notice', body, buttons });
-}
-
 // ---- events -------------------------------------------------------------------------------------------------------
 
-// The lift and the Ore Trader open their menus when tapped (before-events are read-only: the menu opens a tick later).
+// The lift opens its menu when tapped (before-events are read-only: the menu opens a tick later).
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
   const { player, block } = event;
-  const type = block.typeId;
-  if (type !== CONFIG.blocks.lift && type !== CONFIG.blocks.trader) return;
+  if (block.typeId !== CONFIG.blocks.lift) return;
   event.cancel = true;
   if (!event.isFirstEvent) return;
   const dimensionId = block.dimension.id;
   const location = { ...block.location };
-  system.run(() => (type === CONFIG.blocks.lift ? useLift(player, dimensionId, location) : showTrader(player)));
+  system.run(() => useLift(player, dimensionId, location));
 });
 
 // In a cave only its explorer breaks blocks, and only ores (with a good enough pick).

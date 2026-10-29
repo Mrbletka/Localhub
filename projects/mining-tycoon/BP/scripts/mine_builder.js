@@ -1,6 +1,7 @@
 // The mine every session plays in: an enclosed cave around the plot centre (y = floor). Rough rock walls and a
 // ceiling with stalactites, timber arches with hanging lanterns, a rail track from the expedition lift (in the tunnel,
-// south) to the ore vein in the north wall, drill pads along both side walls and the Ore Trader on the landing.
+// south) to the ore vein in the north wall, drill pads along both side walls, the Ore Trader and the machine bays on
+// the landing.
 // Built across several ticks (system.runJob).
 import { BlockVolume } from '@minecraft/server';
 import { CONFIG } from './config.js';
@@ -38,6 +39,7 @@ function blocks() {
     tunnel: pick('minecraft:blackstone', 'minecraft:coal_block'),
     lift: pick(CONFIG.blocks.lift, 'minecraft:iron_block'),
     trader: pick(CONFIG.blocks.trader, 'minecraft:barrel'),
+    frame: pick(CONFIG.machineFrame, 'minecraft:crafting_table'),
     air: 'minecraft:air',
   };
   palette = Object.fromEntries(Object.entries(ids).map(([key, id]) => [key, permutation(id)]));
@@ -156,7 +158,8 @@ export function* planMine(seed) {
   for (const x of [-4, 4]) hang(x, -7);
   for (const z of [-2, 4, 10]) set(0, ceilY(0, z), z, 'light');
   // Barrels by the entrance.
-  for (const [x, z] of [[-4, 11], [-5, 11], [-5, 10], [4, 11], [5, 11]]) set(x, 1, z, 'barrel');
+  for (const [x, z] of [[4, 11], [5, 11]]) set(x, 1, z, 'barrel');
+  for (const m of CONFIG.machines) set(...m.bay, 'frame'); // machine bays (machines.js shows the built ones)
   // Stalactites, away from the arches and the chains.
   const used = new Set(attached.map(([x, , z]) => `${x},${z}`));
   for (let x = -12; x <= 12; x++) {

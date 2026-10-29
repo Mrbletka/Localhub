@@ -45,6 +45,42 @@
     },
     "mining_tycoon_trader_top": {
       "textures": "textures/mining_tycoon/blocks/trader_top"
+    },
+    "mining_tycoon_smelter_front": {
+      "textures": "textures/mining_tycoon/blocks/smelter_front"
+    },
+    "mining_tycoon_smelter_side": {
+      "textures": "textures/mining_tycoon/blocks/smelter_side"
+    },
+    "mining_tycoon_smelter_top": {
+      "textures": "textures/mining_tycoon/blocks/smelter_top"
+    },
+    "mining_tycoon_crusher_front": {
+      "textures": "textures/mining_tycoon/blocks/crusher_front"
+    },
+    "mining_tycoon_crusher_side": {
+      "textures": "textures/mining_tycoon/blocks/crusher_side"
+    },
+    "mining_tycoon_crusher_top": {
+      "textures": "textures/mining_tycoon/blocks/crusher_top"
+    },
+    "mining_tycoon_gem_cutter_front": {
+      "textures": "textures/mining_tycoon/blocks/gem_cutter_front"
+    },
+    "mining_tycoon_gem_cutter_side": {
+      "textures": "textures/mining_tycoon/blocks/gem_cutter_side"
+    },
+    "mining_tycoon_gem_cutter_top": {
+      "textures": "textures/mining_tycoon/blocks/gem_cutter_top"
+    },
+    "mining_tycoon_machine_frame_front": {
+      "textures": "textures/mining_tycoon/blocks/machine_frame_front"
+    },
+    "mining_tycoon_machine_frame_side": {
+      "textures": "textures/mining_tycoon/blocks/machine_frame_side"
+    },
+    "mining_tycoon_machine_frame_top": {
+      "textures": "textures/mining_tycoon/blocks/machine_frame_top"
     }
   }
 }

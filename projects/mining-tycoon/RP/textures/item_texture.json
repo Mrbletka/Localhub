@@ -40,6 +40,30 @@
     },
     "mining_tycoon_res_diamond": {
       "textures": "textures/mining_tycoon/items/res_diamond"
+    },
+    "mining_tycoon_crushed_copper": {
+      "textures": "textures/mining_tycoon/items/crushed_copper"
+    },
+    "mining_tycoon_crushed_iron": {
+      "textures": "textures/mining_tycoon/items/crushed_iron"
+    },
+    "mining_tycoon_crushed_gold": {
+      "textures": "textures/mining_tycoon/items/crushed_gold"
+    },
+    "mining_tycoon_copper_bar": {
+      "textures": "textures/mining_tycoon/items/copper_bar"
+    },
+    "mining_tycoon_iron_bar": {
+      "textures": "textures/mining_tycoon/items/iron_bar"
+    },
+    "mining_tycoon_gold_bar": {
+      "textures": "textures/mining_tycoon/items/gold_bar"
+    },
+    "mining_tycoon_cut_ruby": {
+      "textures": "textures/mining_tycoon/items/cut_ruby"
+    },
+    "mining_tycoon_cut_diamond": {
+      "textures": "textures/mining_tycoon/items/cut_diamond"
     }
   }
 }

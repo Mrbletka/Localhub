@@ -1,0 +1,37 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:block": {
+    "description": {
+      "identifier": "mining_tycoon:smelter",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "tile.mining_tycoon:smelter.name",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "mining_tycoon_smelter_side",
+          "render_method": "opaque"
+        },
+        "north": {
+          "texture": "mining_tycoon_smelter_front",
+          "render_method": "opaque"
+        },
+        "up": {
+          "texture": "mining_tycoon_smelter_top",
+          "render_method": "opaque"
+        },
+        "down": {
+          "texture": "mining_tycoon_smelter_top",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:destructible_by_mining": false,
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:map_color": "#5a5650",
+      "minecraft:light_emission": 8
+    }
+  }
+}

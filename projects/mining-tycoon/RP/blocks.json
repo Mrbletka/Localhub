@@ -39,5 +39,17 @@
   },
   "mining_tycoon:trader": {
     "sound": "wood"
+  },
+  "mining_tycoon:smelter": {
+    "sound": "stone"
+  },
+  "mining_tycoon:crusher": {
+    "sound": "metal"
+  },
+  "mining_tycoon:gem_cutter": {
+    "sound": "wood"
+  },
+  "mining_tycoon:machine_frame": {
+    "sound": "wood"
   }
 }

@@ -1,0 +1,37 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:block": {
+    "description": {
+      "identifier": "mining_tycoon:gem_cutter",
+      "menu_category": {
+        "category": "construction"
+      }
+    },
+    "components": {
+      "minecraft:display_name": "tile.mining_tycoon:gem_cutter.name",
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "mining_tycoon_gem_cutter_side",
+          "render_method": "opaque"
+        },
+        "north": {
+          "texture": "mining_tycoon_gem_cutter_front",
+          "render_method": "opaque"
+        },
+        "up": {
+          "texture": "mining_tycoon_gem_cutter_top",
+          "render_method": "opaque"
+        },
+        "down": {
+          "texture": "mining_tycoon_gem_cutter_top",
+          "render_method": "opaque"
+        }
+      },
+      "minecraft:destructible_by_mining": false,
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:map_color": "#7a5634",
+      "minecraft:light_emission": 3
+    }
+  }
+}

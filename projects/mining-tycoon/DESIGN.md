@@ -68,16 +68,43 @@ A small safe vein at home gets you started.
     every ore and every 5 s, so a crash or quit can't keep a haul. After a script reload a player still in their cave
     carries on (the creature spots are planned again from the seed).
 - `keepInventory` is turned on (world load), so picks and the tablet are never dropped.
-- **Ore Trader** (`mining_tycoon:trader`, spruce stall with a coin sign) on the home mine's landing: tap to sell one
-  kind of resource or everything for `sell x cash multiplier` (into the active session's money). Prices (before the
-  multiplier): Coal Chunk $6, Copper Chunk $16, Iron Chunk $45, Gold Chunk $130, Rough Ruby $380, Rough Diamond $1.1K.
+- **Ore Trader** (`mining_tycoon:trader`, spruce stall with a coin sign, `BP/scripts/trader.js`) on the home mine's
+  landing buys resources and machine products for `sell x cash multiplier` (into the active session's money). Its menu
+  stays short for phones: **Sell everything**, **Sell products only** (keeps the chunks for the machines), **Close**.
+  Prices (before the multiplier): Coal Chunk $6, Copper Chunk $16, Iron Chunk $45, Gold Chunk $130, Rough Ruby $380,
+  Rough Diamond $1.1K; products below.
 - Menus: the `notice` form (lift, extract, trader, results) and the `run` form (tablet in a cave) in the generator;
   icons `expedition` (lantern), `extract` (ore cart with an up arrow), `sell` (money bag).
+
+## Machines (step E2) - `BP/scripts/machines.js`, config `machines`, `products`
+- Three **machine bays** on the west side of the landing (x -6, -4, -2 at z 11, facing the hall; the old barrels there
+  are gone). An empty bay is a **Machine Bay** frame (scaffold with a blueprint): tap it to build its machine. One of
+  each per session; the machine block shows in its bay (`syncBays` on every session entry, also fixes older mines
+  without a rebuild).
+  | Machine | Cost | Makes | s per item (levels 1-5) | Next level |
+  |---|---|---|---|---|
+  | Smelter | $250 | Copper/Iron/Gold Chunk or Crushed ore -> Bar. Fuel: 1 Coal Chunk per 4 items | 6, 4.5, 3.4, 2.5, 1.8 | $400 x 2.2^(level-1) |
+  | Crusher | $3K | Copper/Iron/Gold Chunk -> 2 Crushed ore (2 bars instead of 1) | 5, 3.8, 2.8, 2, 1.4 | $4K x 2.2^(level-1) |
+  | Gem Cutter | $8K | Rough Ruby/Diamond -> Cut Ruby/Diamond | 15, 11, 8, 6, 4 | $10K x 2.2^(level-1) |
+- Products (sell): Crushed Copper $10, Crushed Iron $28, Crushed Gold $80, Copper Bar $40, Iron Bar $110, Gold Bar
+  $320, Cut Ruby $1K, Cut Diamond $3K. Chain value of one Gold Chunk: sold raw $130, smelted $320, crushed + smelted
+  $640.
+- Tap a built machine: one full-screen menu with at most 4 buttons - **Collect N items**, **Load N** (every accepted
+  good you carry, plus just enough Coal Chunks to smelt it all), **Speed: level N - $cost**, **Close**. The body shows
+  level and time per item, what is working and how long it takes, fuel, and what is ready.
+- Work: every second, each machine of the player's **active session** works one second (one item at a time, in recipe
+  order), wherever the player is - in the mine or on an expedition; nothing happens while they are offline or play
+  another session. Chat messages when a machine is done or out of fuel. Working machines smoke / sparkle in the mine.
+- State per session: player property `s<slot>:machines` = { machineId: { level, in, out, fuel, work, idle } }.
+- Rebirth takes the machines down (what was in them, and whole coal of the fuel, comes back to the inventory); deleting
+  a session deletes them.
+- Items `mining_tycoon:crushed_copper/iron/gold`, `copper_bar/iron_bar/gold_bar`, `cut_ruby/cut_diamond`; blocks
+  `mining_tycoon:smelter`, `crusher`, `gem_cutter`, `machine_frame` (north face = front, unbreakable, smelter glows).
 
 ## Roadmap - expeditions
 - [x] **E1 First expedition:** lift, generated caves, light energy, creatures, resource items, extract or lose it all,
   Ore Trader.
-- [ ] **E2 Machines:** crusher, smelter, gem cutter at home turn chunks into bars and cut gems worth far more (takes time).
+- [x] **E2 Machines:** crusher, smelter, gem cutter at home turn chunks into bars and cut gems worth far more (takes time).
 - [ ] **E3 Workshop:** craft with materials + money: cart (unlocks cave levels), pickaxe station (better picks),
   lantern (more light), backpack (capacity), helper machines that work while you're away (the drills' new job).
 - [ ] **E4 Depths:** cave levels 2-5 (Deep Caverns, Crystal Grotto, Flooded Mines, Magma Core): bigger caves, richer ores,
@@ -136,6 +163,8 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
 - [ ] Check hand mining vs drills: drills should feel like a big boost at unlock, but mining must stay worth it.
 - [ ] Check mining times: with the "right" pick every ore should take ~0.8 s; hardness/speed may need tweaking in game.
 - [ ] Rebirth cost and bonus once the late game exists.
+- [ ] Machines: build and speed costs vs what one expedition earns; product prices (bar ~2.5x, crushed+smelted
+  ~5x, cut gem ~2.7x); fuel use. Machines only work while you play that session (offline progress could come with E3).
 - [ ] Expeditions: haul per run vs the home vein (first runs only mine coal with the Wooden Pick), light time,
   creature count/pace, resource sell prices, ore density (`deposits` chance in cave_builder.js).
 
