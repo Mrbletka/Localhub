@@ -35,9 +35,9 @@ identifiers/keys/function names to use, how its part connects to the rest, and w
 the same file. Afterwards read their key files, integrate, and validate.
 
 ## Workflow for a request
-1. Continue from the latest version: `git fetch origin`, then merge every `origin/claude/*` branch that has commits your
-   branch lacks and touches the project you are working on (`git log HEAD..origin/claude/<x> -- projects/<slug>`), oldest
-   first. Earlier sessions push their work to those branches, and main may not have it yet.
+1. Continue from the latest version: `git fetch origin`, then merge every `origin/claude/*` and `origin/ccr-*` branch that has
+   commits your branch lacks and touches the project you are working on (`git log HEAD..origin/<branch> -- projects/<slug>`),
+   oldest first. Earlier sessions push their work to those branches, and main may not have it yet.
 2. Pick or create the project; read its DESIGN.md. For a new idea, write the concept, core loop, systems, content list and
    progression into DESIGN.md first.
 3. Build it (yourself or with the team). Keep DESIGN.md in sync with what exists.

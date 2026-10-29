@@ -84,6 +84,8 @@ export class GitSync {
       const n = await git(root, ['rev-list', '--count', `HEAD..${ref}`]);
       if (!n.ok || Number(n.out) === 0) continue;
       const files = (await git(root, ['diff', '--name-only', `HEAD...${ref}`, '--', spec])).out.split('\n').filter(Boolean);
+      // Only work on add-ons: other sessions on this repo (studio code, unrelated experiments) are not offered.
+      if (!files.length) continue;
       claude.push({ branch: ref.replace(/^origin\//, ''), date, subject, commits: Number(n.out), projectFiles: files.length });
       if (claude.length >= 8) break;
     }
@@ -135,7 +137,7 @@ export class GitSync {
       result.pulled = true;
     }
     const spec = `${await this.#projectsSpec()}/${slug}`;
-    const refs = (await git(root, ['for-each-ref', '--sort=committerdate', '--format=%(refname:short)', 'refs/remotes/origin/claude/'])).out.split('\n').filter(Boolean);
+    const refs = (await git(root, ['for-each-ref', '--sort=committerdate', '--format=%(refname:short)', ...CLAUDE_REFS])).out.split('\n').filter(Boolean);
     for (const ref of refs) {
       const fresh = await git(root, ['rev-list', '--count', `HEAD..${ref}`]);
       if (!fresh.ok || Number(fresh.out) === 0) continue;

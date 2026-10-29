@@ -156,17 +156,26 @@ test('getLatest merges only the Claude branches that touch the project', async (
   git(phone, 'push', '-u', 'origin', 'main');
   const cloud = path.join(dir, 'cloud');
   git(dir, 'clone', origin, cloud);
-  for (const [branch, slug, text] of [['claude/a1', 'tycoon-a', 'first'], ['claude/b1', 'other-b', 'MARKER-B'], ['claude/a2', 'tycoon-a', 'second']]) {
-    git(cloud, 'checkout', '-q', '-B', branch, branch === 'claude/a2' ? 'claude/a1' : 'origin/main');
+  for (const [branch, slug, text] of [['claude/a1', 'tycoon-a', 'first'], ['claude/b1', 'other-b', 'MARKER-B'], ['ccr-a2', 'tycoon-a', 'second']]) {
+    git(cloud, 'checkout', '-q', '-B', branch, branch === 'ccr-a2' ? 'claude/a1' : 'origin/main');
     fs.appendFileSync(path.join(cloud, 'projects', slug, 'DESIGN.md'), `\n${text}\n`);
     git(cloud, 'commit', '-qam', `${slug}: ${text}`);
     git(cloud, 'push', '-q', 'origin', branch);
   }
   const res = await new GitSync(path.join(phone, 'projects')).getLatest('tycoon-a');
   assert.equal(res.error, null);
-  assert.deepEqual(res.merged, ['claude/a1', 'claude/a2']);
+  // ccr-a2 builds on claude/a1, so it may arrive alone; either way both changes must be in.
+  assert.ok(res.merged.includes('ccr-a2') && !res.merged.includes('claude/b1'), res.merged.join());
   const design = fs.readFileSync(path.join(phone, 'projects', 'tycoon-a', 'DESIGN.md'), 'utf8');
   assert.match(design, /first\n\nsecond/);
   assert.doesNotMatch(fs.readFileSync(path.join(phone, 'projects', 'other-b', 'DESIGN.md'), 'utf8'), /MARKER-B/);
   assert.deepEqual((await new GitSync(path.join(phone, 'projects')).getLatest('tycoon-a')).merged, [], 'nothing new the second time');
+  // A cloud session that only touched studio code is not offered as add-on work.
+  git(cloud, 'checkout', '-q', '-B', 'ccr-tools', 'origin/main');
+  fs.writeFileSync(path.join(cloud, 'tool.mjs'), 'export {};\n');
+  git(cloud, 'add', '-A');
+  git(cloud, 'commit', '-qm', 'unrelated tool');
+  git(cloud, 'push', '-q', 'origin', 'ccr-tools');
+  const st = await new GitSync(path.join(phone, 'projects')).status({ fetch: true });
+  assert.deepEqual(st.claude.map((c) => c.branch), ['claude/b1']);
 });
