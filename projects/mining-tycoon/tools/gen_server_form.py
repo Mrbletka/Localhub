@@ -207,6 +207,17 @@ LOADER = [{'loader': {'type': 'panel', 'size': ['100%', 44], 'controls': [
         [(0.12, [-14, -12], [-6, -2], 'in_quad'), (0.35, [-6, -2], [-14, -12], 'out_cubic'), (0.2, [-14, -12], [-14, -12])])}},
 ]}}]
 
+# The cave goes in the screen's background slot ($screen_bg_content -> "bg_no_safezone_screen_panel" in
+# common.base_screen): it fills the whole screen. Everything in the form itself is laid out inside the phone's safe
+# area, so a background there always stopped short of the screen edges.
+ui['third_party_server_screen'] = {'$screen_bg_content': 'server_form.mining_tycoon_screen_bg'}
+ui['mining_tycoon_screen_bg'] = {
+    'type': 'panel', 'size': ['100%', '100%'],
+    'bindings': [{'binding_name': '#title_text'}, view(f'(not ({not_ours} = #title_text))')],  # only behind our menus
+    'controls': [{'background': {'type': 'image', 'texture': f'{UI}/menu_bg', 'size': ['100%', '100%'], 'layer': 1,
+                                 'controls': background_fx()}}],
+}
+
 screens = []
 for key, (tag, root) in FORMS.items():
     rows = render(root, [])
@@ -214,9 +225,6 @@ for key, (tag, root) in FORMS.items():
         'type': 'panel', 'size': ['100%', '100%'], 'layer': 10,
         'bindings': title_has(tag),
         'controls': [
-            {'background': {'type': 'image', 'texture': f'{UI}/menu_bg', 'size': ['250%y', '100% + 8px'],
-                            'anchor_from': 'center', 'anchor_to': 'center', 'layer': 1,
-                            'controls': background_fx()}},
             {'content': {'type': 'stack_panel', 'orientation': 'vertical', 'size': [190, '100%c'], 'anchor_from': 'center',
                          'anchor_to': 'center', 'layer': 20,
                          'offset': anim(f'mining_tycoon_content_in_{key}', 'offset', 0.35, [0, 14], [0, 0], easing='out_cubic'),
