@@ -2,7 +2,8 @@
 // Full-screen menus are drawn by RP/ui/server_form.json. Each menu is ONE form holding all of its pages: every
 // button starts with a list code saying where it is drawn, title flags show or hide options, and the UI opens
 // sub-pages and goes back by itself, so the form never closes to change page. Codes: menu_layout.js (generated).
-// From joining until the player stands in their mine, a dark camera fade hides the world (menus draw above it).
+// Short dark camera fades only bridge the moments no menu is up (joining, the teleport into a mine): a long fade
+// can't be cut short and would stay dark after the loading screen.
 import { world, system, HudVisibility } from '@minecraft/server';
 import { ActionFormData, FormCancelationReason, uiManager } from '@minecraft/server-ui';
 import { CONFIG } from './config.js';
@@ -17,22 +18,22 @@ const open = new Set();
 export const icon = (name) => (MENU.icons.includes(name) ? `textures/mining_tycoon/ui/icons/${name}` : undefined);
 const covered = new Set();
 
-/** Hide the world and HUD behind a dark screen. Fades hold for at most 10 s, so covered players are refreshed. */
-function cover(player) {
+/** Hide the HUD and the world for a short moment (menus and the loading screen cover the rest). */
+function cover(player, seconds = 1.5) {
   covered.add(player.id);
   try {
-    player.camera.fade({ fadeColor: SHADE, fadeTime: { fadeInTime: 0, holdTime: 10, fadeOutTime: 0.5 } });
+    player.camera.fade({ fadeColor: SHADE, fadeTime: { fadeInTime: 0, holdTime: seconds, fadeOutTime: 0.5 } });
     player.onScreenDisplay.setHudVisibility(HudVisibility.Hide);
   } catch {
-    // still loading in - the next refresh covers again
+    // still loading in - the next menu attempt covers again
   }
 }
 
-/** Fade the world back in. */
+/** Show the world and HUD again. */
 function uncover(player) {
   if (!covered.delete(player.id)) return;
   try {
-    player.camera.fade({ fadeColor: SHADE, fadeTime: { fadeInTime: 0, holdTime: 0.2, fadeOutTime: 0.8 } });
+    player.camera.clear(); // ends a fade that is still running
     player.onScreenDisplay.setHudVisibility(HudVisibility.Reset);
   } catch {
     // player left
@@ -47,7 +48,7 @@ function uncover(player) {
  */
 export function fullScreenMenu(player, menu, onClose) {
   if (!player.isValid || open.has(player.id)) return;
-  if (covered.has(player.id)) cover(player); // re-sent on every attempt: the first one can arrive while still loading
+  if (covered.has(player.id)) cover(player); // until the menu is up: the first fade can arrive while still loading
   open.add(player.id);
   const { form, flags = [], body, buttons } = menu;
   const title = MENU.forms[form] + flags.map((f) => MENU.flags[f]).join('') + CONFIG.title;
@@ -60,6 +61,7 @@ export function fullScreenMenu(player, menu, onClose) {
       if (!player.isValid) return;
       if (res.canceled) {
         if (res.cancelationReason === FormCancelationReason.UserBusy) return system.runTimeout(() => fullScreenMenu(player, menu, onClose), 5);
+        if (covered.has(player.id)) cover(player); // closed with Back: keep the world hidden until it comes back
         if (onClose) system.runTimeout(() => onClose(player), 5);
         return;
       }
@@ -121,7 +123,7 @@ function hideLoading(player, then) {
 /** Play a session, or create it first when the slot is empty. */
 function enter(player, slot) {
   const fresh = !sessionsOf(player.id)[slot];
-  cover(player); // hides the teleport and the mine being built
+  cover(player, 1); // hides the teleport until the loading screen is up
   showLoading(player, fresh ? 'Building your mine...' : `Heading into Session ${slot + 1}...`); // opens after the teleport
   const done = (ok) => hideLoading(player, () => {
     uncover(player);
@@ -193,8 +195,3 @@ world.afterEvents.playerLeave.subscribe(({ playerId }) => {
   covered.delete(playerId);
 });
 
-world.afterEvents.worldLoad.subscribe(() => {
-  system.runInterval(() => {
-    for (const player of world.getAllPlayers()) if (covered.has(player.id)) cover(player);
-  }, 100);
-});

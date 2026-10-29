@@ -1,6 +1,6 @@
-import { world, system, DisplaySlotId, ObjectiveSortOrder } from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
-import { formatNumber, getNumber, setNumber, getJson, setJson, giveItem, hasItem, ensureObjective, toScore } from './lib/util.js';
+import { formatNumber, getNumber, setNumber, getJson, setJson, giveItem, hasItem } from './lib/util.js';
 import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete, plotAt, plotCenter } from './sessions.js';
 import { stat, setStat, addStat, pickTier, mineLevel, valueMultiplier, valueCost, rebirthCost } from './economy.js';
 import { inField, rerollField, syncPick, popupUntil } from './mining.js';
@@ -12,7 +12,6 @@ const TIERS = new Map(CONFIG.generators.map((g) => [g.block, g]));
 
 /** Placed generators: "dimension|x|y|z" -> { owner: playerId, slot: session slot, block: typeId } */
 let generators = {};
-let moneyBoard;
 
 const locKey = (dimensionId, { x, y, z }) => `${dimensionId}|${x}|${y}|${z}`;
 const save = () => setJson(world, GENERATORS_KEY, generators);
@@ -220,8 +219,9 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
 world.afterEvents.worldLoad.subscribe(() => {
   generators = getJson(world, GENERATORS_KEY, {});
   loadSessions();
-  moneyBoard = ensureObjective(`${NS}_money`, '§aMoney');
-  world.scoreboard.setObjectiveAtDisplaySlot(DisplaySlotId.Sidebar, { objective: moneyBoard, sortOrder: ObjectiveSortOrder.Descending });
+  // Money shows in the action bar; the old "Money" sidebar scoreboard is removed from existing worlds.
+  const board = world.scoreboard.getObjective(`${NS}_money`);
+  if (board) world.scoreboard.removeObjective(board);
 
   // Pay income every second to each player's active session.
   system.runInterval(() => {
@@ -229,7 +229,6 @@ world.afterEvents.worldLoad.subscribe(() => {
       if (activeSession(player) === undefined) continue;
       const income = incomePerSecond(player);
       const money = income > 0 ? addStat(player, 'money', income) : stat(player, 'money');
-      moneyBoard.setScore(player, toScore(money));
       if (system.currentTick < (popupUntil.get(player.id) ?? 0)) continue; // a mining popup is showing
       player.onScreenDisplay.setActionBar(`§a$${formatNumber(money)}${income > 0 ? `  §7(+$${formatNumber(income)}/s)` : ''}`);
     }

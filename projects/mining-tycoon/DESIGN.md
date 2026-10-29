@@ -73,6 +73,7 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
 ## Systems (current)
 - Ownership: placed drills are stored in a world dynamic property (`mining_tycoon:generators`) with owner and session slot; only the owner can break them.
 - Drill income: `sum(drill income) x cash multiplier`, paid every 20 ticks. Drills can't go in the ore field.
+- Money shows in the action bar (no scoreboard; the old `mining_tycoon_money` sidebar is removed on world load).
 - Limit: 40 drills per session.
 - Start menu (`BP/scripts/menu.js`): shown on every join (retried every 5 ticks until the client can show it), and
   from Tablet > Main menu. It comes back if closed with Back, so players must choose:
@@ -84,9 +85,10 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
     page: **Yes, delete Session N** / **Keep it**); **Back**.
   - **Exit**: disconnects the player with a goodbye message. The host of a local world can't be disconnected, so they
     get a hint to leave from the pause menu instead.
-- Join cover: from the moment a player joins until they stand in their mine, a dark camera fade (re-sent so it never
-  runs out) hides the world and the HUD is hidden; menus draw above it. Entering a session also covers the teleport
-  and plot building, then fades the world in.
+- Join cover: short dark camera fades (1-1.5 s, re-sent on every menu attempt while joining) hide the world and HUD
+  only while no menu is up: joining, Back on the start menu, the teleport into a mine. The full-screen menus and the
+  loading screen cover everything else. A long fade can't be cut short on phones, so it would stay dark after the
+  loading screen; when the player is in the mine the HUD comes back and `camera.clear()` ends any fade left.
 - Loading screen: entering a session shows a third full-screen form (tag `§m§t§l`, no buttons): cave, logo,
   "Building your mine..." / "Heading into Session N..." and a gold pick striking a shaking gold ore. It opens a moment
   after the teleport (teleports close open forms), comes back if anything closes it while the mine is still loading,
@@ -145,7 +147,8 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
 ## Roadmap (built step by step)
 - [x] **Foundation:** project from the tycoon template, rethemed to mining (drills, Miner's Tablet, texts).
 - [x] **Menu look:** pixel-art logo, button icons, animated background (pan, lanterns, gems, dust, minecart).
-- [ ] **Look:** pixel-art drill textures, Miner's Tablet icon, pack icon.
+- [x] **Pack icon:** cave, logo and a gold pick striking gold ore (BP and RP).
+- [ ] **Look:** pixel-art drill textures, Miner's Tablet icon.
 - [ ] **Ore feel:** mining particles/sounds; drills that visibly mine the ore field next to them.
 - [x] **Start menu + plots:** full-screen join menu (Play / Create session / Exit), private mine plots, drills only in your own mine.
 - [x] **Sessions:** 2 save slots per player with a full-screen slots menu; stone & gold menu buttons.
