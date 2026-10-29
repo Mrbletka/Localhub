@@ -4,7 +4,7 @@ export const CONFIG = {
   title: 'Mining Tycoon',
   items: { tablet: 'mining_tycoon:tycoon_tablet' },
   startingMoney: 25,
-  maxGeneratorsPerPlayer: 40,
+  maxGeneratorsPerPlayer: 40, // per session
   // income is money per second per placed generator
   generators: [
     { block: 'mining_tycoon:generator_t1', name: 'Stone Drill', cost: 25, income: 1, icon: 'textures/mining_tycoon/blocks/generator_t1' },
@@ -15,6 +15,8 @@ export const CONFIG = {
   rebirth: { baseCost: 50000, costGrowth: 4, bonusPerRebirth: 0.5 },
   // Join menu. Forms whose title starts with this tag get the full-screen look from RP/ui/server_form.json.
   menu: { tag: '§m§t§s' },
+  // Save slots per player. Each session has its own mine plot, money, upgrades, rebirths and drills.
+  sessions: { slots: 2 },
   // Private mine plots in a grid far from spawn: plot i sits at origin + (i % perRow, i / perRow) x spacing.
   plots: {
     dimension: 'minecraft:overworld',

@@ -1,47 +1,68 @@
 import { world, system, DisplaySlotId, ObjectiveSortOrder } from '@minecraft/server';
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui';
 import { CONFIG } from './config.js';
-import { formatNumber, getNumber, setNumber, addNumber, getJson, setJson, giveItem, hasItem, ensureObjective, toScore } from './lib/util.js';
-import { loadPlots, inOwnPlot } from './plots.js';
+import { formatNumber, getNumber, setNumber, getJson, setJson, giveItem, hasItem, ensureObjective, toScore } from './lib/util.js';
+import { loadSessions, sessionsOf, activeSession, sessionKey, inActivePlot, onSessionDelete } from './sessions.js';
 import { showStartMenu } from './menu.js';
 
 const NS = CONFIG.namespace;
-const KEY = {
-  money: `${NS}:money`,
-  level: `${NS}:income_level`,
-  rebirths: `${NS}:rebirths`,
-  started: `${NS}:started`,
-};
 const GENERATORS_KEY = `${NS}:generators`;
 const TIERS = new Map(CONFIG.generators.map((g) => [g.block, g]));
 
-/** Placed generators: "dimension|x|y|z" -> { owner: playerId, block: typeId } */
+/** Placed generators: "dimension|x|y|z" -> { owner: playerId, slot: session slot, block: typeId } */
 let generators = {};
 let moneyBoard;
 
 const locKey = (dimensionId, { x, y, z }) => `${dimensionId}|${x}|${y}|${z}`;
 const save = () => setJson(world, GENERATORS_KEY, generators);
-const owned = (playerId) => Object.entries(generators).filter(([, g]) => g.owner === playerId);
+const owned = (playerId, slot) => Object.entries(generators).filter(([, g]) => g.owner === playerId && (g.slot ?? 0) === slot);
 
-const rebirthBonus = (p) => 1 + getNumber(p, KEY.rebirths) * CONFIG.rebirth.bonusPerRebirth;
-const incomeMultiplier = (p) => (1 + getNumber(p, KEY.level) * CONFIG.upgrade.incomeBonusPerLevel) * rebirthBonus(p);
+// Money, income level and rebirths of the player's active session (0 when not in a session).
+const stat = (player, name) => {
+  const slot = activeSession(player);
+  return slot === undefined ? 0 : getNumber(player, sessionKey(slot, name));
+};
+const setStat = (player, name, value) => {
+  const slot = activeSession(player);
+  if (slot !== undefined) setNumber(player, sessionKey(slot, name), value);
+  return value;
+};
+const addStat = (player, name, delta) => setStat(player, name, stat(player, name) + delta);
+
+const rebirthBonus = (p) => 1 + stat(p, 'rebirths') * CONFIG.rebirth.bonusPerRebirth;
+const incomeMultiplier = (p) => (1 + stat(p, 'income_level') * CONFIG.upgrade.incomeBonusPerLevel) * rebirthBonus(p);
 const upgradeCost = (level) => Math.floor(CONFIG.upgrade.baseCost * CONFIG.upgrade.costGrowth ** level);
 const rebirthCost = (rebirths) => Math.floor(CONFIG.rebirth.baseCost * CONFIG.rebirth.costGrowth ** rebirths);
 
 function incomePerSecond(player) {
+  const slot = activeSession(player);
+  if (slot === undefined) return 0;
   let base = 0;
-  for (const [, g] of owned(player.id)) base += TIERS.get(g.block)?.income ?? 0;
+  for (const [, g] of owned(player.id, slot)) base += TIERS.get(g.block)?.income ?? 0;
   return base * incomeMultiplier(player);
 }
 
+function removeDrills(entries) {
+  for (const [key] of entries) {
+    const [dimensionId, x, y, z] = key.split('|');
+    try {
+      world.getDimension(dimensionId).getBlock({ x: +x, y: +y, z: +z })?.setType('minecraft:air');
+    } catch {
+      // chunk not loaded - the record is dropped either way
+    }
+    delete generators[key];
+  }
+  save();
+}
+
 function buyMenu(player) {
-  const form = new ActionFormData().title('Buy drills').body(`§7Money: §a$${formatNumber(getNumber(player, KEY.money))}`);
+  const form = new ActionFormData().title('Buy drills').body(`§7Money: §a$${formatNumber(stat(player, 'money'))}`);
   for (const g of CONFIG.generators) form.button(`${g.name}\n§8$${formatNumber(g.cost)} - $${formatNumber(g.income)}/s`, g.icon);
   form.show(player).then((res) => {
     if (res.canceled || res.selection === undefined) return;
     const g = CONFIG.generators[res.selection];
-    if (getNumber(player, KEY.money) < g.cost) return player.sendMessage(`§cYou need §a$${formatNumber(g.cost)}§c.`);
-    addNumber(player, KEY.money, -g.cost);
+    if (stat(player, 'money') < g.cost) return player.sendMessage(`§cYou need §a$${formatNumber(g.cost)}§c.`);
+    addStat(player, 'money', -g.cost);
     giveItem(player, g.block);
     player.playSound('random.orb');
     player.sendMessage(`§aBought a ${g.name}. Place it to start mining!`);
@@ -49,40 +70,32 @@ function buyMenu(player) {
 }
 
 function upgrade(player) {
-  const level = getNumber(player, KEY.level);
+  const level = stat(player, 'income_level');
   const cost = upgradeCost(level);
-  if (getNumber(player, KEY.money) < cost) return player.sendMessage(`§cYou need §a$${formatNumber(cost)}§c.`);
-  addNumber(player, KEY.money, -cost);
-  setNumber(player, KEY.level, level + 1);
+  if (stat(player, 'money') < cost) return player.sendMessage(`§cYou need §a$${formatNumber(cost)}§c.`);
+  addStat(player, 'money', -cost);
+  setStat(player, 'income_level', level + 1);
   player.playSound('random.levelup');
   player.sendMessage(`§aIncome upgraded to level ${level + 1} (+${Math.round(CONFIG.upgrade.incomeBonusPerLevel * 100)}% each).`);
 }
 
 function rebirth(player) {
-  const rebirths = getNumber(player, KEY.rebirths);
+  const slot = activeSession(player);
+  const rebirths = stat(player, 'rebirths');
   const cost = rebirthCost(rebirths);
-  if (getNumber(player, KEY.money) < cost) return player.sendMessage(`§cRebirth needs §a$${formatNumber(cost)}§c.`);
+  if (stat(player, 'money') < cost) return player.sendMessage(`§cRebirth needs §a$${formatNumber(cost)}§c.`);
   new MessageFormData()
     .title('Rebirth?')
-    .body('Your money, upgrades and drills reset. You keep a permanent income bonus.')
+    .body('Your money, upgrades and drills in this session reset. You keep a permanent income bonus.')
     .button1('Rebirth!')
     .button2('Not yet')
     .show(player)
     .then((res) => {
-      if (res.canceled || res.selection !== 0) return;
-      for (const [key] of owned(player.id)) {
-        const [dimensionId, x, y, z] = key.split('|');
-        try {
-          world.getDimension(dimensionId).getBlock({ x: +x, y: +y, z: +z })?.setType('minecraft:air');
-        } catch {
-          // chunk not loaded - the record is dropped either way
-        }
-        delete generators[key];
-      }
-      save();
-      setNumber(player, KEY.money, CONFIG.startingMoney);
-      setNumber(player, KEY.level, 0);
-      setNumber(player, KEY.rebirths, rebirths + 1);
+      if (res.canceled || res.selection !== 0 || activeSession(player) !== slot) return;
+      removeDrills(owned(player.id, slot));
+      setStat(player, 'money', CONFIG.startingMoney);
+      setStat(player, 'income_level', 0);
+      setStat(player, 'rebirths', rebirths + 1);
       giveItem(player, CONFIG.generators[0].block);
       player.playSound('random.totem');
       world.sendMessage(`§d${player.name} reached rebirth ${rebirths + 1}!`);
@@ -90,14 +103,16 @@ function rebirth(player) {
 }
 
 function openMenu(player) {
-  const level = getNumber(player, KEY.level);
-  const rebirths = getNumber(player, KEY.rebirths);
+  const slot = activeSession(player);
+  if (slot === undefined) return showStartMenu(player);
+  const level = stat(player, 'income_level');
+  const rebirths = stat(player, 'rebirths');
   new ActionFormData()
-    .title(CONFIG.title)
+    .title(`${CONFIG.title} - Session ${slot + 1}`)
     .body(
-      `§7Money: §a$${formatNumber(getNumber(player, KEY.money))}\n` +
+      `§7Money: §a$${formatNumber(stat(player, 'money'))}\n` +
         `§7Income: §a$${formatNumber(incomePerSecond(player))}/s\n` +
-        `§7Drills: §f${owned(player.id).length}/${CONFIG.maxGeneratorsPerPlayer}\n` +
+        `§7Drills: §f${owned(player.id, slot).length}/${CONFIG.maxGeneratorsPerPlayer}\n` +
         `§7Rebirths: §d${rebirths}`,
     )
     .button('Buy drills', CONFIG.generators[0].icon)
@@ -118,28 +133,34 @@ world.afterEvents.itemUse.subscribe(({ source: player, itemStack }) => {
 world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   const tier = TIERS.get(block.typeId);
   if (!tier) return;
-  if (!inOwnPlot(player, dimension.id, block.location)) {
+  const slot = activeSession(player);
+  if (!inActivePlot(player, dimension.id, block.location)) {
     block.setType('minecraft:air');
     giveItem(player, tier.block);
-    return player.sendMessage('§cDrills only work in your own mine. Tap §fCreate session§c in the menu to claim one.');
+    return player.sendMessage('§cDrills only work in the mine of the session you are playing.');
   }
-  if (owned(player.id).length >= CONFIG.maxGeneratorsPerPlayer) {
+  if (owned(player.id, slot).length >= CONFIG.maxGeneratorsPerPlayer) {
     block.setType('minecraft:air');
     giveItem(player, tier.block);
     return player.sendMessage(`§cDrill limit reached (${CONFIG.maxGeneratorsPerPlayer}).`);
   }
-  generators[locKey(dimension.id, block.location)] = { owner: player.id, block: block.typeId };
+  generators[locKey(dimension.id, block.location)] = { owner: player.id, slot, block: block.typeId };
   save();
   player.onScreenDisplay.setActionBar(`§a${tier.name} drilling: +$${formatNumber(tier.income * incomeMultiplier(player))}/s`);
 });
 
-// Only the owner may break a generator. Before-events are read-only, so messages go through system.run.
+// Drills can only be broken by their owner, from the session they belong to (so they can't move between saves).
+// Before-events are read-only, so messages go through system.run.
 world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const record = generators[locKey(event.dimension.id, event.block.location)];
-  if (record && record.owner !== event.player.id) {
+  if (!record) return;
+  const player = event.player;
+  if (record.owner !== player.id) {
     event.cancel = true;
-    const player = event.player;
     system.run(() => player.sendMessage('§cThat drill belongs to someone else.'));
+  } else if ((record.slot ?? 0) !== activeSession(player)) {
+    event.cancel = true;
+    system.run(() => player.sendMessage('§cThat drill belongs to your other session.'));
   }
 });
 
@@ -151,27 +172,33 @@ world.afterEvents.playerBreakBlock.subscribe(({ block, dimension }) => {
   }
 });
 
+onSessionDelete((playerId, slot) => removeDrills(owned(playerId, slot)));
+
 world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
   if (!initialSpawn) return;
-  if (!player.getDynamicProperty(KEY.started)) {
-    player.setDynamicProperty(KEY.started, true);
-    setNumber(player, KEY.money, CONFIG.startingMoney);
-    giveItem(player, CONFIG.generators[0].block);
+  // Worlds from before sessions: money, upgrades and rebirths move into session 1.
+  const oldMoney = player.getDynamicProperty(`${NS}:money`);
+  if (typeof oldMoney === 'number') {
+    if (sessionsOf(player.id)[0] && player.getDynamicProperty(sessionKey(0, 'money')) === undefined) {
+      for (const name of ['money', 'income_level', 'rebirths']) setNumber(player, sessionKey(0, name), getNumber(player, `${NS}:${name}`));
+    }
+    for (const name of ['money', 'income_level', 'rebirths', 'started']) player.setDynamicProperty(`${NS}:${name}`, undefined);
   }
   if (!hasItem(player, CONFIG.items.tablet)) giveItem(player, CONFIG.items.tablet);
 });
 
 world.afterEvents.worldLoad.subscribe(() => {
   generators = getJson(world, GENERATORS_KEY, {});
-  loadPlots();
+  loadSessions();
   moneyBoard = ensureObjective(`${NS}_money`, '§aMoney');
   world.scoreboard.setObjectiveAtDisplaySlot(DisplaySlotId.Sidebar, { objective: moneyBoard, sortOrder: ObjectiveSortOrder.Descending });
 
-  // Pay income every second.
+  // Pay income every second to each player's active session.
   system.runInterval(() => {
     for (const player of world.getAllPlayers()) {
+      if (activeSession(player) === undefined) continue;
       const income = incomePerSecond(player);
-      const money = income > 0 ? addNumber(player, KEY.money, income) : getNumber(player, KEY.money);
+      const money = income > 0 ? addStat(player, 'money', income) : stat(player, 'money');
       moneyBoard.setScore(player, toScore(money));
       player.onScreenDisplay.setActionBar(`§a$${formatNumber(money)}  §7(+$${formatNumber(income)}/s)`);
     }
