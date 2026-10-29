@@ -1,10 +1,12 @@
-// GitHub sync for the phone: bring in what Claude Code pushed (main or its claude/* branches)
+// GitHub sync for the phone: bring in what Claude Code pushed (main or its claude/* and ccr-* branches)
 // and push edits made on the phone. Every git call runs non-interactively with fixed arguments.
 import { execFile } from 'node:child_process';
 import path from 'node:path';
 import { WorkspaceError } from './workspace.js';
 
 const BRANCH_RE = /^[\w][\w./-]{0,200}$/;
+// Claude Code pushes to claude/<name> (local and older cloud sessions) or ccr-<id> (cloud sessions).
+const CLAUDE_REFS = ['refs/remotes/origin/claude/', 'refs/remotes/origin/ccr-*'];
 
 function git(cwd, args, { timeout = 60_000 } = {}) {
   return new Promise((resolve) => {
@@ -74,7 +76,7 @@ export class GitSync {
     const changes = (await git(root, ['status', '--porcelain', '--', spec])).out.split('\n').filter(Boolean);
     const counts = await git(root, ['rev-list', '--left-right', '--count', `HEAD...origin/${branch}`]);
     const [ahead, behind] = counts.ok ? counts.out.split(/\s+/).map(Number) : [0, 0];
-    const refs = (await git(root, ['for-each-ref', '--sort=-committerdate', '--format=%(refname:short)%09%(committerdate:iso8601)%09%(subject)', 'refs/remotes/origin/claude/'])).out
+    const refs = (await git(root, ['for-each-ref', '--sort=-committerdate', '--format=%(refname:short)%09%(committerdate:iso8601)%09%(subject)', ...CLAUDE_REFS])).out
       .split('\n').filter(Boolean).slice(0, 20);
     const claude = [];
     for (const line of refs) {
@@ -101,7 +103,7 @@ export class GitSync {
     return { ok: true, output: res.out };
   }
 
-  /** Merge one of Claude Code's branches (claude/...) into the current branch. */
+  /** Merge one of Claude Code's branches (claude/... or ccr-...) into the current branch. */
   async merge(branch) {
     if (typeof branch !== 'string' || !BRANCH_RE.test(branch) || branch.includes('..')) throw new WorkspaceError('Invalid branch name');
     const root = await this.#need();

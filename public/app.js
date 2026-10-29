@@ -1042,7 +1042,7 @@ const ago = (iso) => {
   return `${Math.round(s / 86400)} days ago`;
 };
 
-/** GitHub sync card: get what Claude Code pushed (claude/* branches or main), push phone edits. */
+/** GitHub sync card: get what Claude Code pushed (claude/* or ccr-* branches, or main), push phone edits. */
 function syncPanel() {
   const box = el('div', { class: 'card' }, el('h3', {}, 'Sync with Claude (GitHub)'), el('p', {}, 'Checking…'));
   let status = null;
