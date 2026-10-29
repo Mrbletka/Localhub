@@ -26,8 +26,8 @@ resets but you keep a permanent cash multiplier and push even deeper next time.
 - Ownership: placed drills are stored in a world dynamic property (`mining_tycoon:generators`) with owner and session slot; only the owner can break them.
 - Income: `sum(drill income) x (1 + level x incomeBonusPerLevel) x rebirthBonus`, paid every 20 ticks.
 - Limit: 40 drills per session.
-- Start menu (`BP/scripts/menu.js`): shown a moment after every join, and from Tablet > Main menu. It comes back if
-  closed with Back, so players must choose:
+- Start menu (`BP/scripts/menu.js`): shown on every join (retried every 5 ticks until the client can show it), and
+  from Tablet > Main menu. It comes back if closed with Back, so players must choose:
   - **Play**: continue your last session (builds its mine first if it never finished). No sessions -> hint.
   - **Create session** (only while you have no sessions): start session 1.
   - **Sessions** (once you have one): the slots menu, one button per slot -
@@ -35,6 +35,9 @@ resets but you keep a permanent cash multiplier and push even deeper next time.
     empty slot `Slot N - Empty` -> creates a session there.
   - **Exit**: disconnects the player with a goodbye message. The host of a local world can't be disconnected, so they
     get a hint to leave from the pause menu instead.
+- Join cover: from the moment a player joins until they stand in their mine, a dark camera fade (re-sent so it never
+  runs out) hides the world and the HUD is hidden; menus draw above it. Entering a session also covers the teleport
+  and plot building, then fades the world in.
 - Sessions (`BP/scripts/sessions.js`, world property `mining_tycoon:sessions`): 2 save slots per player (config
   `sessions.slots`). Each session is its own save: own mine plot, money, income level, rebirths (player properties
   `mining_tycoon:s<slot>:<name>`), placed drills (`slot` in each drill record) and unplaced drill items (stashed when

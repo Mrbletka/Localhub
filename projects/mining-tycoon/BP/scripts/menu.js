@@ -1,13 +1,38 @@
 // Start menu shown when a player joins: Play, Create session (no sessions yet) or Sessions, Exit.
 // Forms whose title starts with CONFIG.menu.tag are drawn full screen by RP/ui/server_form.json.
-import { world, system } from '@minecraft/server';
+// From joining until the player stands in their mine, a dark camera fade hides the world (menus draw above it).
+import { world, system, HudVisibility } from '@minecraft/server';
 import { ActionFormData, MessageFormData, FormCancelationReason } from '@minecraft/server-ui';
 import { CONFIG } from './config.js';
 import { formatNumber } from './lib/util.js';
 import { sessionsOf, hasSessions, activeSession, lastSession, sessionStats, playSession, createSession, deleteSession } from './sessions.js';
 
 const TAG = CONFIG.menu.tag;
+const SHADE = { red: 0.06, green: 0.045, blue: 0.03 };
 const open = new Set();
+const covered = new Set();
+
+/** Hide the world and HUD behind a dark screen. Fades hold for at most 10 s, so covered players are refreshed. */
+function cover(player) {
+  covered.add(player.id);
+  try {
+    player.camera.fade({ fadeColor: SHADE, fadeTime: { fadeInTime: 0, holdTime: 10, fadeOutTime: 0.5 } });
+    player.onScreenDisplay.setHudVisibility(HudVisibility.Hide);
+  } catch {
+    // still loading in - the next refresh covers again
+  }
+}
+
+/** Fade the world back in. */
+function uncover(player) {
+  if (!covered.delete(player.id)) return;
+  try {
+    player.camera.fade({ fadeColor: SHADE, fadeTime: { fadeInTime: 0, holdTime: 0.2, fadeOutTime: 0.8 } });
+    player.onScreenDisplay.setHudVisibility(HudVisibility.Reset);
+  } catch {
+    // player left
+  }
+}
 
 /**
  * Show a full-screen menu. buttons: [{ text, run }]. Closing it with Back runs onClose; when the player is just
@@ -15,6 +40,7 @@ const open = new Set();
  */
 function fullScreenMenu(player, body, buttons, onClose) {
   if (!player.isValid || open.has(player.id)) return;
+  if (covered.has(player.id)) cover(player); // re-sent on every attempt: the first one can arrive while still loading
   open.add(player.id);
   const form = new ActionFormData().title(`${TAG}${CONFIG.title}`).body(body);
   for (const b of buttons) form.button(b.text);
@@ -25,7 +51,7 @@ function fullScreenMenu(player, body, buttons, onClose) {
       if (!player.isValid) return;
       if (res.canceled) {
         if (res.cancelationReason === FormCancelationReason.UserBusy) {
-          return system.runTimeout(() => fullScreenMenu(player, body, buttons, onClose), 20);
+          return system.runTimeout(() => fullScreenMenu(player, body, buttons, onClose), 5);
         }
         return system.runTimeout(() => onClose(player), 5);
       }
@@ -42,7 +68,9 @@ function summary(player, slot) {
 /** Play a session, or create it first when the slot is empty. */
 function enter(player, slot) {
   const fresh = !sessionsOf(player.id)[slot];
+  cover(player); // hides the teleport and the mine being built
   const done = (ok) => {
+    uncover(player);
     if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
     if (!fresh) return player.sendMessage(`§aWelcome back to Session ${slot + 1}!`);
     player.playSound('random.levelup');
@@ -67,6 +95,7 @@ function exit(player) {
     player.dimension.runCommand(`kick "${player.name}" Thanks for playing ${CONFIG.title}!`);
   } catch {
     // The host of a local world cannot be kicked.
+    uncover(player);
     player.sendMessage('§7You are hosting this world: leave it from the pause menu.');
   }
 }
@@ -134,7 +163,18 @@ function confirmDelete(player, slot) {
 }
 
 world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
-  if (initialSpawn) system.runTimeout(() => showStartMenu(player), 40);
+  if (!initialSpawn) return;
+  cover(player);
+  system.run(() => showStartMenu(player)); // retried every few ticks until the client can show it
 });
 
-world.afterEvents.playerLeave.subscribe(({ playerId }) => open.delete(playerId));
+world.afterEvents.playerLeave.subscribe(({ playerId }) => {
+  open.delete(playerId);
+  covered.delete(playerId);
+});
+
+world.afterEvents.worldLoad.subscribe(() => {
+  system.runInterval(() => {
+    for (const player of world.getAllPlayers()) if (covered.has(player.id)) cover(player);
+  }, 100);
+});
