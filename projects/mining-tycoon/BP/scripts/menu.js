@@ -75,23 +75,29 @@ function summary(player, slot) {
 
 /** Players on the loading screen -> tick before which it may not close (so it never just flashes). */
 const loading = new Map();
+/** Players whose loading screen form is open or on its way (its promise has not settled). */
+const loadingOpen = new Set();
 
-/** Full-screen loading screen (a pick striking ore) while a mine is built or loaded. */
+/**
+ * Full-screen loading screen (a pick striking ore) while a mine is built or loaded. It opens a moment after the
+ * teleport, and anything that closes it early (teleporting, terrain loading, Back) only brings it back.
+ */
 function showLoading(player, text) {
-  loading.set(player.id, system.currentTick + 30);
+  loading.set(player.id, system.currentTick + 40);
   const attempt = () => {
     if (!player.isValid || !loading.has(player.id)) return;
+    loadingOpen.add(player.id);
     new ActionFormData()
       .title(MENU.forms.loading + CONFIG.title)
       .body(text)
       .show(player)
       .then((res) => {
-        // The previous menu was still closing: try again. Closed by hideLoading (or Back): nothing to do.
-        if (res.canceled && res.cancelationReason === FormCancelationReason.UserBusy) system.runTimeout(attempt, 2);
+        loadingOpen.delete(player.id);
+        if (loading.has(player.id)) system.runTimeout(attempt, res.cancelationReason === FormCancelationReason.UserBusy ? 2 : 3);
       })
-      .catch(() => {});
+      .catch(() => loadingOpen.delete(player.id));
   };
-  attempt();
+  system.runTimeout(attempt, 6);
 }
 
 /** Close the loading screen once it has shown long enough and the area around the player had a moment to render. */
@@ -100,7 +106,14 @@ function hideLoading(player, then) {
   system.runTimeout(() => {
     loading.delete(player.id);
     if (!player.isValid) return;
-    uiManager.closeAllForms(player);
+    // A screen that was still on its way when we closed would stay up: close until it is really gone.
+    let tries = 0;
+    const close = () => {
+      if (!player.isValid) return;
+      uiManager.closeAllForms(player);
+      if (loadingOpen.has(player.id) && ++tries < 10) system.runTimeout(close, 4);
+    };
+    close();
     then();
   }, wait);
 }
@@ -109,7 +122,7 @@ function hideLoading(player, then) {
 function enter(player, slot) {
   const fresh = !sessionsOf(player.id)[slot];
   cover(player); // hides the teleport and the mine being built
-  showLoading(player, fresh ? 'Building your mine...' : `Heading into Session ${slot + 1}...`);
+  showLoading(player, fresh ? 'Building your mine...' : `Heading into Session ${slot + 1}...`); // opens after the teleport
   const done = (ok) => hideLoading(player, () => {
     uncover(player);
     if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
@@ -176,6 +189,7 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
 world.afterEvents.playerLeave.subscribe(({ playerId }) => {
   open.delete(playerId);
   loading.delete(playerId);
+  loadingOpen.delete(playerId);
   covered.delete(playerId);
 });
 

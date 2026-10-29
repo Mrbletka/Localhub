@@ -88,8 +88,10 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
   runs out) hides the world and the HUD is hidden; menus draw above it. Entering a session also covers the teleport
   and plot building, then fades the world in.
 - Loading screen: entering a session shows a third full-screen form (tag `§m§t§l`, no buttons): cave, logo,
-  "Building your mine..." / "Heading into Session N..." and a gold pick striking a shaking gold ore. It stays at
-  least 1.5 s and closes (`uiManager.closeAllForms`) 1 s after the player stands in the mine; then the world fades in.
+  "Building your mine..." / "Heading into Session N..." and a gold pick striking a shaking gold ore. It opens a moment
+  after the teleport (teleports close open forms), comes back if anything closes it while the mine is still loading,
+  stays at least 2 s and closes (`uiManager.closeAllForms`, repeated until it is really gone) 1 s after the player
+  stands in the mine; then the world fades in.
 - Sessions (`BP/scripts/sessions.js`, world property `mining_tycoon:sessions`): 2 save slots per player (config
   `sessions.slots`). Each session is its own save: own mine plot, money, income level, rebirths (player properties
   `mining_tycoon:s<slot>:<name>`), placed drills (`slot` in each drill record) and unplaced drill items (stashed when
