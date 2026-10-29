@@ -52,6 +52,14 @@ FORMS = {
 }
 # Loading screen while a mine is built / loaded: no buttons, the script closes it once the player stands in the mine.
 FORMS['loading'] = ('§m§t§l', Page([]))
+# Notices and small choices (lift, extract, Ore Trader, expedition results): the body text and one list of buttons.
+FORMS['notice'] = ('§m§t§n', Page([List('notice')]))
+# The Miner's Tablet on an expedition: Keep mining, or give up after a confirm page.
+FORMS['run'] = ('§m§t§e', Page([
+    List('run_top'),  # Keep mining
+    Nav('go_give_up', 'Give up', 'Keep going', icon='exit', page=Page(
+        heading='Give up? The lift pulls you home and everything you mined on this run is lost.', items=[List('run_give_up')])),
+]))
 FLAGS = {'hasSessions': '§h§s', **{f'slot{i}': f'§f§{i + 1}' for i in range(SLOTS)}}
 UI = 'textures/mining_tycoon/ui'
 ICONS = f'{UI}/icons'

@@ -78,9 +78,15 @@ export function syncPick(player) {
   if (!has) giveItem(player, want);
 }
 
-function popup(player, text) {
+/** A short action bar message that the per-second money (or expedition) bar leaves alone for a moment. */
+export function popup(player, text) {
   popupUntil.set(player.id, system.currentTick + 25);
   player.onScreenDisplay.setActionBar(text);
+}
+
+/** Why the held item can't break an ore (needs a better pick), or undefined when it can. */
+export function pickProblem(itemStack, ore) {
+  if ((PICK_TIER.get(itemStack?.typeId) ?? 0) < ore.pick) return `§c${ore.name} needs a ${CONFIG.picks[ore.pick - 1].name} or better.`;
 }
 
 /** Grow an ore back in a field cell, rolled from the owner's mine level (if they are online and still own it). */
@@ -110,7 +116,7 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   if (!plot || plot.owner !== player.id) return; // not in a mine, or someone else's (sessions.js stops that)
   let message;
   if (plot.slot !== activeSession(player)) message = '§cThis mine belongs to your other session.';
-  else if ((PICK_TIER.get(event.itemStack?.typeId) ?? 0) < ore.pick) message = `§c${ore.name} needs a ${CONFIG.picks[ore.pick - 1].name} or better.`;
+  else message = pickProblem(event.itemStack, ore);
   if (!message) return;
   event.cancel = true;
   system.run(() => popup(player, message));

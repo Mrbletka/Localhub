@@ -22,6 +22,24 @@
     },
     "mining_tycoon_pick_6": {
       "textures": "textures/mining_tycoon/items/pick_6"
+    },
+    "mining_tycoon_res_coal": {
+      "textures": "textures/mining_tycoon/items/res_coal"
+    },
+    "mining_tycoon_res_copper": {
+      "textures": "textures/mining_tycoon/items/res_copper"
+    },
+    "mining_tycoon_res_iron": {
+      "textures": "textures/mining_tycoon/items/res_iron"
+    },
+    "mining_tycoon_res_gold": {
+      "textures": "textures/mining_tycoon/items/res_gold"
+    },
+    "mining_tycoon_res_ruby": {
+      "textures": "textures/mining_tycoon/items/res_ruby"
+    },
+    "mining_tycoon_res_diamond": {
+      "textures": "textures/mining_tycoon/items/res_diamond"
     }
   }
 }

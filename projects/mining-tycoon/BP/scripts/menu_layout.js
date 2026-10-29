@@ -4,7 +4,9 @@ export const MENU = {
   "forms": {
     "start": "§m§t§s",
     "tablet": "§m§t§t",
-    "loading": "§m§t§l"
+    "loading": "§m§t§l",
+    "notice": "§m§t§n",
+    "run": "§m§t§e"
   },
   "lists": {
     "start_top": "§p§1§1§r",
@@ -15,7 +17,10 @@ export const MENU = {
     "tablet_upgrades": "§p§1§6§r",
     "tablet_shop": "§p§1§7§r",
     "tablet_rebirth": "§p§1§8§r",
-    "tablet_bottom": "§p§1§9§r"
+    "tablet_bottom": "§p§1§9§r",
+    "notice": "§p§2§0§r",
+    "run_top": "§p§2§1§r",
+    "run_give_up": "§p§2§2§r"
   },
   "flags": {
     "hasSessions": "§h§s",
@@ -28,11 +33,14 @@ export const MENU = {
     "delete",
     "drills",
     "exit",
+    "expedition",
+    "extract",
     "home",
     "lock",
     "new_slot",
     "play",
     "rebirth",
+    "sell",
     "session",
     "sessions",
     "upgrades"

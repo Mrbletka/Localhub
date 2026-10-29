@@ -6,6 +6,7 @@ import { stat, setStat, addStat, pickTier, mineLevel, valueMultiplier, valueCost
 import { rerollField, syncPick, popupUntil } from './mining.js';
 import { padBlockId } from './mine_builder.js';
 import { showStartMenu, fullScreenMenu, icon } from './menu.js';
+import { onExpedition, showRunMenu } from './expedition.js';
 
 const NS = CONFIG.namespace;
 const GENERATORS_KEY = `${NS}:generators`;
@@ -152,7 +153,9 @@ function openMenu(player) {
 }
 
 world.afterEvents.itemUse.subscribe(({ source: player, itemStack }) => {
-  if (itemStack.typeId === CONFIG.items.tablet) openMenu(player);
+  if (itemStack.typeId !== CONFIG.items.tablet) return;
+  if (onExpedition(player)) showRunMenu(player); // no shop down in the caves
+  else openMenu(player);
 });
 
 world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
@@ -243,6 +246,7 @@ world.afterEvents.worldLoad.subscribe(() => {
       if (activeSession(player) === undefined) continue;
       const income = incomePerSecond(player);
       const money = income > 0 ? addStat(player, 'money', income) : stat(player, 'money');
+      if (onExpedition(player)) continue; // the expedition has its own bar (light and haul)
       if (system.currentTick < (popupUntil.get(player.id) ?? 0)) continue; // a mining popup is showing
       player.onScreenDisplay.setActionBar(`§a$${formatNumber(money)}${income > 0 ? `  §7(+$${formatNumber(income)}/s)` : ''}`);
     }

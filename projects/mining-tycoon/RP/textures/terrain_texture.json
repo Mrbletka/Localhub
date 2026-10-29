@@ -33,6 +33,18 @@
     },
     "mining_tycoon_ore_diamond": {
       "textures": "textures/mining_tycoon/blocks/ore_diamond"
+    },
+    "mining_tycoon_lift_side": {
+      "textures": "textures/mining_tycoon/blocks/lift_side"
+    },
+    "mining_tycoon_lift_top": {
+      "textures": "textures/mining_tycoon/blocks/lift_top"
+    },
+    "mining_tycoon_trader_side": {
+      "textures": "textures/mining_tycoon/blocks/trader_side"
+    },
+    "mining_tycoon_trader_top": {
+      "textures": "textures/mining_tycoon/blocks/trader_top"
     }
   }
 }

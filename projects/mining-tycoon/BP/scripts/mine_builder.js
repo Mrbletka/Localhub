@@ -1,24 +1,15 @@
 // The mine every session plays in: an enclosed cave around the plot centre (y = floor). Rough rock walls and a
-// ceiling with stalactites, timber arches with hanging lanterns, a rail track from the arrival tunnel (south) to the
-// ore vein in the north wall, and drill pads along both side walls. Built across several ticks (system.runJob).
-import { BlockPermutation, BlockTypes, BlockVolume } from '@minecraft/server';
+// ceiling with stalactites, timber arches with hanging lanterns, a rail track from the expedition lift (in the tunnel,
+// south) to the ore vein in the north wall, drill pads along both side walls and the Ore Trader on the landing.
+// Built across several ticks (system.runJob).
+import { BlockVolume } from '@minecraft/server';
 import { CONFIG } from './config.js';
+import { pick, permutation, hash, noise } from './lib/worldgen.js';
 
 const M = CONFIG.mine;
 const H = M.half; // the mine fills x/z -H..H around the centre, y -1..TOP
 const TOP = 10;
 const ARCHES = [-5, 1, 7]; // z rows of the timber arches (posts at x = +-6, beam at y 6)
-
-/** First of these block ids that exists in this game version (ids get renamed: chain -> iron_chain). */
-const pick = (...ids) => ids.find((id) => BlockTypes.get(id)) ?? 'minecraft:stone';
-
-function permutation(id, states) {
-  try {
-    return BlockPermutation.resolve(id, states);
-  } catch {
-    return BlockPermutation.resolve(id); // a state this version doesn't know: plain block
-  }
-}
 
 let palette;
 /** Block for every key of the plan, resolved once (ids and states checked against this game version). */
@@ -45,6 +36,8 @@ function blocks() {
     padEdge: pick('minecraft:deepslate_tiles', 'minecraft:stone_bricks'),
     light: pick('minecraft:ochre_froglight', 'minecraft:shroomlight', 'minecraft:glowstone'),
     tunnel: pick('minecraft:blackstone', 'minecraft:coal_block'),
+    lift: pick(CONFIG.blocks.lift, 'minecraft:iron_block'),
+    trader: pick(CONFIG.blocks.trader, 'minecraft:barrel'),
     air: 'minecraft:air',
   };
   palette = Object.fromEntries(Object.entries(ids).map(([key, id]) => [key, permutation(id)]));
@@ -60,26 +53,6 @@ function blocks() {
 
 /** The block drills must stand on. */
 export const padBlockId = () => blocks().pad.type.id;
-
-// ---- deterministic noise: the same plot always gets the same cave -------------------------------------------------
-function hash(seed, a, b) {
-  let h = Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(a, 0xc2b2ae35) ^ Math.imul(b, 0x27d4eb2f);
-  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
-  h = Math.imul(h ^ (h >>> 12), 0x297a2d39);
-  return ((h ^ (h >>> 15)) >>> 0) / 4294967296;
-}
-
-function noise(seed, x, y, scale) {
-  const x0 = Math.floor(x / scale);
-  const y0 = Math.floor(y / scale);
-  const fx = x / scale - x0;
-  const fy = y / scale - y0;
-  const sx = fx * fx * (3 - 2 * fx);
-  const sy = fy * fy * (3 - 2 * fy);
-  const top = hash(seed, x0, y0) * (1 - sx) + hash(seed, x0 + 1, y0) * sx;
-  const bottom = hash(seed, x0, y0 + 1) * (1 - sx) + hash(seed, x0 + 1, y0 + 1) * sx;
-  return top * (1 - sy) + bottom * sy;
-}
 
 // ---- the plan --------------------------------------------------------------------------------------------------
 const V = M.vein;
@@ -161,6 +134,8 @@ export function* planMine(seed) {
   for (let y = 1; y <= 4; y++) set(-2, y, 12, 'post'), set(2, y, 12, 'post');
   for (let x = -2; x <= 2; x++) set(x, 4, 12, 'beam');
   for (let x = -1; x <= 1; x++) for (let y = 1; y <= 3; y++) set(x, y, 15, 'tunnel');
+  set(0, 2, 15, 'lift'); // the expedition lift: tap it at the end of the tunnel
+  set(3, 1, 11, 'trader'); // the Ore Trader on the landing
   // Drill pads along both side walls, framed by tiles.
   for (const s of [-1, 1]) {
     for (let z = -5; z <= 7; z++) {

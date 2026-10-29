@@ -111,7 +111,7 @@ function hideLoading(player, then) {
     // A screen that was still on its way when we closed would stay up: close until it is really gone.
     let tries = 0;
     const close = () => {
-      if (!player.isValid) return;
+      if (!player.isValid || (tries > 0 && !loadingOpen.has(player.id))) return;
       uiManager.closeAllForms(player);
       if (loadingOpen.has(player.id) && ++tries < 10) system.runTimeout(close, 4);
     };
@@ -120,21 +120,38 @@ function hideLoading(player, then) {
   }, wait);
 }
 
+/** Run fn once no loading screen is open or on its way any more (so a menu opened next is not closed with it). */
+function afterLoading(player, fn, tries = 0) {
+  if (!player.isValid) return;
+  if (loadingOpen.has(player.id) && tries < 12) return system.runTimeout(() => afterLoading(player, fn, tries + 1), 4);
+  fn();
+}
+
+/**
+ * Take a player somewhere behind the loading screen (text on it). go(done) teleports them first (teleports close
+ * menus, the screen opens just after) and calls done(ok) once they stand there; then the screen closes, the world
+ * shows again and after(ok) runs.
+ */
+export function travel(player, text, go, after) {
+  cover(player, 1); // hides the teleport until the loading screen is up
+  showLoading(player, text);
+  go((ok) => hideLoading(player, () => {
+    uncover(player);
+    afterLoading(player, () => after(ok));
+  }));
+}
+
 /** Play a session, or create it first when the slot is empty. */
 function enter(player, slot) {
   const fresh = !sessionsOf(player.id)[slot];
-  cover(player, 1); // hides the teleport until the loading screen is up
-  showLoading(player, fresh ? 'Building your mine...' : `Heading into Session ${slot + 1}...`); // opens after the teleport
-  const done = (ok) => hideLoading(player, () => {
-    uncover(player);
+  const go = (done) => (fresh ? createSession(player, slot, done) : playSession(player, slot, done));
+  travel(player, fresh ? 'Building your mine...' : `Heading into Session ${slot + 1}...`, go, (ok) => {
     if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
     if (!fresh) return player.sendMessage(`§aWelcome back to Session ${slot + 1}!`);
     player.playSound('random.levelup');
     player.onScreenDisplay.setTitle(`§6Session ${slot + 1}`, { subtitle: 'Break the ores for cash', fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
     player.sendMessage("§aYour new mine is ready! Break the ores with your Wooden Pick, then open the Miner's Tablet for upgrades.");
   });
-  if (!fresh) return playSession(player, slot, done);
-  createSession(player, slot, done);
 }
 
 /** Continue the last session; with none yet, Play starts the first one. */

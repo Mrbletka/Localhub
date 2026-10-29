@@ -4,6 +4,7 @@ export const CONFIG = {
   namespace: 'mining_tycoon',
   title: 'Mining Tycoon',
   items: { tablet: 'mining_tycoon:tycoon_tablet' },
+  blocks: { lift: 'mining_tycoon:lift', trader: 'mining_tycoon:trader' },
   startingMoney: 0,
 
   // Hand mining. value = cash per ore; pick = pick tier needed to break it. Hardness lives in BP/blocks/ore_*.json.
@@ -37,10 +38,39 @@ export const CONFIG = {
   // The mine on every plot (BP/scripts/mine_builder.js). Bump `version` when the layout changes: older mines are rebuilt
   // the next time their session is entered (drills placed in them go back to the inventory).
   mine: {
-    version: 2,
+    version: 3, // 3: lift in the tunnel, Ore Trader on the landing
     half: 15, // a mine fills x/z -half..half around its plot centre
     vein: { x: [-6, 6], z: [-12, -9], y: [1, 4] }, // the ore field: a vein in the north wall (y 0 = mine floor)
     respawnSeconds: 4,
+  },
+
+  // Resources: what ores give on expeditions (items you carry home). sell = Ore Trader price before the cash multiplier.
+  resources: [
+    { id: 'coal', item: 'mining_tycoon:res_coal', name: 'Coal Chunk', sell: 6 },
+    { id: 'copper', item: 'mining_tycoon:res_copper', name: 'Copper Chunk', sell: 16 },
+    { id: 'iron', item: 'mining_tycoon:res_iron', name: 'Iron Chunk', sell: 45 },
+    { id: 'gold', item: 'mining_tycoon:res_gold', name: 'Gold Chunk', sell: 130 },
+    { id: 'ruby', item: 'mining_tycoon:res_ruby', name: 'Rough Ruby', sell: 380 },
+    { id: 'diamond', item: 'mining_tycoon:res_diamond', name: 'Rough Diamond', sell: 1100 },
+  ],
+  // Expeditions: a fresh cave per run (BP/scripts/cave_builder.js), one slot per player far from the mines.
+  expedition: {
+    origin: { x: -20000, y: 150, z: 10000 },
+    spacing: 128,
+    perRow: 16,
+    half: 22, // a cave fills x/z -half..half around its centre
+    height: 16, // y 0..height
+    lightSeconds: 180, // the lantern's light energy
+    maxCreatures: 8,
+    levels: [
+      {
+        name: 'Shallow Caves',
+        // ore weights next to the lift -> at the far end of the cave
+        near: { coal: 55, copper: 35, iron: 10 },
+        far: { copper: 25, iron: 30, gold: 25, ruby: 14, diamond: 6 },
+        creatures: ['minecraft:zombie', 'minecraft:zombie', 'minecraft:skeleton', 'minecraft:spider'],
+      },
+    ],
   },
 
   // Drills: automation, unlocked at this mine level. income is money per second per placed drill.
