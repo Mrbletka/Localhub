@@ -115,8 +115,9 @@ def wrap(name, control, conds):
         control = {f'w{counter[0]}': stack([control], cond)}
     return control if conds else control
 
-def render(page, conds):
-    """Rows of a page (and its sub-pages) for the shared stack. conds: what must hold for this page to be on the path."""
+def render(page, conds, tech=False):
+    """Rows of a page (and its sub-pages) for the shared stack. conds: what must hold for this page to be on the path.
+    tech: the MINE-OS look (glass navs) of the welcome menu."""
     navs = [i.name for i in page.items if isinstance(i, Nav)]
     current = conds + [toggle_off(n) for n in navs]  # this page is the one showing
     rows = []
@@ -128,12 +129,12 @@ def render(page, conds):
             rows.append(wrap(item.name, {item.name: {'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%', '100%c'],
                                                      'controls': [{'list@server_form.mining_tycoon_list_' + item.name: {}}]}}, current))
         else:
-            rows += render(item.page, conds + [toggle_on(item.name)])
+            rows += render(item.page, conds + [toggle_on(item.name)], tech)
             child_navs = [i.name for i in item.page.items if isinstance(i, Nav)]
             toggle_conds = conds + [toggle_off(n) for n in navs if n != item.name] + [toggle_off(n) for n in child_navs]
             if item.show_if: toggle_conds.append(title_has(FLAGS[item.show_if]))
             rows.append(wrap(item.name, {f'{item.name}_row': {'type': 'panel', 'size': ['100%', 34], 'controls': [
-                {f'{item.name}@server_form.mining_tycoon_nav_toggle': {
+                {f'{item.name}@server_form.mining_tycoon_{"tech_" if tech else ""}nav_toggle': {
                     '$toggle_name': item.name, '$nav_text': item.text, '$nav_back_text': item.back,
                     '$nav_icon': f'{ICONS}/{item.icon}', '$nav_back_icon': f'{ICONS}/{item.back_icon}',
                     '$nav_icon_visible': item.icon in ICON_FILES, '$nav_back_icon_visible': item.back_icon in ICON_FILES}}]}}, toggle_conds))
@@ -232,9 +233,119 @@ ui['mining_tycoon_screen_bg'] = {
                                  'controls': background_fx()}}],  # screen the cave stopped short of both edges
 }
 
+# ---- MINE-OS: the welcome menu as a holo terminal (art: tools/gen_tech.py) ---------------------------------------
+# On open the terminal powers on like a CRT (a bright line opens into the screen), boot lines type themselves, corner
+# brackets lock in, a holographic ore block is printed by a rising laser and then turns in its projector beam, the ore
+# radar sweeps and lights blips, a scan line runs down the screen, the logo glitches into red/cyan now and then, and
+# the glass buttons get a light sweep.
+TECH = f'{UI}/tech'
+START = FORMS['start'][0]
+CYAN_TEXT = [0.55, 0.97, 1.0]
+
+def seq(prefix, kind, steps):
+    """One-shot animation steps [(duration, from, to, easing?)], each starting the next; the last value stays."""
+    names = [f'{prefix}_{i}' for i in range(len(steps))]
+    for i, (dur, frm, to, *ease) in enumerate(steps):
+        anim(names[i], kind, dur, frm, to, names[i + 1] if i + 1 < len(steps) else None, ease[0] if ease else 'linear')
+    return f'@server_form.{names[0]}'
+
+def flip(name, frames, step, fps, loop):
+    d = {'anim_type': 'flip_book', 'initial_uv': [0, 0], 'frame_count': frames, 'frame_step': step, 'fps': fps}
+    if loop: d['next'] = f'@server_form.{name}'
+    ui[name] = d
+    return f'@server_form.{name}'
+
+def tech_text(text, **extra):
+    d = {'type': 'label', 'text': text, 'color': CYAN_TEXT, 'shadow': False, 'font_scale_factor': 0.8, 'layer': 6,
+         'size': ['default', 'default']}
+    d.update(extra)
+    return d
+
+def typed(name, text, delay, y, width=190):
+    """A boot line that types itself: a clipping panel grows from nothing to the line's width."""
+    return {name: {'type': 'panel', 'clip_children': True, 'anchor_from': 'bottom_left', 'anchor_to': 'bottom_left',
+                   'offset': [14, y], 'layer': 6,
+                   'size': seq(f'mining_tycoon_type_{name}', 'size', [(delay, [0, 10], [0, 10]), (1.0, [0, 10], [width, 10])]),
+                   'controls': [{'text': tech_text(text, anchor_from='left_middle', anchor_to='left_middle')}]}}
+
+def bracket(name, corner, sign):
+    sx, sy = sign
+    return {name: {'type': 'image', 'texture': f'{TECH}/{name}', 'size': [12, 12], 'layer': 6, 'anchor_from': corner, 'anchor_to': corner,
+                   'offset': seq(f'mining_tycoon_{name}_in', 'offset', [(0.3, [-18 * sx, -18 * sy], [-18 * sx, -18 * sy]),
+                                                                         (0.35, [-18 * sx, -18 * sy], [8 * sx, 8 * sy], 'out_back')])}}
+
+def device(name, texture, size, frames, fps, title, detail, side):
+    """A holo device beside the menu (hologram on the left, radar on the right) with its caption."""
+    anchor = f'{side}_middle'
+    return {name: {'type': 'panel', 'size': [size, size + 22], 'layer': 6, 'anchor_from': anchor, 'anchor_to': anchor,
+                   'offset': [12 if side == 'left' else -12, -4], 'controls': [
+        *texture,
+        {'title': tech_text(title, anchor_from='bottom_middle', anchor_to='bottom_middle', offset=[0, -10], color=[1.0, 0.82, 0.38])},
+        {'detail': tech_text(detail, anchor_from='bottom_middle', anchor_to='bottom_middle', offset=[0, 0],
+                             alpha=chain(f'mining_tycoon_{name}_blink', 'alpha', [(0.6, 1, 1), (0.5, 0.35, 0.35)]))},
+    ]}}
+
+H = 112
+hologram = device('hologram', [
+    {'print': {'type': 'image', 'texture': f'{TECH}/holo_print', 'size': [H, H], 'uv_size': [H, H], 'anchor_from': 'top_middle',
+               'anchor_to': 'top_middle', 'disable_anim_fast_forward': True,
+               'uv': flip('mining_tycoon_holo_print', 18, H, 18, False),
+               'alpha': seq('mining_tycoon_holo_print_alpha', 'alpha', [(1.0, 1, 1), (0.06, 1, 0)])}},
+    {'spin': {'type': 'image', 'texture': f'{TECH}/holo_spin', 'size': [H, H], 'uv_size': [H, H], 'anchor_from': 'top_middle',
+              'anchor_to': 'top_middle', 'disable_anim_fast_forward': True, 'uv': flip('mining_tycoon_holo_spin', 18, H, 9, True),
+              'alpha': seq('mining_tycoon_holo_spin_alpha', 'alpha', [(1.0, 0, 0), (0.06, 0, 1)])}},
+], H, 18, 9, 'HOLO-SCAN', 'specimen: ore', 'left')
+radar = device('radar', [
+    {'sweep': {'type': 'image', 'texture': f'{TECH}/radar', 'size': [96, 96], 'uv_size': [96, 96], 'anchor_from': 'top_middle',
+               'anchor_to': 'top_middle', 'offset': [0, 8], 'disable_anim_fast_forward': True, 'uv': flip('mining_tycoon_radar', 20, 96, 10, True)}},
+], 112, 20, 10, 'ORE RADAR', 'signal 98%', 'right')
+
+ui['mining_tycoon_mineos'] = {
+    'type': 'panel', 'size': ['100%', '100%'], 'layer': 5,
+    'bindings': [{'binding_name': '#title_text'}, view(contains('#title_text', START))],
+    'controls': [
+        # the screen is off (black) until the CRT opens
+        {'off': {'type': 'image', 'texture': 'textures/ui/Black', 'size': ['100%', '100%'], 'keep_ratio': False, 'layer': 0,
+                 'alpha': seq('mining_tycoon_screen_off', 'alpha', [(0.15, 1, 1), (0.5, 1, 0, 'in_quad')])}},
+        {'crt': {'type': 'panel', 'anchor_from': 'center', 'anchor_to': 'center', 'clip_children': True, 'layer': 1,
+                 'size': seq('mining_tycoon_crt', 'size', [(0.12, ['100%', 2], ['100%', 2]), (0.45, ['100%', 2], ['100%', '100%'], 'out_expo')]),
+                 'controls': [
+            {'tint': {'type': 'image', 'texture': f'{TECH}/tint', 'size': ['100%', '100%'], 'keep_ratio': False, 'layer': 1}},
+            {'scanlines': {'type': 'image', 'texture': f'{TECH}/scanlines', 'size': ['100%', '100% + 8px'], 'tiled': True, 'layer': 2,
+                           'anchor_from': 'top_left', 'anchor_to': 'top_left',
+                           'offset': chain('mining_tycoon_scanlines', 'offset', [(0.4, [0, -4], [0, 0])])}},
+            {'vignette': {'type': 'image', 'texture': f'{TECH}/vignette', 'size': ['100%', '100%'], 'keep_ratio': False, 'layer': 3}},
+            {'sweep': {'type': 'image', 'texture': f'{TECH}/line', 'size': ['100%', 3], 'keep_ratio': False, 'layer': 4, 'alpha': 0.6,
+                       'anchor_from': 'top_left', 'anchor_to': 'top_left',
+                       'offset': chain('mining_tycoon_sweep', 'offset', [(2.4, [0, '-2%'], [0, '102%'], 'in_out_sine'), (3.6, [0, '102%'], [0, '102%'])])}},
+            hologram, radar,
+            bracket('bracket', 'top_left', (1, 1)), bracket('bracket_tr', 'top_right', (-1, 1)),
+            bracket('bracket_bl', 'bottom_left', (1, -1)), bracket('bracket_br', 'bottom_right', (-1, -1)),
+            typed('boot_1', '> MINE-OS v4.2 // DEPTH LINK ONLINE', 0.5, -34),
+            typed('boot_2', '> ORE SIGNAL .............. 98%', 1.4, -24),
+            typed('boot_3', '> WELCOME, MINER. SELECT AN OPTION', 2.3, -14),
+        ]}},
+        # the power-on line: a bright stroke across the middle that fades as the screen opens
+        {'power': {'type': 'image', 'texture': f'{TECH}/line', 'size': ['100%', 4], 'keep_ratio': False, 'layer': 8,
+                   'anchor_from': 'center', 'anchor_to': 'center',
+                   'alpha': seq('mining_tycoon_power', 'alpha', [(0.15, 1, 1), (0.45, 1, 0)])}},
+    ],
+}
+ui['mining_tycoon_screen_bg']['controls'].append({'mineos@server_form.mining_tycoon_mineos': {}})
+
+GLITCH = [(4.4, 0, 0), (0.05, 0, 0.8), (0.04, 0.8, 0.2), (0.05, 0.2, 0.85), (0.08, 0.85, 0)]
+def ghost(name, color, sign):
+    """A tinted copy of the logo that flashes out of place now and then (RGB split glitch)."""
+    return {name: {'type': 'image', 'texture': f'{UI}/logo', 'size': ['100%', '100%'], 'color': color, 'layer': -1,
+                   'alpha': chain(f'mining_tycoon_{name}_alpha', 'alpha', GLITCH),
+                   'offset': chain(f'mining_tycoon_{name}_offset', 'offset', [(4.4, [0, 0], [0, 0]), (0.05, [-3 * sign, 0], [-3 * sign, 0]),
+                                                                            (0.04, [2 * sign, -1], [2 * sign, -1]), (0.05, [-2 * sign, 1], [-2 * sign, 1]),
+                                                                            (0.08, [0, 0], [0, 0])])}}
+LOGO_GLITCH = [ghost('logo_red', [1.0, 0.25, 0.3], 1), ghost('logo_cyan', [0.3, 0.95, 1.0], -1)] if HAS_LOGO else []
+
 screens = []
 for key, (tag, root) in FORMS.items():
-    rows = render(root, [])
+    rows = render(root, [], key == 'start')
     screens.append({f'{key}_menu': {
         'type': 'panel', 'size': ['100%', '100%'], 'layer': 10,
         'bindings': title_has(tag),
@@ -242,6 +353,8 @@ for key, (tag, root) in FORMS.items():
             {'content': {'type': 'stack_panel', 'orientation': 'vertical', 'size': [190, '100%c'], 'anchor_from': 'center',
                          'anchor_to': 'center', 'layer': 20,
                          'offset': anim(f'mining_tycoon_content_in_{key}', 'offset', 0.35, [0, 14], [0, 0], easing='out_cubic'),
+                         **({'propagate_alpha': True, 'alpha': seq('mining_tycoon_start_flicker', 'alpha',
+                             [(0.35, 0, 0), (0.05, 0, 1), (0.05, 1, 0.25), (0.08, 0.25, 1)])} if key == 'start' else {}),
                          'controls': [
                 {'logo_row': {'type': 'panel', 'size': ['100%', 56], 'controls': [
                     {'logo': {**({'type': 'image', 'texture': f'{UI}/logo'} if HAS_LOGO else
@@ -249,7 +362,7 @@ for key, (tag, root) in FORMS.items():
                               'size': [180, 56] if HAS_LOGO else ['100%', 'default'],
                               'offset': anim(f'mining_tycoon_logo_drop_{key}', 'offset', 0.6, [0, -36], [0, 0],
                                              'mining_tycoon_logo_float_0', 'out_back'),
-                              'controls': LOGO_SPARKLES if HAS_LOGO else []}}]}},
+                              'controls': (LOGO_SPARKLES + (LOGO_GLITCH if key == 'start' else [])) if HAS_LOGO else []}}]}},
                 {'logo_gap': {'type': 'panel', 'size': ['100%', 4]}},
                 {'body': label('#form_text', [0.95, 0.95, 0.95], bindings=[{'binding_name': '#form_text'}])},
                 {'body_gap': {'type': 'panel', 'size': ['100%', 10]}},
@@ -277,7 +390,7 @@ for name, code in LIST_CODES.items():
             {'binding_name': '#form_button_text', **COLLECTION},
             view(contains('#form_button_text', code)),
         ],
-        'controls': [{'form_button@server_form.mining_tycoon_form_button': {}}],
+        'controls': [{f'form_button@server_form.mining_tycoon_{"tech" if name.startswith("start_") else "form"}_button': {}}],
     }
 strip = '#form_button_text' + ''.join(f" - '{c}'" for c in LIST_CODES.values())
 ui['mining_tycoon_form_button@common.button'] = {
@@ -315,6 +428,56 @@ ui['mining_tycoon_button_state'] = {
                         bindings=[{'binding_name': '#form_button_text', **COLLECTION}, view(f'({strip})', '#text')])},
     ],
 }
+
+# MINE-OS glass buttons (welcome menu): cyan text, gold when selected, a light streak sweeping across every few seconds.
+TECH_TEXT, TECH_HOVER = [0.62, 0.97, 1.0], [1.0, 0.86, 0.45]
+STREAK = {'streak': {'type': 'image', 'texture': f'{UI}/tech/streak', 'size': [24, 30], 'layer': 3, 'anchor_from': 'left_middle',
+                     'anchor_to': 'left_middle', 'alpha': 0.9,
+                     'offset': chain('mining_tycoon_streak', 'offset', [(0.55, [-30, 0], [210, 0], 'in_out_sine'), (2.9, [210, 0], [210, 0])])}}
+ui['mining_tycoon_tech_button@common.button'] = {
+    '$pressed_button_name': 'button.form_button_click',
+    'size': ['100%', 30], 'anchor_from': 'top_middle', 'anchor_to': 'top_middle',
+    'bindings': [{'binding_type': 'collection_details', 'binding_collection_name': 'form_buttons'}],
+    'controls': [
+        {'default@server_form.mining_tycoon_tech_state': {'$state_texture': f'{UI}/tech/glass', '$state_text_color': TECH_TEXT}},
+        {'hover@server_form.mining_tycoon_tech_state': {'$state_texture': f'{UI}/tech/glass_hover', '$state_text_color': TECH_HOVER, '$state_icon_offset': ICON_BOB}},
+        {'pressed@server_form.mining_tycoon_tech_state': {'$state_texture': f'{UI}/tech/glass_pressed', '$state_text_color': [1.0, 0.97, 0.85], '$state_text_offset': [0, 1]}},
+    ],
+}
+ui['mining_tycoon_tech_state'] = {
+    'type': 'image', 'texture': '$state_texture', 'size': ['100%', '100%'], 'clip_children': True,
+    '$state_text_offset|default': [0, 0], '$state_icon_offset|default': [7, 0],
+    'controls': [
+        icon(offset='$state_icon_offset'),
+        {'label': label('#text', '$state_text_color', offset='$state_text_offset', size=['100% - 48px', 'default'],
+                        max_size=['100% - 48px', 22], layer=1,
+                        bindings=[{'binding_name': '#form_button_text', **COLLECTION}, view(f'({strip})', '#text')])},
+        STREAK,
+    ],
+}
+ui['mining_tycoon_tech_nav_toggle@common.toggle'] = {
+    'size': ['100%', 30], 'anchor_from': 'top_middle', 'anchor_to': 'top_middle',
+    '$toggle_binding_type': 'none',
+    '$unchecked_control': 'server_form.mining_tycoon_tech_nav_open',
+    '$unchecked_hover_control': 'server_form.mining_tycoon_tech_nav_open_hover',
+    '$checked_control': 'server_form.mining_tycoon_tech_nav_back',
+    '$checked_hover_control': 'server_form.mining_tycoon_tech_nav_back_hover',
+    '$unchecked_locked_control': 'server_form.mining_tycoon_tech_nav_open',
+    '$unchecked_locked_hover_control': 'server_form.mining_tycoon_tech_nav_open',
+    '$checked_locked_control': 'server_form.mining_tycoon_tech_nav_back',
+    '$checked_locked_hover_control': 'server_form.mining_tycoon_tech_nav_back',
+}
+for name, tex, color, text, ico, bob in [
+    ('open', 'glass', TECH_TEXT, '$nav_text', '$nav_icon', False),
+    ('open_hover', 'glass_hover', TECH_HOVER, '$nav_text', '$nav_icon', True),
+    ('back', 'glass', TECH_TEXT, '$nav_back_text', '$nav_back_icon', False),
+    ('back_hover', 'glass_hover', TECH_HOVER, '$nav_back_text', '$nav_back_icon', True),
+]:
+    ui[f'mining_tycoon_tech_nav_{name}'] = {
+        'type': 'image', 'texture': f'{UI}/tech/{tex}', 'size': ['100%', '100%'], 'clip_children': True,
+        'controls': [{'icon': {**icon(ico, ICON_BOB if bob else (7, 0))['icon'], 'visible': ico + '_visible'}},
+                     {'label': label(text, color, size=['100% - 48px', 'default'], layer=1)}, STREAK],
+    }
 
 # Nav: an on/off UI toggle. Off: "$nav_text" (opens the sub-page). On: "$nav_back_text" (closes it again).
 ui['mining_tycoon_nav_toggle@common.toggle'] = {

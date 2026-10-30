@@ -33,6 +33,12 @@ Light always comes from the top-left: lighter rim top/left, darker bottom/right.
 - **Particles**: gold sparkles (`mining_tycoon:guide` marks where to go, `mining_tycoon:burst` celebrates a reward).
   Full bright, fade out, never block the view.
 
+## Accent: MINE-OS (tech)
+For the one screen that should feel like advanced technology (the welcome menu): dark glass over the world, cyan
+`#5ff6ff` light with the studio gold kept for titles and selection, scanlines, a vignette, chamfered glass panels,
+corner brackets, typed monospace-style boot lines, holograms and radars rendered as frame strips (`tools/gen_tech.py`),
+a CRT power-on, and a rare RGB-split glitch. Use it sparingly: it is the "wow" moment, the rest stays stone & gold.
+
 ## Words
 - Short, plain, friendly. Tell the player what to do: "Mine 5 Coal at the vein", "Get back to the lift!".
 - Numbers short: `$1.23K`, `3:30`, `12/48`.

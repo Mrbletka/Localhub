@@ -191,6 +191,19 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
 - Cave levels each have their own palette (see the table); the home mine has arches, lanterns, froglights, rails.
 
 ## Menus and sessions
+- **MINE-OS welcome menu** (the start menu only; `tools/gen_tech.py` renders the art, `tools/gen_server_form.py` the
+  layout): the start menu is a holo terminal over the dimmed cave.
+  - Power-on like a CRT: black screen, a bright line across the middle opens into the screen (0.6 s), the menu flickers
+    on, corner brackets lock into the screen corners.
+  - **Holo-Scan** (left): a holographic ore block printed layer by layer by a rising laser ring (18 frames, 1 s), then
+    turning in its projector beam with a scan pass every turn (18 frames, 2 s loop). Rendered by a small 3D rasteriser.
+  - **Ore radar** (right): a sweep with a fading trail that lights ore blips (gold, ruby, diamond) which fade until it
+    comes round again (20 frames, 2 s loop).
+  - Boot lines type themselves at the bottom left (`> MINE-OS v4.2 // DEPTH LINK ONLINE` ...), scanlines drift, a scan
+    line runs down the screen every 6 s, the logo glitches into a red/cyan split every ~4.6 s.
+  - Glass buttons and navs (chamfered, cyan rim, gold when selected) with a light streak sweeping across them.
+  - Animations are `flip_book` strips (frames side by side, at most 2048 px wide for older phones), one-shot `seq`
+    chains and looping `chain`s; the other menus keep the stone & gold look.
 - Start menu (`BP/scripts/menu.js`): shown on every join (retried every 5 ticks until the client can show it), and
   from Tablet > Main menu. It comes back if closed with Back, so players must choose:
   - **Play**: continue your last session (builds its mine first if it never finished). No sessions yet -> starts
