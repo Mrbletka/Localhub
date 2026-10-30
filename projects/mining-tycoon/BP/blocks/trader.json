@@ -9,24 +9,42 @@
     },
     "components": {
       "minecraft:display_name": "tile.mining_tycoon:trader.name",
-      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:geometry": "geometry.mining_tycoon.trader",
       "minecraft:material_instances": {
         "*": {
-          "texture": "mining_tycoon_trader_side",
-          "render_method": "opaque"
-        },
-        "up": {
-          "texture": "mining_tycoon_trader_top",
-          "render_method": "opaque"
-        },
-        "down": {
-          "texture": "mining_tycoon_trader_top",
-          "render_method": "opaque"
+          "texture": "mining_tycoon_props",
+          "render_method": "alpha_test"
         }
       },
+      "minecraft:collision_box": {
+        "origin": [
+          -8,
+          0,
+          -8
+        ],
+        "size": [
+          16,
+          16,
+          16
+        ]
+      },
+      "minecraft:selection_box": {
+        "origin": [
+          -8,
+          0,
+          -8
+        ],
+        "size": [
+          16,
+          16,
+          16
+        ]
+      },
+      "minecraft:light_dampening": 0,
       "minecraft:destructible_by_mining": false,
       "minecraft:destructible_by_explosion": false,
-      "minecraft:map_color": "#8e5e32"
+      "minecraft:map_color": "#d83a2c",
+      "minecraft:light_emission": 6
     }
   }
 }

@@ -1,7 +1,7 @@
 // The mine every session plays in: an enclosed cave around the plot centre (y = floor). Rough rock walls and a
 // ceiling with stalactites, timber arches with hanging lanterns, a rail track from the expedition lift (in the tunnel,
-// south) to the ore vein in the north wall, drill pads along both side walls, the Ore Trader and the machine bays on
-// the landing.
+// south) to the ore vein in the north wall, drill pads on the west side, the Ore Trader's market on the east side, and
+// on the landing the row of machine bays (west of the tunnel) and workshop stations (east of it).
 // Built across several ticks (system.runJob).
 import { BlockVolume } from '@minecraft/server';
 import { CONFIG } from './config.js';
@@ -42,6 +42,7 @@ function blocks() {
     frame: pick(CONFIG.machineFrame, 'minecraft:crafting_table'),
     air: 'minecraft:air',
   };
+  for (const s of CONFIG.workshop.stations) ids[`station_${s.id}`] = pick(s.block, 'minecraft:crafting_table');
   palette = Object.fromEntries(Object.entries(ids).map(([key, id]) => [key, permutation(id)]));
   palette.post = permutation(pick('minecraft:spruce_log', 'minecraft:log'), { pillar_axis: 'y' });
   palette.beam = permutation(pick('minecraft:stripped_spruce_log', 'minecraft:spruce_log', 'minecraft:log'), { pillar_axis: 'x' });
@@ -137,13 +138,16 @@ export function* planMine(seed) {
   for (let x = -2; x <= 2; x++) set(x, 4, 12, 'beam');
   for (let x = -1; x <= 1; x++) for (let y = 1; y <= 3; y++) set(x, y, 15, 'tunnel');
   set(0, 2, 15, 'lift'); // the expedition lift: tap it at the end of the tunnel
-  set(3, 1, 11, 'trader'); // the Ore Trader on the landing
-  // Drill pads along both side walls, framed by tiles.
-  for (const s of [-1, 1]) {
-    for (let z = -5; z <= 7; z++) {
-      for (let a = 8; a <= 12; a++) set(s * a, 0, z, a === 8 || z === -5 || z === 7 ? 'padEdge' : 'pad');
+  // West: drill pads framed by tiles. East: the market, a timber floor with the Ore Trader's stall in the middle.
+  for (let z = -5; z <= 7; z++) {
+    for (let a = 8; a <= 12; a++) {
+      const edge = a === 8 || z === -5 || z === 7;
+      set(-a, 0, z, edge ? 'padEdge' : 'pad');
+      set(a, 0, z, edge ? 'padEdge' : 'plank');
     }
   }
+  set(...M.trader, 'trader');
+  for (const [x, z] of [[12, -4], [12, 6], [9, 6]]) set(x, 1, z, 'barrel');
   // Timber arches with lanterns, lanterns on chains over the drill bays and in front of the vein.
   const hang = (x, z) => {
     for (let y = ceilY(x, z) - 1; y >= 6; y--) if (get(x, y, z) === 'air') attached.push([x, y, z, 'chain']);
@@ -157,9 +161,9 @@ export function* planMine(seed) {
   for (const x of [-10, 10]) for (const z of [-2, 4]) hang(x, z);
   for (const x of [-4, 4]) hang(x, -7);
   for (const z of [-2, 4, 10]) set(0, ceilY(0, z), z, 'light');
-  // Barrels by the entrance.
-  for (const [x, z] of [[4, 11], [5, 11]]) set(x, 1, z, 'barrel');
-  for (const m of CONFIG.machines) set(...m.bay, 'frame'); // machine bays (machines.js shows the built ones)
+  // The row on the landing: machine bays west of the tunnel (machines.js shows the built ones), workshop east of it.
+  for (const m of CONFIG.machines) set(...m.bay, 'frame');
+  for (const s of CONFIG.workshop.stations) set(...s.bay, `station_${s.id}`);
   // Stalactites, away from the arches and the chains.
   const used = new Set(attached.map(([x, , z]) => `${x},${z}`));
   for (let x = -12; x <= 12; x++) {
@@ -212,9 +216,9 @@ export function* buildMine(dimension, c, seed, done) {
 
 /** A few floor blocks under the arrival spot (the player's own chunk, always loaded), placed before the real build. */
 export function safetyFloor(dimension, c) {
-  for (let x = -1; x <= 1; x++) for (let z = 9; z <= 11; z++) dimension.getBlock({ x: c.x + x, y: c.y, z: c.z + z })?.setPermutation(blocks().plank);
+  for (let x = -1; x <= 1; x++) for (let z = 6; z <= 8; z++) dimension.getBlock({ x: c.x + x, y: c.y, z: c.z + z })?.setPermutation(blocks().plank);
 }
 
-/** Where players arrive: on the rails in front of the tunnel, looking at the vein. */
-export const arrival = (c) => ({ x: c.x + 0.5, y: c.y + 1, z: c.z + 10.5 });
-export const lookAt = (c) => ({ x: c.x + 0.5, y: c.y + 2, z: c.z - 10 });
+/** Where players arrive: on the rails in the hall, facing the landing (machines, tunnel with the lift, workshop). */
+export const arrival = (c) => ({ x: c.x + 0.5, y: c.y + 1, z: c.z + 7.5 });
+export const lookAt = (c) => ({ x: c.x + 0.5, y: c.y + 2, z: c.z + 14 });

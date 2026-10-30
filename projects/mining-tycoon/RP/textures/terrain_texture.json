@@ -81,6 +81,12 @@
     },
     "mining_tycoon_machine_frame_top": {
       "textures": "textures/mining_tycoon/blocks/machine_frame_top"
+    },
+    "mining_tycoon_props": {
+      "textures": "textures/mining_tycoon/blocks/props"
+    },
+    "mining_tycoon_props_on": {
+      "textures": "textures/mining_tycoon/blocks/props_on"
     }
   }
 }

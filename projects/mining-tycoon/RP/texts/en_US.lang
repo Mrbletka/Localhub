@@ -37,3 +37,6 @@ tile.mining_tycoon:smelter.name=Smelter
 tile.mining_tycoon:crusher.name=Crusher
 tile.mining_tycoon:gem_cutter.name=Gem Cutter
 tile.mining_tycoon:machine_frame.name=Machine Bay
+tile.mining_tycoon:pick_station.name=Pickaxe Station
+tile.mining_tycoon:gear_bench.name=Gear Bench
+tile.mining_tycoon:cart_depot.name=Mine Cart

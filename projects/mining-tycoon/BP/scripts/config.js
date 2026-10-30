@@ -7,44 +7,40 @@ export const CONFIG = {
   blocks: { lift: 'mining_tycoon:lift', trader: 'mining_tycoon:trader' },
   startingMoney: 0,
 
-  // Hand mining. value = cash per ore; pick = pick tier needed to break it. Hardness lives in BP/blocks/ore_*.json.
+  // Ores (custom blocks): breaking one gives its resource item (home vein and caves alike); pick = pick tier needed.
+  // Hardness lives in BP/blocks/ore_*.json. Mine Rock is no longer used (old veins are re-rolled).
   ores: [
-    { id: 'rock', block: 'mining_tycoon:ore_rock', name: 'Mine Rock', value: 1, pick: 1 },
-    { id: 'coal', block: 'mining_tycoon:ore_coal', name: 'Coal Ore', value: 4, pick: 1 },
-    { id: 'copper', block: 'mining_tycoon:ore_copper', name: 'Copper Ore', value: 12, pick: 2 },
-    { id: 'iron', block: 'mining_tycoon:ore_iron', name: 'Iron Ore', value: 35, pick: 3 },
-    { id: 'gold', block: 'mining_tycoon:ore_gold', name: 'Gold Ore', value: 100, pick: 4 },
-    { id: 'ruby', block: 'mining_tycoon:ore_ruby', name: 'Ruby Ore', value: 300, pick: 5 },
-    { id: 'diamond', block: 'mining_tycoon:ore_diamond', name: 'Diamond Ore', value: 900, pick: 6 },
+    { id: 'rock', block: 'mining_tycoon:ore_rock', name: 'Mine Rock', pick: 1 },
+    { id: 'coal', block: 'mining_tycoon:ore_coal', name: 'Coal Ore', pick: 1 },
+    { id: 'copper', block: 'mining_tycoon:ore_copper', name: 'Copper Ore', pick: 2 },
+    { id: 'iron', block: 'mining_tycoon:ore_iron', name: 'Iron Ore', pick: 3 },
+    { id: 'gold', block: 'mining_tycoon:ore_gold', name: 'Gold Ore', pick: 4 },
+    { id: 'ruby', block: 'mining_tycoon:ore_ruby', name: 'Ruby Ore', pick: 5 },
+    { id: 'diamond', block: 'mining_tycoon:ore_diamond', name: 'Diamond Ore', pick: 6 },
   ],
-  // Pick tiers in order (tier = index + 1). Mining speed lives in BP/items/pick_*.json (minecraft:digger).
+  // Pick tiers in order (tier = index + 1), crafted at the Pickaxe Station from `needs` (money + goods by id).
+  // Mining speed lives in BP/items/pick_*.json (minecraft:digger).
   picks: [
-    { item: 'mining_tycoon:pick_1', name: 'Wooden Pick', cost: 0 },
-    { item: 'mining_tycoon:pick_2', name: 'Stone Pick', cost: 60 },
-    { item: 'mining_tycoon:pick_3', name: 'Copper Pick', cost: 800 },
-    { item: 'mining_tycoon:pick_4', name: 'Iron Pick', cost: 7500 },
-    { item: 'mining_tycoon:pick_5', name: 'Gold Pick', cost: 60000 },
-    { item: 'mining_tycoon:pick_6', name: 'Diamond Pick', cost: 450000 },
+    { item: 'mining_tycoon:pick_1', name: 'Wooden Pick', needs: {} },
+    { item: 'mining_tycoon:pick_2', name: 'Stone Pick', needs: { money: 50 } },
+    { item: 'mining_tycoon:pick_3', name: 'Copper Pick', needs: { money: 150, copper_bar: 4 } },
+    { item: 'mining_tycoon:pick_4', name: 'Iron Pick', needs: { money: 1200, iron_bar: 6 } },
+    { item: 'mining_tycoon:pick_5', name: 'Gold Pick', needs: { money: 9000, gold_bar: 6 } },
+    { item: 'mining_tycoon:pick_6', name: 'Diamond Pick', needs: { money: 60000, gold_bar: 8, cut_ruby: 4 } },
   ],
-  // Mine levels in order (level = index + 1): weights of the ores that grow in the ore field.
-  mines: [
-    { name: 'Shallow Mine', cost: 0, weights: { rock: 80, coal: 20 } },
-    { name: 'Copper Seam', cost: 120, weights: { rock: 60, coal: 25, copper: 15 } },
-    { name: 'Iron Vein', cost: 1500, weights: { rock: 50, coal: 20, copper: 18, iron: 12 } },
-    { name: 'Gold Cavern', cost: 12000, weights: { rock: 40, coal: 15, copper: 18, iron: 15, gold: 12 } },
-    { name: 'Ruby Depths', cost: 100000, weights: { rock: 35, coal: 10, copper: 15, iron: 15, gold: 15, ruby: 10 } },
-    { name: 'Diamond Core', cost: 750000, weights: { rock: 30, coal: 8, copper: 12, iron: 15, gold: 15, ruby: 12, diamond: 8 } },
-  ],
+  // The home vein: weights of the ores that grow there (only ores your pick can mine; a new pick re-rolls it).
+  vein: { coal: 50, copper: 35, iron: 15 },
   // The mine on every plot (BP/scripts/mine_builder.js). Bump `version` when the layout changes: older mines are rebuilt
   // the next time their session is entered (drills placed in them go back to the inventory).
   mine: {
-    version: 3, // 3: lift in the tunnel, Ore Trader on the landing
+    version: 4, // 4: workshop row on the landing, market stall on the east side, drill pads on the west side only
     half: 15, // a mine fills x/z -half..half around its plot centre
     vein: { x: [-6, 6], z: [-12, -9], y: [1, 4] }, // the ore field: a vein in the north wall (y 0 = mine floor)
     respawnSeconds: 4,
+    trader: [10, 1, 1], // the Ore Trader's market stall
   },
 
-  // Resources: what ores give on expeditions (items you carry home). sell = Ore Trader price before the cash multiplier.
+  // Resources: what ores give (items). sell = Ore Trader price before the rebirth bonus.
   resources: [
     { id: 'coal', item: 'mining_tycoon:res_coal', name: 'Coal Chunk', sell: 6 },
     { id: 'copper', item: 'mining_tycoon:res_copper', name: 'Copper Chunk', sell: 16 },
@@ -95,35 +91,83 @@ export const CONFIG = {
   machineFrame: 'mining_tycoon:machine_frame', // an empty bay: tap it to build its machine
 
   // Expeditions: a fresh cave per run (BP/scripts/cave_builder.js), one slot per player far from the mines.
+  // Workshop stations (BP/scripts/workshop.js) in the row on the landing (bay: x, y, z from the plot centre; north
+  // face = front). Each upgrade level lists what crafting it needs (money + goods by id).
+  workshop: {
+    stations: [
+      { id: 'picks', block: 'mining_tycoon:pick_station', name: 'Pickaxe Station', bay: [2, 1, 11] },
+      { id: 'gear', block: 'mining_tycoon:gear_bench', name: 'Gear Bench', bay: [4, 1, 11] },
+      { id: 'cart', block: 'mining_tycoon:cart_depot', name: 'Mine Cart', bay: [6, 1, 11] },
+    ],
+    // Lantern: seconds of light per expedition.
+    lantern: [
+      { seconds: 180, needs: {} },
+      { seconds: 240, needs: { money: 300, copper_bar: 3 } },
+      { seconds: 300, needs: { money: 2500, iron_bar: 5 } },
+      { seconds: 390, needs: { money: 20000, gold_bar: 5 } },
+      { seconds: 480, needs: { money: 90000, cut_ruby: 3 } },
+    ],
+    // Backpack: how many items one expedition can bring up.
+    backpack: [
+      { size: 24, needs: {} },
+      { size: 48, needs: { money: 200, copper_bar: 4 } },
+      { size: 96, needs: { money: 1800, iron_bar: 6 } },
+      { size: 160, needs: { money: 15000, gold_bar: 6 } },
+      { size: 256, needs: { money: 120000, cut_diamond: 2 } },
+    ],
+  },
+
+  // Expeditions: a fresh cave per run (BP/scripts/cave_builder.js), one slot per session far from the mines. Cave levels
+  // are unlocked with the Mine Cart (`needs`); deeper caves are bigger, richer, darker and more dangerous.
   expedition: {
     origin: { x: -20000, y: 150, z: 10000 },
     spacing: 128,
     perRow: 16,
-    half: 22, // a cave fills x/z -half..half around its centre
     height: 16, // y 0..height
-    lightSeconds: 180, // the lantern's light energy
-    maxCreatures: 8,
     levels: [
       {
-        name: 'Shallow Caves',
+        name: 'Shallow Caves', palette: 'stone', half: 22, maxCreatures: 6, needs: {},
+        about: 'Stone tunnels: coal and copper by the lift, iron and gold further in.',
         // ore weights next to the lift -> at the far end of the cave
-        near: { coal: 55, copper: 35, iron: 10 },
-        far: { copper: 25, iron: 30, gold: 25, ruby: 14, diamond: 6 },
+        near: { coal: 50, copper: 38, iron: 12 },
+        far: { copper: 25, iron: 35, gold: 25, ruby: 10, diamond: 5 },
         creatures: ['minecraft:zombie', 'minecraft:zombie', 'minecraft:skeleton', 'minecraft:spider'],
+      },
+      {
+        name: 'Deep Caverns', palette: 'deep', half: 24, maxCreatures: 8, needs: { money: 3000, iron_bar: 8 },
+        about: 'Deepslate halls: iron and gold, rubies and diamonds further in. Husks and cave spiders.',
+        near: { copper: 30, iron: 45, gold: 25 },
+        far: { iron: 20, gold: 40, ruby: 25, diamond: 15 },
+        creatures: ['minecraft:zombie', 'minecraft:husk', 'minecraft:skeleton', 'minecraft:cave_spider'],
+      },
+      {
+        name: 'Crystal Grotto', palette: 'crystal', half: 26, maxCreatures: 9, needs: { money: 25000, gold_bar: 8 },
+        about: 'Glowing amethyst caves full of gold, rubies and diamonds. Strays shoot slowing arrows.',
+        near: { iron: 30, gold: 45, ruby: 25 },
+        far: { gold: 25, ruby: 40, diamond: 35 },
+        creatures: ['minecraft:stray', 'minecraft:stray', 'minecraft:cave_spider', 'minecraft:zombie'],
+      },
+      {
+        name: 'Magma Core', palette: 'magma', half: 28, maxCreatures: 10, needs: { money: 150000, cut_diamond: 4 },
+        about: 'Blackstone and magma, rubies and diamonds everywhere. Wither skeletons, blazes, magma cubes.',
+        near: { gold: 40, ruby: 35, diamond: 25 },
+        far: { ruby: 35, diamond: 65 },
+        creatures: ['minecraft:wither_skeleton', 'minecraft:magma_cube', 'minecraft:blaze', 'minecraft:wither_skeleton'],
       },
     ],
   },
 
-  // Drills: automation, unlocked at this mine level. income is money per second per placed drill.
-  drillsUnlockMine: 3,
-  maxGeneratorsPerPlayer: 40, // per session
-  generators: [
-    { block: 'mining_tycoon:generator_t1', name: 'Stone Drill', cost: 2000, income: 4, icon: 'textures/mining_tycoon/blocks/generator_t1' },
-    { block: 'mining_tycoon:generator_t2', name: 'Iron Drill', cost: 20000, income: 35, icon: 'textures/mining_tycoon/blocks/generator_t2' },
-    { block: 'mining_tycoon:generator_t3', name: 'Diamond Drill', cost: 200000, income: 300, icon: 'textures/mining_tycoon/blocks/generator_t3' },
-  ],
-  // Ore value: +incomeBonusPerLevel cash from ores and drills per level.
-  upgrade: { baseCost: 40, costGrowth: 1.6, incomeBonusPerLevel: 0.25 },
+  // Drills: helpers on the drill pads (west side of the mine) that dig chunks into the session's drill bin while you
+  // play it. Crafted at the Pickaxe Station once your pick is good enough (`pick`). makes: weights of what they dig.
+  drills: {
+    max: 12, // per session
+    bin: 256, // the bin stops filling when it is full
+    tiers: [
+      { block: 'mining_tycoon:generator_t1', name: 'Stone Drill', pick: 3, seconds: 20, needs: { money: 2000, copper_bar: 4 }, makes: { coal: 55, copper: 45 } },
+      { block: 'mining_tycoon:generator_t2', name: 'Iron Drill', pick: 4, seconds: 15, needs: { money: 20000, iron_bar: 8 }, makes: { copper: 40, iron: 45, gold: 15 } },
+      { block: 'mining_tycoon:generator_t3', name: 'Diamond Drill', pick: 6, seconds: 12, needs: { money: 200000, cut_diamond: 3 }, makes: { iron: 30, gold: 45, ruby: 18, diamond: 7 } },
+    ],
+  },
   rebirth: { baseCost: 1000000, costGrowth: 4, bonusPerRebirth: 0.5 },
 
   // Save slots per player. Each session has its own mine plot, money, upgrades, rebirths and drills.

@@ -6,8 +6,8 @@ import { world, system, EntityDamageCause } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { formatNumber, getJson, setJson, giveItem } from './lib/util.js';
 import { activeSession, sessionsOf, plotAt, playSession } from './sessions.js';
-import { buildCave, planCave, safetyFloor, caveArrival, caveLookAt } from './cave_builder.js';
-import { pickTier, valueMultiplier } from './economy.js';
+import { buildCave, planCave, safetyFloor, caveArrival, caveLookAt, caveBounds } from './cave_builder.js';
+import { pickTier, valueMultiplier, lightSeconds, backpackSize, cartLevel } from './economy.js';
 import { pickProblem, popup, popupUntil } from './mining.js';
 import { fullScreenMenu, icon, travel } from './menu.js';
 
@@ -19,12 +19,14 @@ const CREATURE = `${NS}:creature`;
 const ORES = new Map(CONFIG.ores.map((o) => [o.block, o]));
 const RESOURCES = new Map(CONFIG.resources.map((r) => [r.id, r]));
 const RESOURCE_ITEMS = new Map(CONFIG.resources.map((r) => [r.item, r]));
-const DRILLS = new Set(CONFIG.generators.map((g) => g.block));
+const DRILLS = new Set(CONFIG.drills.tiers.map((g) => g.block));
 const QUIET = { showParticles: false };
-const REACH = E.half * 2 + E.height; // getEntities radius around a cave centre that covers the whole box
+const HALF = caveBounds.half; // the largest cave box
+const REACH = HALF * 2 + E.height; // getEntities radius around a cave centre that covers the whole box
 
 /**
- * Expeditions underway: playerId -> { slot, cave, seed, level, light, haul, phase, glow, spawns, nextSpawn, dark }.
+ * Expeditions underway: playerId -> { slot, cave, seed, level, light, max, room, haul, phase, glow, spawns, nextSpawn, dark }.
+ * level: index into CONFIG.expedition.levels. light / max: seconds left / at the start (lantern). room: backpack size.
  * light: seconds left. haul: { resourceId: count } mined on this run. phase: 'building' (the cave goes up), 'active',
  * 'dead' (waiting to respawn). The run is stored on the player too, so leaving the game mid-run still costs the haul.
  */
@@ -48,7 +50,7 @@ export function caveAt(dimensionId, { x, y, z }) {
   const row = Math.round((z - E.origin.z) / E.spacing);
   if (col < 0 || col >= E.perRow || row < 0) return;
   const c = caveCenter(row * E.perRow + col);
-  if (Math.abs(x - c.x) > E.half + 1 || Math.abs(z - c.z) > E.half + 1) return;
+  if (Math.abs(x - c.x) > HALF + 1 || Math.abs(z - c.z) > HALF + 1) return;
   return row * E.perRow + col;
 }
 
@@ -77,8 +79,8 @@ const haulValue = (haul, player) =>
   Object.entries(haul).reduce((sum, [id, n]) => sum + (RESOURCES.get(id)?.sell ?? 0) * n, 0) * valueMultiplier(player);
 
 function save(player, run) {
-  const { slot, cave, seed, level, light, haul, phase } = run;
-  setJson(player, RUN_KEY, { slot, cave, seed, level, light, haul, phase });
+  const { slot, cave, seed, level, light, max, room, haul, phase } = run;
+  setJson(player, RUN_KEY, { slot, cave, seed, level, light, max, room, haul, phase });
 }
 
 function end(player) {
@@ -127,15 +129,16 @@ function notice(player, body) {
 function enterCave(player, run, done) {
   const dimension = world.getDimension(DIMENSION);
   const c = caveCenter(run.cave);
-  const spot = caveArrival(c);
+  const level = E.levels[run.level];
+  const spot = caveArrival(c, level);
   player.addEffect('slow_falling', 600, QUIET);
-  player.teleport({ ...spot, y: spot.y + 1.5 }, { dimension, facingLocation: caveLookAt(c) });
+  player.teleport({ ...spot, y: spot.y + 1.5 }, { dimension, facingLocation: caveLookAt(c, level) });
   let tries = 0;
   const over = () => !player.isValid || runs.get(player.id) !== run || run.phase !== 'building'; // died or left meanwhile
   const attempt = () => {
     if (over()) return done(false);
     try {
-      safetyFloor(dimension, c); // something to stand on at once, even before the rest of the area has loaded
+      safetyFloor(dimension, c, level); // something to stand on at once, even before the rest of the area has loaded
     } catch {
       // not loaded yet either - the build retries
     }
@@ -145,20 +148,20 @@ function enterCave(player, run, done) {
       clearCave(dimension, c);
       run.spawns = plan.spawns;
       player.removeEffect('slow_falling');
-      if (player.location.y < spot.y - 0.5) player.teleport(spot, { dimension, facingLocation: caveLookAt(c) });
+      if (player.location.y < spot.y - 0.5) player.teleport(spot, { dimension, facingLocation: caveLookAt(c, level) });
       done(true);
     };
-    system.runJob(buildCave(dimension, c, run.seed, E.levels[run.level], built, () => clearCave(dimension, c)));
+    system.runJob(buildCave(dimension, c, run.seed, level, built, () => clearCave(dimension, c)));
   };
   system.runTimeout(attempt, 2);
 }
 
-function descend(player) {
+function descend(player, level) {
   const slot = activeSession(player);
   const record = slot === undefined ? undefined : sessionsOf(player.id)[slot];
-  if (!record || runs.has(player.id)) return;
-  const level = 0;
-  const run = { slot, cave: record.index, seed: Math.floor(Math.random() * 2147483647), level, light: E.lightSeconds, haul: {}, phase: 'building', glow: '', spawns: [], nextSpawn: 0, dark: 0 };
+  if (!record || runs.has(player.id) || level >= cartLevel(player)) return;
+  const light = lightSeconds(player);
+  const run = { slot, cave: record.index, seed: Math.floor(Math.random() * 2147483647), level, light, max: light, room: backpackSize(player), haul: {}, phase: 'building', glow: '', spawns: [], nextSpawn: 0, dark: 0 };
   runs.set(player.id, run);
   save(player, run);
   travel(player, `Riding the lift down into the ${E.levels[level].name}...`, (done) => enterCave(player, run, done), (ok) => {
@@ -200,7 +203,7 @@ function giveUp(player) {
 
 /** After a script reload players are still down there: carry on (the creature spots come from the seed again). */
 function resume(player, stored) {
-  const run = { ...stored, glow: '', spawns: [], nextSpawn: system.currentTick + 100, dark: 0 };
+  const run = { max: lightSeconds(player), room: backpackSize(player), ...stored, glow: '', spawns: [], nextSpawn: system.currentTick + 100, dark: 0 };
   runs.set(player.id, run);
   system.runJob(
     (function* () {
@@ -212,10 +215,11 @@ function resume(player, stored) {
 // ---- light and creatures ------------------------------------------------------------------------------------------
 
 function hud(run) {
-  const left = run.light / E.lightSeconds;
+  const left = run.light / run.max;
   const lit = Math.ceil(left * 12);
   const color = left > 0.3 ? '§e' : left > 0.1 ? '§6' : '§c';
-  return `${color}Light ${clock(run.light)} ${'|'.repeat(lit)}§8${'|'.repeat(12 - lit)}  §fHaul ${haulCount(run.haul)}`;
+  const haul = haulCount(run.haul);
+  return `${color}Light ${clock(run.light)} ${'|'.repeat(lit)}§8${'|'.repeat(12 - lit)}  ${haul >= run.room ? '§c' : '§f'}Haul ${haul}/${run.room}`;
 }
 
 /** Creatures come from spots 10-20 blocks away, one at a time, more of them (and faster) as the light fades. */
@@ -223,7 +227,8 @@ function sendCreatures(player, run, left) {
   if (system.currentTick < run.nextSpawn || !run.spawns.length) return;
   const c = caveCenter(run.cave);
   const dimension = player.dimension;
-  const want = Math.min(E.maxCreatures, 1 + Math.floor((1 - left) * E.maxCreatures));
+  const max = E.levels[run.level].maxCreatures;
+  const want = Math.min(max, 1 + Math.floor((1 - left) * max));
   if (dimension.getEntities({ location: c, maxDistance: REACH, tags: [caveTag(run.cave)] }).length >= want) return;
   const p = player.location;
   const spots = run.spawns.filter(([x, y, z]) => {
@@ -253,7 +258,7 @@ function burn(player, run) {
     return notice(player, lose(player, run, 'You left the cave without the lift.'));
   }
   run.light = Math.max(0, run.light - 1);
-  const left = run.light / E.lightSeconds;
+  const left = run.light / run.max;
   const glow = run.light === 0 ? 'out' : left <= 0.1 ? 'dying' : left <= 0.3 ? 'flicker' : 'full';
   if (glow !== run.glow) {
     run.glow = glow;
@@ -283,25 +288,24 @@ function burn(player, run) {
 
 // ---- menus --------------------------------------------------------------------------------------------------------
 
+/** The lift at home: the deepest two cave levels the Mine Cart has unlocked. */
 function showDescend(player) {
-  const level = E.levels[0];
+  const unlocked = cartLevel(player);
   const tier = pickTier(player);
-  const ores = CONFIG.ores.filter((o) => o.id in level.near || o.id in level.far);
-  const can = ores.filter((o) => o.pick <= tier).map((o) => o.name);
+  const deepest = E.levels[unlocked - 1];
+  const ores = CONFIG.ores.filter((o) => o.id in deepest.near || o.id in deepest.far);
+  const can = ores.filter((o) => o.pick <= tier).map((o) => o.name.replace(' Ore', ''));
   const next = ores.find((o) => o.pick > tier);
   const body =
-    `§6Expedition: ${level.name}§r\n` +
-    `A new cave every time. Your light lasts ${clock(E.lightSeconds)}: get back to this lift before it runs out.\n` +
-    '§cDie down there and you lose everything you mined.\n' +
+    `§6Expedition§r - a new cave every time. Light ${clock(lightSeconds(player))}, backpack ${backpackSize(player)} items.\n` +
+    '§cDie down there and you lose what you mined on that run.\n' +
     `§7Your ${CONFIG.picks[tier - 1].name} mines ${can.join(', ') || 'nothing there'}.${next ? ` ${next.name} needs a ${CONFIG.picks[next.pick - 1].name}.` : ''}`;
-  fullScreenMenu(player, {
-    form: 'notice',
-    body,
-    buttons: [
-      { list: 'notice', text: 'Descend\n§7Into the dark', icon: icon('expedition'), run: descend },
-      { list: 'notice', text: 'Not now', icon: icon('back'), run: () => {} },
-    ],
-  });
+  const buttons = [];
+  for (let i = unlocked - 1; i >= Math.max(0, unlocked - 2); i--) {
+    buttons.push({ list: 'notice', text: `${E.levels[i].name}\n§7${E.levels[i].about}`, icon: icon('expedition'), run: (p) => descend(p, i) });
+  }
+  buttons.push({ list: 'notice', text: 'Not now', icon: icon('back'), run: () => {} });
+  fullScreenMenu(player, { form: 'notice', body, buttons });
 }
 
 function showExtract(player, run) {
@@ -366,6 +370,7 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   let message;
   if (run?.cave !== cave || run.phase !== 'active') message = '§7This cave is not yours.';
   else if (!ore) message = '§7Only ores can be mined down here.';
+  else if (haulCount(run.haul) >= run.room) message = `§cYour backpack is full (${run.room}): get back to the lift! The Gear Bench makes it bigger.`;
   else message = pickProblem(event.itemStack, ore);
   if (!message) return;
   event.cancel = true;

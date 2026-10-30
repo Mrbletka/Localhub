@@ -9,29 +9,41 @@
     },
     "components": {
       "minecraft:display_name": "tile.mining_tycoon:smelter.name",
-      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:geometry": "geometry.mining_tycoon.smelter",
       "minecraft:material_instances": {
         "*": {
-          "texture": "mining_tycoon_smelter_side",
-          "render_method": "opaque"
-        },
-        "north": {
-          "texture": "mining_tycoon_smelter_front",
-          "render_method": "opaque"
-        },
-        "up": {
-          "texture": "mining_tycoon_smelter_top",
-          "render_method": "opaque"
-        },
-        "down": {
-          "texture": "mining_tycoon_smelter_top",
-          "render_method": "opaque"
+          "texture": "mining_tycoon_props",
+          "render_method": "alpha_test"
         }
       },
+      "minecraft:collision_box": {
+        "origin": [
+          -8,
+          0,
+          -8
+        ],
+        "size": [
+          16,
+          16,
+          16
+        ]
+      },
+      "minecraft:selection_box": {
+        "origin": [
+          -8,
+          0,
+          -8
+        ],
+        "size": [
+          16,
+          16,
+          16
+        ]
+      },
+      "minecraft:light_dampening": 0,
       "minecraft:destructible_by_mining": false,
       "minecraft:destructible_by_explosion": false,
-      "minecraft:map_color": "#5a5650",
-      "minecraft:light_emission": 8
+      "minecraft:map_color": "#5a5650"
     }
   }
 }

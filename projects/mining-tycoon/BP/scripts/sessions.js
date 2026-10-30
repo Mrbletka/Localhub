@@ -10,8 +10,10 @@ const P = CONFIG.plots;
 const SLOTS = CONFIG.sessions.slots;
 const STATE_KEY = `${NS}:sessions`;
 const ACTIVE_KEY = `${NS}:active_session`;
-const DRILLS = new Set(CONFIG.generators.map((g) => g.block));
+const DRILLS = new Set(CONFIG.drills.tiers.map((g) => g.block));
 const BREAKABLE = new Set([...DRILLS, ...CONFIG.ores.map((o) => o.block)]);
+/** Every per-session player property (removed when a session is deleted). */
+const SESSION_DATA = ['money', 'rebirths', 'pick', 'lantern', 'backpack', 'cart', 'drill_items', 'drill_bin', 'machines', 'income_level', 'mine_level'];
 
 /**
  * { players: { playerId: { name, slots: [{ index, version } | null, ...] } }, free: plotIndex[], next: plotIndex }
@@ -64,7 +66,6 @@ export function lastSession(player) {
 export function sessionStats(player, slot) {
   return {
     money: getNumber(player, sessionKey(slot, 'money')),
-    level: getNumber(player, sessionKey(slot, 'income_level')),
     rebirths: getNumber(player, sessionKey(slot, 'rebirths')),
   };
 }
@@ -198,17 +199,15 @@ export function playSession(player, slot, done = () => {}) {
   });
 }
 
-/** Start a fresh session in an empty slot: new plot, starting money, Wooden Pick, Shallow Mine. */
+/** Start a fresh session in an empty slot: new plot, starting money, Wooden Pick, first lantern and backpack. */
 export function createSession(player, slot, done) {
   const p = (state.players[player.id] ??= { name: player.name, slots: Array(SLOTS).fill(null) });
   p.name = player.name;
   p.slots[slot] = { index: state.free.length ? state.free.shift() : state.next++, version: 0 };
   save();
   setNumber(player, sessionKey(slot, 'money'), CONFIG.startingMoney);
-  setNumber(player, sessionKey(slot, 'income_level'), 0);
   setNumber(player, sessionKey(slot, 'rebirths'), 0);
-  setNumber(player, sessionKey(slot, 'pick'), 1);
-  setNumber(player, sessionKey(slot, 'mine_level'), 1);
+  for (const name of ['pick', 'lantern', 'backpack', 'cart']) setNumber(player, sessionKey(slot, name), 1);
   setJson(player, sessionKey(slot, 'drill_items'), {});
   playSession(player, slot, done);
 }
@@ -225,7 +224,7 @@ export function deleteSession(player, slot) {
   p.slots[slot] = null;
   state.free.push(record.index);
   save();
-  for (const name of ['money', 'income_level', 'rebirths', 'pick', 'mine_level', 'drill_items', 'machines']) player.setDynamicProperty(sessionKey(slot, name), undefined);
+  for (const name of SESSION_DATA) player.setDynamicProperty(sessionKey(slot, name), undefined);
   for (const fn of deleteHooks) fn(player.id, slot);
 }
 

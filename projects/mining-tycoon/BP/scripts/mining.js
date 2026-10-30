@@ -1,16 +1,17 @@
-// Hand mining: every mine has an ore field - the vein in its north wall. Breaking an ore pays cash at once and the ore
-// grows back a few seconds later, rolled from the session's mine level. Ores need a good enough pick; picks follow
-// the session.
+// Hand mining at home: every mine has an ore field - the vein in its north wall. Breaking an ore gives its resource
+// item (sell it at the Ore Trader or refine it in the machines) and the ore grows back a few seconds later. The vein
+// only grows ores the session's pick can mine (CONFIG.vein); a better pick re-rolls it. Picks follow the session.
 import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
-import { formatNumber, getNumber, giveItem } from './lib/util.js';
+import { getNumber, giveItem } from './lib/util.js';
 import { activeSession, plotAt, plotCenter, onSessionEnter, sessionKey } from './sessions.js';
-import { addStat, pickTier, mineLevel, valueMultiplier } from './economy.js';
+import { pickTier } from './economy.js';
 
 const V = CONFIG.mine.vein;
 const ORES = new Map(CONFIG.ores.map((o) => [o.block, o]));
 const ORE_BY_ID = new Map(CONFIG.ores.map((o) => [o.id, o]));
 const PICK_TIER = new Map(CONFIG.picks.map((p, i) => [p.item, i + 1]));
+const RESOURCES = new Map(CONFIG.resources.map((r) => [r.id, r]));
 
 /** Tick until which the per-second money action bar leaves a mining popup alone. */
 export const popupUntil = new Map();
@@ -25,12 +26,12 @@ export function inField(c, { x, y, z }) {
   return dx >= V.x[0] && dx <= V.x[1] && dy >= V.y[0] && dy <= V.y[1] && dz >= V.z[0] && dz <= V.z[1];
 }
 
-/** A random ore block for a mine level, by its weights. */
-function rollOre(level) {
-  const weights = Object.entries(CONFIG.mines[Math.min(level, CONFIG.mines.length) - 1].weights);
+/** A random vein ore that a pick tier can mine, by the vein weights. */
+function rollOre(tier) {
+  const weights = Object.entries(CONFIG.vein).filter(([id]) => ORE_BY_ID.get(id).pick <= tier);
   let r = Math.random() * weights.reduce((sum, [, w]) => sum + w, 0);
   for (const [id, w] of weights) if ((r -= w) < 0) return ORE_BY_ID.get(id).block;
-  return CONFIG.ores[0].block;
+  return ORE_BY_ID.get(weights[0][0]).block;
 }
 
 /** Someone's feet or head is in this block cell (an ore must not grow inside a player). */
@@ -38,17 +39,19 @@ const occupied = (players, { x, y, z }) =>
   players.some((p) => Math.floor(p.location.x) === x && Math.floor(p.location.z) === z && (Math.floor(p.location.y) === y || Math.floor(p.location.y) + 1 === y));
 
 /**
- * Fill the ore field of the plot at c for a mine level. Empty cells always get an ore; with reroll, existing ores are
- * rolled again too (after a mine upgrade). Returns false when the area is not loaded.
+ * Fill the ore field of the plot at c for a pick tier. Empty cells, Mine Rock and ores the pick can't mine get a new
+ * ore; with reroll every ore is rolled again (after a pick upgrade). Returns false when the area is not loaded.
  */
-export function fillField(c, level, reroll = false) {
+export function fillField(c, tier, reroll = false) {
   const dimension = world.getDimension(CONFIG.plots.dimension);
   const players = dimension.getPlayers();
   try {
     for (const cell of fieldCells(c)) {
       const block = dimension.getBlock(cell);
       if (!block) return false;
-      if ((block.isAir && !occupied(players, cell)) || (reroll && ORES.has(block.typeId))) block.setType(rollOre(level));
+      const ore = ORES.get(block.typeId);
+      const stale = ore && (reroll || ore.id === 'rock' || ore.pick > tier);
+      if ((block.isAir && !occupied(players, cell)) || stale) block.setType(rollOre(tier));
     }
   } catch {
     return false; // chunk not loaded
@@ -56,10 +59,10 @@ export function fillField(c, level, reroll = false) {
   return true;
 }
 
-/** Re-roll the active session's ore field after a mine upgrade (or rebirth). */
+/** Re-roll the active session's ore field after a pick upgrade (or rebirth). */
 export function rerollField(player) {
   const plot = plotAt(player.dimension.id, player.location);
-  if (plot?.owner === player.id && plot.slot === activeSession(player)) fillField(plotCenter(plot.index), mineLevel(player), true);
+  if (plot?.owner === player.id && plot.slot === activeSession(player)) fillField(plotCenter(plot.index), pickTier(player), true);
 }
 
 /** Give the player the pick of their active session, and take any other tycoon pick away. */
@@ -100,7 +103,7 @@ function scheduleRegrow(owner, index, location) {
       const block = dimension.getBlock(location);
       if (!block?.isAir) return;
       if (occupied(dimension.getPlayers(), location)) return scheduleRegrow(owner, index, location);
-      block.setType(rollOre(Math.max(1, getNumber(player, sessionKey(plot.slot, 'mine_level')))));
+      block.setType(rollOre(Math.max(1, getNumber(player, sessionKey(plot.slot, 'pick')))));
     } catch {
       // chunk unloaded - refilled on the next visit
     }
@@ -127,17 +130,23 @@ world.afterEvents.playerBreakBlock.subscribe(({ player, block, dimension, broken
   if (!ore) return;
   const plot = plotAt(dimension.id, block.location);
   if (!plot || plot.owner !== player.id) return;
-  const gain = ore.value * valueMultiplier(player);
-  const money = addStat(player, 'money', gain);
-  popup(player, `§a$${formatNumber(money)}  §e+$${formatNumber(gain)} ${ore.name}`);
-  if (ore.value >= 12) player.playSound('random.orb', { volume: 0.5, pitch: 0.8 + Math.min(ore.pick, 6) * 0.15 });
+  const res = RESOURCES.get(ore.id);
+  if (res) {
+    giveItem(player, res.item);
+    popup(player, `§e+1 ${res.name}`);
+    player.playSound('random.pop', { volume: 0.5, pitch: 0.8 + Math.min(ore.pick, 6) * 0.12 });
+  }
   if (inField(plotCenter(plot.index), block.location)) scheduleRegrow(player.id, plot.index, { ...block.location });
 });
 
-// Arriving in a session's mine: the right pick in hand and a full ore field.
+// Arriving in a session's mine: the right pick in hand and a full ore field (retried while the mine is loading).
 onSessionEnter((player, slot, c) => {
   syncPick(player);
-  fillField(c, mineLevel(player));
+  let tries = 0;
+  const attempt = () => {
+    if (player.isValid && activeSession(player) === slot && !fillField(c, pickTier(player)) && ++tries < 20) system.runTimeout(attempt, 10);
+  };
+  attempt();
 });
 
 // After dying, the pick comes back.

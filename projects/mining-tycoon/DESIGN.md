@@ -3,176 +3,159 @@
 Template: **Tycoon** · Namespace: `mining_tycoon`
 
 ## Concept
-You run a mine - and below it lies the dark. From your home mine you ride the **lift** down on **expeditions** into a
-cave that is freshly generated every run. Your **lantern's light** is the clock: mine as much as you dare, then get
-back to the lift and **extract** with your haul. Let the light run out and the dark takes you - die down there and
-everything you carried is lost. Back home, **machines** turn raw resources into valuable goods, the **trader** buys them,
-and the **workshop** turns money and materials into progress: a **cart** for deeper, harder, richer cave levels, a
-**pickaxe station** for better picks, a bigger **lantern**, a **backpack**, and machines that work while you're away.
-A small safe vein at home gets you started.
+You run a mine - and below it lies the dark. Mine the safe vein at home, or ride the **lift** into a cave that is new
+every run: your lantern's **light** is the clock, die down there and that run's haul is lost. Every ore is an item.
+**Machines** turn chunks into bars and cut gems worth far more; the **Ore Trader** buys everything; the **workshop**
+turns money + bars + gems into a better pick, lantern, backpack, deeper cave levels and drills that dig for you.
+**Rebirth** starts over with a permanent sell bonus. Everything feeds the same loop, and the Miner's Tablet always
+shows the next goal.
 
 ## Core loop
-0. Join -> full-screen **start menu** -> **Play** / **Create session** (2 save slots, each its own mine and save).
-1. Mine the small safe vein at home -> first cash -> first pick upgrade.
-2. Tap the **lift** at the end of your mine's tunnel -> **expedition**: a new cave, your lantern's light counting down.
-3. Mine ores down there -> resource items in your inventory (Coal Chunk ... Rough Diamond). Richer ores lie further from
-   the lift. Creatures come for you, more of them as your light fades.
-4. Back at the lift -> **Extract** (keep everything) - or die / leave the game -> the haul is lost.
-5. At home: sell at the **Ore Trader** (later: process in machines first for much more).
-6. Upgrade (pick now; later the workshop: cart, pickaxe station, lantern, backpack, helper machines) -> deeper, longer,
-   richer expeditions.
+1. Join -> full-screen **start menu** -> **Play** / **Create session** (2 save slots, each its own mine and save).
+2. Arrive on the landing, facing the base: machine bays (west of the tunnel), the tunnel with the lift, the workshop
+   (east of it); the Ore Trader's market stall is on the east side, drill pads on the west side, the vein in the north wall.
+3. Mine -> resource items: the **vein** (safe, only ores your pick can mine) or an **expedition** (risky, rich).
+4. Refine in the **machines** (Smelter, Crusher, Gem Cutter) or sell at the **Ore Trader** for money.
+5. Craft at the **workshop**: pick (harder ores), lantern (more light), backpack (more haul), Mine Cart (deeper caves),
+   drills (helpers). Each upgrade needs money + products, so every system matters.
+6. Deeper caves -> richer ores -> better products -> ... -> **Rebirth** (x1.5 sell bonus per rebirth).
 
-## Expeditions (step E1) - `BP/scripts/expedition.js`, `BP/scripts/cave_builder.js`, config `expedition`
-- **Lift** (`mining_tycoon:lift`, steel cage door with a hazard stripe): in the back wall of the home mine's tunnel
-  (tap: lift menu - **Descend** / **Not now**, with the light time and which ores your pick can mine) and in every
-  cave's lift room (tap: **Extract** / **Keep mining**, with the haul and its value). Unbreakable.
-- **Caves**: each session has its own cave slot (its plot index) in a grid at x -20000, z 10000, y 150, 128 apart. Every
-  run builds a new cave from a fresh seed in a closed 45 x 45 x 17 stone box (`half` 22, `height` 16):
-  - Lift room: 7 x 7 timber floor, 5 high, two hanging lanterns, the lift in its south wall; players arrive at its
-    centre looking north. Three exits (north, west, east).
-  - Tunnels: "diggers" that wander out of the exits on one gently rolling level (centre y 4-8, radius 1.6-2.7), steer
-    away from the walls, branch (up to 11) and open round chambers (up to 5). Where tunnels meet at different heights,
-    steps are cut into ledges until every floor can be walked to from the lift (sim: 99-100 % of the floor on every
-    seed, nothing you can fall into and not climb out of).
-  - Walls: stone, andesite, tuff, cobblestone (deepslate / cobbled deepslate low down) by seeded noise, gravel
-    patches, dripstone and stalactites on ceilings, a little mossy cobblestone, a few cobwebs in tight corners.
-  - Ores: deposits of 2-5 blocks that start on an exposed wall and grow into it (mining one exposes the next). The ore
-    weights blend from the level's `near` (by the lift) to `far` (38+ blocks away) - richer the further you go.
-    About 50-110 deposits per cave.
-  - Built across ticks behind the loading screen like the home mine: one teleport into the lift room (slow falling and
-    a safety floor first), then big rock fills around the room, column runs for tunnels/walls/ores, hanging blocks
-    last; what was left of the previous run (creatures, items) is removed first.
+## Progression (route the tablet follows)
+Stone Pick -> Smelter -> Copper Pick -> Lantern 4:00 -> Backpack 48 -> Crusher -> Iron Pick -> Deep Caverns -> Lantern
+5:00 -> Backpack 96 -> Gold Pick -> Gem Cutter -> Crystal Grotto -> Lantern 6:30 -> Backpack 160 -> Diamond Pick ->
+Magma Core -> Lantern 8:00 -> Backpack 256 -> Rebirth. (`ROUTE` in `BP/scripts/workshop.js`.)
+
+| Pick (Pickaxe Station) | Mines | Needs |
+|---|---|---|
+| Wooden Pick | Coal | start |
+| Stone Pick | + Copper | $50 |
+| Copper Pick | + Iron | 4 Copper Bar + $150 |
+| Iron Pick | + Gold | 6 Iron Bar + $1.2K |
+| Gold Pick | + Ruby | 6 Gold Bar + $9K |
+| Diamond Pick | + Diamond | 8 Gold Bar + 4 Cut Ruby + $60K |
+
+| Level | Lantern (Gear Bench) | Backpack (Gear Bench) | Cave (Mine Cart) |
+|---|---|---|---|
+| 1 | 3:00 (start) | 24 (start) | Shallow Caves (start) |
+| 2 | 4:00 - 3 Copper Bar + $300 | 48 - 4 Copper Bar + $200 | Deep Caverns - 8 Iron Bar + $3K |
+| 3 | 5:00 - 5 Iron Bar + $2.5K | 96 - 6 Iron Bar + $1.8K | Crystal Grotto - 8 Gold Bar + $25K |
+| 4 | 6:30 - 5 Gold Bar + $20K | 160 - 6 Gold Bar + $15K | Magma Core - 4 Cut Diamond + $150K |
+| 5 | 8:00 - 3 Cut Ruby + $90K | 256 - 2 Cut Diamond + $120K | |
+
+| Machine (bay) | Cost | Makes | s per item (speed levels 1-5) | Next speed level |
+|---|---|---|---|---|
+| Smelter | $250 | Chunk or Crushed ore -> Bar. Fuel: 1 Coal Chunk per 4 items | 6, 4.5, 3.4, 2.5, 1.8 | $400 x 2.2^(level-1) |
+| Crusher | $3K | Copper/Iron/Gold Chunk -> 2 Crushed ore | 5, 3.8, 2.8, 2, 1.4 | $4K x 2.2^(level-1) |
+| Gem Cutter | $8K | Rough Ruby/Diamond -> Cut Ruby/Diamond | 15, 11, 8, 6, 4 | $10K x 2.2^(level-1) |
+
+| Drill (Pickaxe Station) | Unlocks with | Needs | Digs (one chunk every) |
+|---|---|---|---|
+| Stone Drill | Copper Pick | 4 Copper Bar + $2K | coal, copper (20 s) |
+| Iron Drill | Iron Pick | 8 Iron Bar + $20K | copper, iron, gold (15 s) |
+| Diamond Drill | Diamond Pick | 3 Cut Diamond + $200K | iron, gold, ruby, diamond (12 s) |
+
+Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
+
+## Content
+- Ores (custom blocks `mining_tycoon:ore_*`, drop nothing themselves; the script gives the resource item): coal (pick
+  1), copper (2), iron (3), gold (4), ruby (5), diamond (6). `ore_rock` (Mine Rock) is no longer used; old veins are
+  re-rolled. Hardness = seconds to break by hand; a pick divides it by its speed (`minecraft:digger` in
+  `BP/items/pick_*.json`, only on blocks tagged `mining_tycoon_ore`).
+- Resources (sell): Coal Chunk $6, Copper Chunk $16, Iron Chunk $45, Gold Chunk $130, Rough Ruby $380, Rough Diamond $1.1K.
+- Products (sell): Crushed Copper $10, Crushed Iron $28, Crushed Gold $80, Copper Bar $40, Iron Bar $110, Gold Bar
+  $320, Cut Ruby $1K, Cut Diamond $3K. One Gold Chunk: $130 raw, $320 smelted, $640 crushed + smelted.
+- Blocks: lift, trader (market stall), machine_frame (empty bay), smelter / crusher / gem_cutter and their working
+  `_on` blocks, pick_station, gear_bench, cart_depot, drills `generator_t1..3`, ores.
+
+## Systems
+- **Goods and costs** (`BP/scripts/goods.js`): resources + products are "goods"; upgrades cost `needs`
+  (`{ money: 150, copper_bar: 4 }`): money of the active session plus goods from the inventory. Menus show progress
+  (`Copper Bar 1/4, $150`, green when there is enough); paying takes nothing and names what is missing when short.
+- **Economy** (`BP/scripts/economy.js`): per session (player properties `mining_tycoon:s<slot>:<name>`): money,
+  rebirths, pick, lantern, backpack, cart (levels start at 1). Sell multiplier = 1 + 0.5 x rebirths. No cash per ore,
+  no mine levels, no ore value upgrade any more (old properties are ignored and removed with the session).
+- **Home vein** (`BP/scripts/mining.js`): 13 x 4 x 4 in the north wall. Every ore gives its resource item (`+1 Coal
+  Chunk` popup) and grows back after ~4-5 s, rolled from `CONFIG.vein` (coal 50, copper 35, iron 15) among the ores the
+  session's pick can mine - a Wooden Pick sees a coal vein. Crafting a pick (or rebirth) re-rolls the vein; arriving
+  replaces empty cells, Mine Rock and ores the pick can't mine (retried while the mine loads).
+- **Ore Trader** (`BP/scripts/trader.js`, market stall at x 10, z 1): **Sell everything** / **Sell products only**
+  (keeps chunks for the machines) / **Close** - at most 3 buttons so it fits a phone.
+- **Workshop** (`BP/scripts/workshop.js`): three stations on the landing east of the tunnel (x 2, 4, 6 at z 11), part
+  of the mine layout (put back on entry if missing). One menu each, at most 3 buttons:
+  - **Pickaxe Station**: craft the next pick (shows what it mines); build the best drill your pick unlocks.
+  - **Gear Bench**: next lantern level, next backpack level.
+  - **Mine Cart**: unlock the next cave level (with its description).
+  - Crafting: sound, "Crafted!" title, chat line with the next goal. `nextGoal()` = the first unfinished step of
+    `ROUTE`; shown in the tablet and in the money action bar (`$1.23K  Next: Copper Pick - Pickaxe Station`).
+- **Machines** (`BP/scripts/machines.js`): bays west of the tunnel (x -6, -4, -2 at z 11). Empty bay = Machine Bay frame
+  (tap: build). Built machine menu (at most 4 buttons): **Collect N items**, **Load N** (everything it accepts + just
+  enough coal), **Speed: level N**, **Close**. They work one item at a time, one second per second while you play that
+  session (also on expeditions), message when done / out of fuel, smoke or sparkle while working. The bay block is the
+  working `_on` model (animated fire, turning rollers, spinning blade) while it has work and fuel, the still model
+  otherwise (synced every second while you are in your mine). State: `s<slot>:machines`. Rebirth takes them down and
+  gives their contents back.
+- **Drills** (`BP/scripts/drills.js`): crafted at the Pickaxe Station, placed on the west drill pads only (max 12 per
+  session). They dig chunks into the session's drill bin (`s<slot>:drill_bin`, max 256) while you play that session;
+  tap any drill: **Collect N** / **Close**. Only the owner breaks them, from their session; a rebuilt mine hands them
+  back. Placed drills live in the world property `mining_tycoon:generators` (old name kept for old worlds).
+- **Miner's Tablet** (`main.js`): body = session, money (+ sell bonus), pick, light, backpack, deepest cave, next goal
+  with progress. Pages: **How to play** (the loop in five lines), **Rebirth** (confirm), **Main menu**. On an
+  expedition the tablet shows the run instead (Keep mining / Give up with a confirm page).
+- **Rebirth**: needs the money; resets money, pick, lantern, backpack, cart, machines (contents returned) and drills
+  (and the bin); +1 rebirth. Announced to everyone.
+- **Protection**: in a mine only the owner breaks blocks, and only ores and drills; only drills can be placed (on
+  pads, in the active session's mine). Caves: see Expeditions. Monsters that spawn by themselves in mines and caves
+  are removed.
+
+## Expeditions - `BP/scripts/expedition.js`, `BP/scripts/cave_builder.js`, config `expedition`
+- **Lift** (`mining_tycoon:lift`): in the back wall of the home tunnel - tap: the two deepest unlocked cave levels
+  (with their descriptions) + Not now; body: light time, backpack size, which ores your pick mines there. In each
+  cave's lift room - tap: **Extract** / **Keep mining** with the haul and its value.
+- **Cave levels** (unlocked with the Mine Cart):
+  | Level | Box | Rock | Ores near lift -> far | Creatures (max) |
+  |---|---|---|---|---|
+  | Shallow Caves | 45 x 45 | stone, andesite, tuff, cobblestone, deepslate low down, dripstone, cobwebs | coal/copper -> iron/gold, some ruby/diamond | zombies, skeletons, spiders (6) |
+  | Deep Caverns | 49 x 49 | deepslate, tuff, smooth basalt, sculk patches, cobwebs | copper/iron/gold -> gold/ruby/diamond | zombies, husks, skeletons, cave spiders (8) |
+  | Crystal Grotto | 53 x 53 | calcite, amethyst, smooth basalt, moss floors, glowing amethyst clusters | iron/gold/ruby -> ruby/diamond | strays, cave spiders, zombies (9) |
+  | Magma Core | 57 x 57 | blackstone, basalt, gilded blackstone, netherrack floors, magma | gold/ruby/diamond -> diamond | wither skeletons, magma cubes, blazes (10) |
+  All 17 high (y 0..16). One cave slot per session (its plot index) in a grid at x -20000, z 10000, y 150, 128 apart.
+- **Generation** (new seed every run): lift room (7 x 7 timber floor, two lanterns, the lift in its south wall; arrival
+  in its middle looking north) with three exits; "diggers" wander out on one gently rolling level, branch and open
+  chambers (more and longer in bigger caves); ledges where tunnels meet are cut into steps until every floor can be
+  reached (sim: 99-100 % on every level, nothing you can fall into and not climb out of); rock skin by seeded noise
+  from the level's palette; ore deposits (2-5 blocks, growing into the wall) blend from `near` to `far` weights.
+  Built across ticks behind the loading screen around the player (rock fills around the room, column runs, hanging
+  blocks last); what was left of the previous run is removed first.
 - **Rules in caves**: only ores can be broken (with the same pick tiers as at home), nothing can be placed, other
   players can't break anything in your cave. Ores give **resource items** (Coal Chunk, Copper Chunk, Iron Chunk, Gold
   Chunk, Rough Ruby, Rough Diamond) - the haul.
-- **Light energy** (`lightSeconds` 180): action bar `Light 2:41 |||||||||... Haul 12` every second (mining popups win
-  for a moment). Over 30 % night vision; 30-10 % it flickers (night vision kept under 10 s, which makes the client
-  flicker it) and darkness pulses; under 10 % no night vision and stronger darkness pulses; at 0 blindness and magic
-  damage every second that grows (1, then +1 every 4 s). Warnings (title + sound) at 1:00, 0:30, 0:10 and when it is
-  out.
-- **Creatures**: zombies, skeletons, spiders (level `creatures`) spawned on cave floors 10-20 blocks from the player,
-  after 10 quiet seconds: target count 1 at full light up to `maxCreatures` 8 at 0, one every 5-15 s (faster as the
-  light fades). Tagged `mining_tycoon:creature` + `mining_tycoon:cave_<i>`, removed when the run ends.
 - **No natural spawns**: the caves are dark, so any monster that spawns by itself in a cave box (or in a home mine)
   is removed at once (`entitySpawn`), as are item drops in caves that are not add-on items (creature loot).
-- **Ending a run**:
-  - **Extract** at the cave lift: the haul is safe; back home (loading screen), "Expedition complete!" notice with
-    the haul and its value at the trader.
-  - **Death**: on respawn (at home: the mine's spawn point) everything mined on that run is taken from the inventory
-    ("The dark took you!" notice). Resources carried in from earlier runs are not at risk.
-  - **Give up** from the Miner's Tablet (in a cave it shows Keep mining / Give up with a confirm page): same loss,
-    lift home.
-  - **Leaving the game** mid-run: on the next join the haul is taken and they are moved out of the cave at once
-    (chat message); the start menu shows as usual.
-  - Run state lives on the player (`mining_tycoon:run`: slot, cave, seed, level, light, haul, phase) and is saved on
-    every ore and every 5 s, so a crash or quit can't keep a haul. After a script reload a player still in their cave
-    carries on (the creature spots are planned again from the seed).
-- `keepInventory` is turned on (world load), so picks and the tablet are never dropped.
-- **Ore Trader** (`mining_tycoon:trader`, spruce stall with a coin sign, `BP/scripts/trader.js`) on the home mine's
-  landing buys resources and machine products for `sell x cash multiplier` (into the active session's money). Its menu
-  stays short for phones: **Sell everything**, **Sell products only** (keeps the chunks for the machines), **Close**.
-  Prices (before the multiplier): Coal Chunk $6, Copper Chunk $16, Iron Chunk $45, Gold Chunk $130, Rough Ruby $380,
-  Rough Diamond $1.1K; products below.
-- Menus: the `notice` form (lift, extract, trader, results) and the `run` form (tablet in a cave) in the generator;
-  icons `expedition` (lantern), `extract` (ore cart with an up arrow), `sell` (money bag).
+- **Light** = the lantern level's seconds (3:00 to 8:00): night vision while over 30 %; 30-10 % it flickers and darkness
+  pulses; under 10 % no night vision; at 0 blindness and magic damage every second that grows. Warnings at 1:00, 0:30,
+  0:10 and when it is out. Action bar: `Light 2:41 ||||||||....  Haul 12/48`.
+- **Backpack**: a run's haul is capped at the backpack size; when full, ores can't be mined ("get back to the lift").
+- **Creatures**: the level's creatures, spawned on cave floors 10-20 blocks from the player after 10 quiet seconds:
+  1 at full light up to the level's max at 0, one every 5-15 s (faster as the light fades). Tagged
+  `mining_tycoon:creature` + `mining_tycoon:cave_<i>`, removed when the run ends; non-add-on item drops in caves vanish.
+- **Ending a run**: **Extract** (haul safe, "Expedition complete!" notice with its value); **death** (on respawn the
+  haul mined on that run is taken: "The dark took you!"; goods carried in before are safe); **Give up** from the
+  tablet (same loss); **leaving the game** (haul taken on the next join, moved out of the cave at once). Run state on
+  the player (`mining_tycoon:run`: slot, cave, seed, level, light, max, room, haul, phase), saved on every ore and every
+  5 s. After a script reload a player still in their cave carries on.
+- `keepInventory` is on (world load): picks and the tablet are never dropped.
 
-## Machines (step E2) - `BP/scripts/machines.js`, config `machines`, `products`
-- Three **machine bays** on the west side of the landing (x -6, -4, -2 at z 11, facing the hall; the old barrels there
-  are gone). An empty bay is a **Machine Bay** frame (scaffold with a blueprint): tap it to build its machine. One of
-  each per session; the machine block shows in its bay (`syncBays` on every session entry, also fixes older mines
-  without a rebuild).
-  | Machine | Cost | Makes | s per item (levels 1-5) | Next level |
-  |---|---|---|---|---|
-  | Smelter | $250 | Copper/Iron/Gold Chunk or Crushed ore -> Bar. Fuel: 1 Coal Chunk per 4 items | 6, 4.5, 3.4, 2.5, 1.8 | $400 x 2.2^(level-1) |
-  | Crusher | $3K | Copper/Iron/Gold Chunk -> 2 Crushed ore (2 bars instead of 1) | 5, 3.8, 2.8, 2, 1.4 | $4K x 2.2^(level-1) |
-  | Gem Cutter | $8K | Rough Ruby/Diamond -> Cut Ruby/Diamond | 15, 11, 8, 6, 4 | $10K x 2.2^(level-1) |
-- Products (sell): Crushed Copper $10, Crushed Iron $28, Crushed Gold $80, Copper Bar $40, Iron Bar $110, Gold Bar
-  $320, Cut Ruby $1K, Cut Diamond $3K. Chain value of one Gold Chunk: sold raw $130, smelted $320, crushed + smelted
-  $640.
-- Tap a built machine: one full-screen menu with at most 4 buttons - **Collect N items**, **Load N** (every accepted
-  good you carry, plus just enough Coal Chunks to smelt it all), **Speed: level N - $cost**, **Close**. The body shows
-  level and time per item, what is working and how long it takes, fuel, and what is ready.
-- Work: every second, each machine of the player's **active session** works one second (one item at a time, in recipe
-  order), wherever the player is - in the mine or on an expedition; nothing happens while they are offline or play
-  another session. Chat messages when a machine is done or out of fuel. Working machines smoke / sparkle in the mine.
-- State per session: player property `s<slot>:machines` = { machineId: { level, in, out, fuel, work, idle } }.
-- Rebirth takes the machines down (what was in them, and whole coal of the fuel, comes back to the inventory); deleting
-  a session deletes them.
-- Items `mining_tycoon:crushed_copper/iron/gold`, `copper_bar/iron_bar/gold_bar`, `cut_ruby/cut_diamond`; blocks
-  `mining_tycoon:smelter`, `crusher`, `gem_cutter`, `machine_frame` (north face = front, unbreakable, smelter glows).
+## Look
+- **3D models** (`tools/gen_models.py` -> `RP/models/blocks/*.geo.json`, BP block files, `blocks/props.png` and the
+  animated `blocks/props_on.png` + `RP/textures/flipbook_textures.json`): smelter (brick furnace with chimney, fire when
+  working), crusher (steel body, hazard band, hopper, turning rollers), gem cutter (workbench with a spinning saw and a
+  ruby), machine bay (timber scaffold with a blueprint), Pickaxe Station (anvil with a diamond pick), Gear Bench
+  (workbench with a lantern and a backpack), Mine Cart (minecart full of ore on rails), Ore Trader (market stall with a
+  striped awning, 1.5 blocks tall). All share one 128 x 128 atlas of 16 x 16 tiles (front faces north; "picture" tiles
+  are drawn whole, material tiles are cropped). Menu icons `blocks/<model>_front.png` come from the same tiles.
+- Cave levels each have their own palette (see the table); the home mine has arches, lanterns, froglights, rails.
 
-## Roadmap - expeditions
-- [x] **E1 First expedition:** lift, generated caves, light energy, creatures, resource items, extract or lose it all,
-  Ore Trader.
-- [x] **E2 Machines:** crusher, smelter, gem cutter at home turn chunks into bars and cut gems worth far more (takes time).
-- [ ] **E3 Workshop:** craft with materials + money: cart (unlocks cave levels), pickaxe station (better picks),
-  lantern (more light), backpack (capacity), helper machines that work while you're away (the drills' new job).
-- [ ] **E4 Depths:** cave levels 2-5 (Deep Caverns, Crystal Grotto, Flooded Mines, Magma Core): bigger caves, richer ores,
-  tougher custom creatures, hazards.
-- [ ] **E5 Home rework + balance:** home mine upgrades become workshop upgrades, prices tuned with a progression
-  simulator, rebirth revisited.
-
-## Content
-Ores (custom blocks, drop nothing; value is paid in cash). Hardness = seconds to break by hand; a pick divides it by its speed.
-| Block | Name | Value | Hardness | Needs |
-|---|---|---|---|---|
-| mining_tycoon:ore_rock | Mine Rock | $1 | 1.2 | Wooden Pick |
-| mining_tycoon:ore_coal | Coal Ore | $4 | 2 | Wooden Pick |
-| mining_tycoon:ore_copper | Copper Ore | $12 | 3.5 | Stone Pick |
-| mining_tycoon:ore_iron | Iron Ore | $35 | 6 | Copper Pick |
-| mining_tycoon:ore_gold | Gold Ore | $100 | 10 | Iron Pick |
-| mining_tycoon:ore_ruby | Ruby Ore | $300 | 16 | Gold Pick |
-| mining_tycoon:ore_diamond | Diamond Ore | $900 | 25 | Diamond Pick |
-
-Picks (items `mining_tycoon:pick_1`..`pick_6`; speed only works on ores):
-| Tier | Name | Speed | Cost |
-|---|---|---|---|
-| 1 | Wooden Pick | 2 | start |
-| 2 | Stone Pick | 4 | $60 |
-| 3 | Copper Pick | 7 | $800 |
-| 4 | Iron Pick | 12 | $7.5K |
-| 5 | Gold Pick | 20 | $60K |
-| 6 | Diamond Pick | 32 | $450K |
-
-Mine levels (ore field weights, %):
-| Level | Name | Cost | rock | coal | copper | iron | gold | ruby | diamond |
-|---|---|---|---|---|---|---|---|---|---|
-| 1 | Shallow Mine | start | 80 | 20 | | | | | |
-| 2 | Copper Seam | $120 | 60 | 25 | 15 | | | | |
-| 3 | Iron Vein | $1.5K | 50 | 20 | 18 | 12 | | | |
-| 4 | Gold Cavern | $12K | 40 | 15 | 18 | 15 | 12 | | |
-| 5 | Ruby Depths | $100K | 35 | 10 | 15 | 15 | 15 | 10 | |
-| 6 | Diamond Core | $750K | 30 | 8 | 12 | 15 | 15 | 12 | 8 |
-
-Drills (unlock at mine level 3):
-| Block | Name | Cost | Income/s |
-|---|---|---|---|
-| mining_tycoon:generator_t1 | Stone Drill | $2K | 4 |
-| mining_tycoon:generator_t2 | Iron Drill | $20K | 35 |
-| mining_tycoon:generator_t3 | Diamond Drill | $200K | 300 |
-
-Other upgrades: **Ore value** +25% cash from ores and drills per level, cost $40 x 1.6^level. **Rebirth** $1M x 4^n,
-+50% permanent cash per rebirth; resets money, pick, mine level, ore value and drills of that session.
-
-## Balance notes - TO TUNE LATER
-Every number above is a first guess so the loop can be played; they all live in `BP/scripts/config.js` (ore values,
-pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore hardness is `seconds_to_destroy` in
-`BP/blocks/ore_*.json`, pick speed is the `minecraft:digger` speed in `BP/items/pick_*.json`.
-- [ ] Play the first 30 minutes and write a minute -> cash/s -> next purchase table here.
-- [ ] Aim: 3-5 purchases in the first minute or two, first drill around 10 minutes, first rebirth 30-45 minutes.
-- [ ] Check hand mining vs drills: drills should feel like a big boost at unlock, but mining must stay worth it.
-- [ ] Check mining times: with the "right" pick every ore should take ~0.8 s; hardness/speed may need tweaking in game.
-- [ ] Rebirth cost and bonus once the late game exists.
-- [ ] Machines: build and speed costs vs what one expedition earns; product prices (bar ~2.5x, crushed+smelted
-  ~5x, cut gem ~2.7x); fuel use. Machines only work while you play that session (offline progress could come with E3).
-- [ ] Expeditions: haul per run vs the home vein (first runs only mine coal with the Wooden Pick), light time,
-  creature count/pace, resource sell prices, ore density (`deposits` chance in cave_builder.js).
-
-## Systems (current)
-- Ownership: placed drills are stored in a world dynamic property (`mining_tycoon:generators`) with owner and session slot; only the owner can break them.
-- Drill income: `sum(drill income) x cash multiplier`, paid every 20 ticks. Drills go on the drill pads only.
-- Money shows in the action bar (no scoreboard; the old `mining_tycoon_money` sidebar is removed on world load).
-- Limit: 40 drills per session.
+## Menus and sessions
 - Start menu (`BP/scripts/menu.js`): shown on every join (retried every 5 ticks until the client can show it), and
   from Tablet > Main menu. It comes back if closed with Back, so players must choose:
   - **Play**: continue your last session (builds its mine first if it never finished). No sessions yet -> starts
@@ -193,29 +176,14 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
   stays at least 2 s and closes (`uiManager.closeAllForms`, repeated until it is really gone) 1 s after the player
   stands in the mine; then the world fades in.
 - Sessions (`BP/scripts/sessions.js`, world property `mining_tycoon:sessions`): 2 save slots per player (config
-  `sessions.slots`). Each session is its own save: own mine plot, money, income level, rebirths (player properties
+  `sessions.slots`). Each session is its own save: own mine plot, money, upgrades, rebirths (player properties
   `mining_tycoon:s<slot>:<name>`), placed drills (`slot` in each drill record) and unplaced drill items (stashed when
   you switch away, handed back when you return). Only the active session (`mining_tycoon:active_session`) earns.
-  A new session starts with $0, a Wooden Pick and the Shallow Mine. Deleting one frees its plot; the next owner gets it rebuilt clean.
+  A new session starts with $0, a Wooden Pick, Lantern 3:00, Backpack 24 and the Shallow Caves. Deleting one frees its plot; the next owner gets it rebuilt clean.
   Worlds from before sessions: the old plot, money, upgrades and rebirths become session 1.
-- Hand mining (`BP/scripts/mining.js`): the ore field is the **vein** in the north wall of each mine, 13 wide, 4 high
-  and 4 deep (config `mine.vein`, relative to the plot centre). Breaking an ore pays `value x cash multiplier` at once
-  (`+$12 Copper Ore` popup; the money action bar waits for it) and the ore grows back after ~4-5 s, rolled from the
-  session's mine level (never inside a player). Ores drop nothing (`loot_tables/blocks/ore_empty.json`).
-  - An ore needs the pick tier in its config (`pick`); by hand or with a weaker pick the break is cancelled with a hint.
-  - Picks (`mining_tycoon:pick_1..6`) follow the session: arriving in a session, upgrading, rebirth and respawning
-    all make sure you hold exactly that session's pick. Pick speed only works on blocks tagged `mining_tycoon_ore`.
-  - Arriving in a session refills empty vein cells; a mine upgrade (or rebirth) re-rolls the whole vein.
-  - Players in a session get a short saturation effect every 10 s, so mining never makes them hungry.
-- Miner's Tablet (`openMenu` in `main.js`): body shows session, money, pick, mine and cash multiplier (+ drill income).
-  **Upgrades** -> Pick (next pick, price, ores it unlocks), Mine (next level, price, ores it adds), Ore value (+25%);
-  **Drills** -> shop (locked until mine level 3: one "Locked" button); **Rebirth** -> confirm page (**Rebirth! - $cost**
-  with the new bonus / **Not yet**); **Main menu** -> start menu. Buying or upgrading closes the menu.
-- Session economy (`BP/scripts/economy.js`): money, income_level (ore value), rebirths, pick and mine_level per
-  session; cash multiplier = `(1 + 0.25 x ore value level) x (1 + 0.5 x rebirths)` for ores and drills alike.
 - Full-screen menus, one form per menu (`RP/ui/server_form.json` + `BP/scripts/menu_layout.js`, both generated by
   `tools/gen_server_form.py` - edit the menu tree there and run it):
-  - A form whose title starts with a form tag (`§m§t§s` start menu, `§m§t§t` tablet) is drawn full screen: cave
+  - A form whose title starts with a form tag (`§m§t§s` start menu, `§m§t§t` tablet, `§m§t§l` loading, `§m§t§n` notice, `§m§t§e` tablet on an expedition) is drawn full screen: cave
     background `textures/mining_tycoon/ui/menu_bg` (128x64, drawn 32px past each edge to cover the screen safe area),
     logo, the body text on every page, a heading per sub-page and stone & gold buttons (nine-sliced
     `textures/mining_tycoon/ui/button`, `button_hover`, `button_pressed`; gold text, up to 2 lines). Other forms keep
@@ -238,45 +206,38 @@ pick costs, mine costs and weights, drills, upgrade and rebirth curves). Ore har
   - Icons: every button has a 16x16 icon on the left that bobs while the button is selected. Real buttons pass a
     texture as the form button icon (`icon('play')` -> `ui/icons/play`, or pick / ore / drill textures in the
     tablet); Navs have fixed icons in the generator (`icon=`, `back_icon=`). Icons: play, new_slot, sessions, session,
-    exit, back, delete, upgrades, drills, rebirth, home, coin, lock.
-- The mine (`BP/scripts/mine_builder.js`, config `mine`): every session plays in an enclosed underground cave, 31 x 31
-  blocks around its plot centre (floor y 0, roof y 10), in a 16-wide grid at x/z 10000, y 80, 48 blocks apart.
-  - Hall about 27 x 20 with rough rock walls (stone, andesite, tuff, cobbled deepslate, deepslate, a bit of mossy
-    cobblestone, all chosen by seeded noise so a plot always looks the same), a ceiling 7-9 high in deepslate, tuff and
-    dripstone with stalactites, three spruce arches with hanging lanterns, lanterns on chains, froglights in the roof.
-  - North: the **ore vein** (x -6..6, z -12..-9, y 1..4) in a timber frame, gravel rubble in front of it.
-  - Sides: **drill pads** (polished tuff in deepslate-tile frames, x 9..12 on both sides, z -4..6): drills can only
-    stand on a pad.
-  - South: a rail track runs from a dark tunnel (timber frame, blackstone back with the **expedition lift** in it at
-    eye height) over a spruce landing with barrels and the **Ore Trader** to the vein. Players arrive on the rails at
-    z 10 looking at the vein; their respawn point is set there. (Layout version 3; older mines are rebuilt on entry.)
-  - Built across ticks with `system.runJob` while the loading screen shows: one teleport to the arrival spot first
-    (teleports close menus), a safety floor under it, then the plan (computed across ticks too) goes in column by
-    column bottom-up - never a solid block where the player stands - and hanging/attached blocks (lanterns, chains,
-    stalactites, rails) go in last, top-down. Block ids are checked at runtime with fallbacks (`minecraft:chain` became
-    `minecraft:iron_chain`; old versions get plain blocks where a state is unknown).
-  - Each plot record stores the layout `version` it was built with; a session whose mine is older than
-    `CONFIG.mine.version` (old floating platforms are version 1) gets it rebuilt on entry, and drills that stood in it
-    go back to the inventory.
-  - Protection: only the owner breaks blocks in a mine, and only ores and drills; only drills can be placed (on pads,
-    in the active session's mine). Drills in your other session's mine can't be broken from this one.
+    exit, back, delete, upgrades, drills, rebirth, home, coin, lock, expedition, extract, sell.
+- The mine (`BP/scripts/mine_builder.js`, config `mine`, layout **version 4**): an enclosed cave, 31 x 31 blocks around
+  its plot centre (floor y 0, roof y 10), in a 16-wide grid at x/z 10000, y 80, 48 apart.
+  - Hall about 27 x 20, rough rock walls by seeded noise, ceiling 7-9 high with stalactites, three spruce arches with
+    lanterns, lanterns on chains, froglights in the roof.
+  - North: the vein (x -6..6, z -12..-9, y 1..4) in a timber frame. West: drill pads (polished tuff in deepslate-tile
+    frames, x -12..-9, z -4..6). East: the market (timber floor in a tile frame) with the trader's stall at (10, 1, 1)
+    and barrels.
+  - South: the landing (x -6..6, z 9..11) with the row of bays at z 11 - machines at x -6/-4/-2, workshop at x 2/4/6 -
+    and the tunnel (x -1..1) with the lift in its back wall. Rails run from the tunnel to the vein. Players arrive at
+    (0, 1, 7.5) facing the landing; the respawn point is set there.
+  - Built across ticks behind the loading screen (one teleport, a safety floor, column runs bottom-up, attached blocks
+    last). Mines with an older `version` are rebuilt on entry (their drills go back to the inventory).
 
-## Roadmap (built step by step)
-- [x] **Foundation:** project from the tycoon template, rethemed to mining (drills, Miner's Tablet, texts).
-- [x] **Menu look:** pixel-art logo, button icons, animated background (pan, lanterns, gems, dust, minecart).
-- [x] **Pack icon:** cave, logo and a gold pick striking gold ore (BP and RP).
-- [ ] **Look:** pixel-art drill textures, Miner's Tablet icon.
-- [ ] **Ore feel:** mining particles/sounds; drills that visibly mine the vein.
-- [ ] **Growing mine (idea):** mine upgrades make the cave bigger / add chambers, rebirth layers change its look.
-- [x] **Start menu + plots:** full-screen join menu (Play / Create session / Exit), private mine plots, drills only in your own mine.
-- [x] **Underground mine:** enclosed cave with timber arches, lanterns, rails, an ore vein in the north wall and drill
-  pads; old platforms are rebuilt automatically.
-- [x] **Sessions:** 2 save slots per player with a full-screen slots menu; stone & gold menu buttons.
-- [x] **One-form menus:** start menu, sessions, delete + confirm and the Miner's Tablet (shop, rebirth) switch pages
-  without closing.
-- [x] **Hand mining:** ore field in every mine, picks, mine levels, ore value; drills become automation (locked until
-  mine level 3). Prices are placeholders (see Balance notes).
-- [ ] **Balance pass:** tune all prices from real play (see Balance notes).
-- [ ] **Ore bag (idea):** ores go into a bag with a capacity upgrade and are sold at a seller, instead of instant cash.
-- [ ] **Depth layers:** rebirths unlock deeper layers (Stone -> Deepslate -> Magma Core) with new ores and drill tiers.
-- [ ] **Extras:** offline earnings, leaderboard, daily bonus.
+## Balance notes - TO TUNE LATER
+Every number is a first guess (all in `BP/scripts/config.js`; ore hardness in `BP/blocks/ore_*.json`, pick speed in
+`BP/items/pick_*.json`).
+- [ ] Play the first 30 minutes: how long to the Stone Pick (~1 min?), the Smelter, the Copper Pick, the first
+  expedition that pays off; write a minute -> money table here.
+- [ ] Home vein vs caves: the vein must stay a fallback, caves the real money (vein regrow 4 s, weights).
+- [ ] Craft costs vs what an expedition at each level brings home (light time, backpack size, ore density).
+- [ ] Machine speed and fuel; drill rates and bin size; rebirth cost and bonus.
+- [ ] Creature counts per level (Magma Core with blazes and wither skeletons may be too hard).
+
+## Roadmap
+- [x] **Foundation, menus, sessions, underground mine, hand mining** (see Menus and sessions).
+- [x] **E1 Expeditions:** lift, generated caves, light, creatures, resource items, extract or lose the haul, Ore Trader.
+- [x] **E2 Machines:** smelter, crusher, gem cutter.
+- [x] **E3 Workshop + overhaul:** one loop (every ore is an item, no mine levels / ore value / cash drills), Pickaxe
+  Station, Gear Bench (lantern, backpack), Mine Cart (cave levels 2-4: Deep Caverns, Crystal Grotto, Magma Core),
+  drills as helpers with a bin, tablet hub with the next goal, mine layout 4, 3D models with animated machines.
+- [ ] **E4 Depths:** hazards (falling gravel, lava pockets, gas), custom creatures, a boss at the Magma Core.
+- [ ] **E5 Balance:** tune every price from real play (see Balance notes).
+- [ ] **HUD:** a drawn money / light / haul panel instead of action bar text.
+- [ ] **Extras:** offline machine/drill progress, leaderboard, daily bonus, co-op expeditions.

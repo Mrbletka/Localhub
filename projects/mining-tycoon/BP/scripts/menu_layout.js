@@ -14,13 +14,11 @@ export const MENU = {
     "start_delete_0": "§p§1§3§r",
     "start_delete_1": "§p§1§4§r",
     "start_bottom": "§p§1§5§r",
-    "tablet_upgrades": "§p§1§6§r",
-    "tablet_shop": "§p§1§7§r",
-    "tablet_rebirth": "§p§1§8§r",
-    "tablet_bottom": "§p§1§9§r",
-    "notice": "§p§2§0§r",
-    "run_top": "§p§2§1§r",
-    "run_give_up": "§p§2§2§r"
+    "tablet_rebirth": "§p§1§6§r",
+    "tablet_bottom": "§p§1§7§r",
+    "notice": "§p§1§8§r",
+    "run_top": "§p§1§9§r",
+    "run_give_up": "§p§2§0§r"
   },
   "flags": {
     "hasSessions": "§h§s",

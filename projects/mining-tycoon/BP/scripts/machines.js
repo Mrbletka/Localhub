@@ -13,7 +13,7 @@ const GOODS = new Map([...CONFIG.resources, ...CONFIG.products].map((g) => [g.id
 const BY_ITEM = new Map([...GOODS.values()].map((g) => [g.item, g]));
 const MACHINES = CONFIG.machines;
 const FRAME = CONFIG.machineFrame;
-const BAY_BLOCKS = new Set([FRAME, ...MACHINES.map((m) => m.block)]);
+const BAY_BLOCKS = new Set([FRAME, ...MACHINES.flatMap((m) => [m.block, `${m.block}_on`])]);
 /** Barrels of the first landing layout that stood where the bays are now (taken away when the bays are set up). */
 const OLD_BARRELS = [[-5, 1, 11], [-5, 1, 10]];
 const PARTICLES = { smelter: 'minecraft:basic_smoke_particle', crusher: 'minecraft:basic_crit_particle', cutter: 'minecraft:villager_happy' };
@@ -43,6 +43,9 @@ function machinesOf(player, slot) {
 }
 
 const save = (player, slot) => setJson(player, sessionKey(slot, 'machines'), machinesOf(player, slot));
+
+/** True when the session has built that machine. */
+export const hasMachine = (player, slot, id) => !!machinesOf(player, slot)[id];
 
 /** The good of every stack in the inventory: [{ slot, item, good }]. */
 function stacks(player) {
@@ -84,18 +87,25 @@ function give(player, goods) {
 
 const bayLocation = (c, m) => ({ x: c.x + m.bay[0], y: c.y + m.bay[1], z: c.z + m.bay[2] });
 
-/** Show the session's machines in the bays of its mine (an empty bay is a frame). Returns false when not loaded. */
-export function syncBays(player, slot, c) {
+/** True while a machine has something to do (and fuel for it). */
+const working = (m, s) => !!s && count(s.in) > 0 && !(m.fuel && !(s.fuel > 0));
+
+/**
+ * Show the session's machines in the bays of its mine: an empty bay is a frame, a machine at work is its animated
+ * "_on" block. cleanup also takes away the barrels of the first landing layout. Returns false when not loaded.
+ */
+export function syncBays(player, slot, c, cleanup = false) {
   const dimension = world.getDimension(CONFIG.plots.dimension);
   const machines = machinesOf(player, slot);
   try {
     for (const m of MACHINES) {
       const block = dimension.getBlock(bayLocation(c, m));
       if (!block) return false;
-      const want = machines[m.id] ? m.block : FRAME;
+      const s = machines[m.id];
+      const want = !s ? FRAME : working(m, s) ? `${m.block}_on` : m.block;
       if (block.typeId !== want) block.setType(want);
     }
-    for (const [x, y, z] of OLD_BARRELS) {
+    for (const [x, y, z] of cleanup ? OLD_BARRELS : []) {
       const block = dimension.getBlock({ x: c.x + x, y: c.y + y, z: c.z + z });
       if (block?.typeId === 'minecraft:barrel') block.setType('minecraft:air');
     }
@@ -290,7 +300,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
 onSessionEnter((player, slot, c) => {
   let tries = 0;
   const attempt = () => {
-    if (player.isValid && activeSession(player) === slot && !syncBays(player, slot, c) && ++tries < 20) system.runTimeout(attempt, 10);
+    if (player.isValid && activeSession(player) === slot && !syncBays(player, slot, c, true) && ++tries < 20) system.runTimeout(attempt, 10);
   };
   attempt();
 });
@@ -318,6 +328,9 @@ world.afterEvents.worldLoad.subscribe(() => {
         if (result === 'fuel') player.sendMessage(`§eYour ${m.name} is out of fuel: load Coal Chunks to keep it going.`);
       }
       if (changed) save(player, slot);
+      // The bays show which machines are at work (only while the mine is loaded around its owner).
+      const plot = plotAt(player.dimension.id, player.location);
+      if (plot?.owner === player.id && plot.slot === slot) syncBays(player, slot, plotCenter(plot.index));
     }
   }, 20);
 

@@ -51,5 +51,23 @@
   },
   "mining_tycoon:machine_frame": {
     "sound": "wood"
+  },
+  "mining_tycoon:smelter_on": {
+    "sound": "stone"
+  },
+  "mining_tycoon:crusher_on": {
+    "sound": "metal"
+  },
+  "mining_tycoon:gem_cutter_on": {
+    "sound": "wood"
+  },
+  "mining_tycoon:pick_station": {
+    "sound": "metal"
+  },
+  "mining_tycoon:gear_bench": {
+    "sound": "wood"
+  },
+  "mining_tycoon:cart_depot": {
+    "sound": "metal"
   }
 }

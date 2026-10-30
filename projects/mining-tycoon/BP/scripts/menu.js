@@ -149,8 +149,8 @@ function enter(player, slot) {
     if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
     if (!fresh) return player.sendMessage(`§aWelcome back to Session ${slot + 1}!`);
     player.playSound('random.levelup');
-    player.onScreenDisplay.setTitle(`§6Session ${slot + 1}`, { subtitle: 'Break the ores for cash', fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
-    player.sendMessage("§aYour new mine is ready! Break the ores with your Wooden Pick, then open the Miner's Tablet for upgrades.");
+    player.onScreenDisplay.setTitle(`§6Session ${slot + 1}`, { subtitle: 'Mine coal, sell it, craft a Stone Pick', fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
+    player.sendMessage("§aYour mine is ready! Mine coal at the vein (north wall) and sell it at the Ore Trader (the stall on the east side). Then craft a Stone Pick at the Pickaxe Station - the workshop by the tunnel. Your Miner's Tablet always shows the next goal.");
   });
 }
 

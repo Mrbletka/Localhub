@@ -1,48 +1,71 @@
-// Expedition caves: a fresh cave for every run, generated from a seed inside a closed stone box far from the mines.
-// Tunnels wander out of the lift room (diggers that turn, climb, branch and open into chambers), ore deposits sit in
-// the walls - richer the further from the lift. It is dark down there: only the lift room has lanterns (expedition.js
-// removes natural mob spawns, so only the creatures the expedition sends come for you). Coordinates are relative to
-// the cave centre (y 0 = bottom of the box).
+// Expedition caves: a fresh cave for every run, generated from a seed inside a closed box far from the mines. Each
+// cave level has its own size, rock (palette), ores and creatures. Tunnels wander out of the lift room (diggers that
+// turn, climb, branch and open into chambers), ore deposits sit in the walls - richer the further from the lift. It
+// is dark down there: only the lift room has lanterns (expedition.js removes natural mob spawns, so only the creatures
+// the expedition sends come for you). Coordinates are relative to the cave centre (y 0 = bottom of the box).
 import { BlockVolume } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { pick, permutation, hash, noise, random } from './lib/worldgen.js';
 
-const E = CONFIG.expedition;
-const R = E.half; // the box spans x/z -R..R
-const TOP = E.height; // and y 0..TOP
-const W = 2 * R + 1;
+const TOP = CONFIG.expedition.height; // the box spans y 0..TOP
 const HEIGHT = TOP + 1;
 const ORES = CONFIG.ores;
-
-// The lift room: lit, timber floor, the lift in its south wall. Players arrive here and extract here.
-export const ROOM = { x: [-3, 3], y: [4, 8], z: [R - 8, R - 2] };
-const GUARD = { x: [-4, 4], y: [2, 10], z: [R - 9, R] }; // no tunnel cuts into the room's walls
-const LIFT = [0, 5, R - 1];
 const inside = (b, x, y, z) => x >= b.x[0] && x <= b.x[1] && y >= b.y[0] && y <= b.y[1] && z >= b.z[0] && z <= b.z[1];
 
-let palette;
-function blocks() {
-  if (palette) return palette;
-  const ids = {
-    shell: pick('minecraft:stone'),
-    stone: pick('minecraft:stone'),
-    andesite: pick('minecraft:andesite', 'minecraft:stone'),
-    tuff: pick('minecraft:tuff', 'minecraft:cobblestone'),
-    cobble: pick('minecraft:cobblestone'),
-    moss: pick('minecraft:mossy_cobblestone', 'minecraft:cobblestone'),
-    deep: pick('minecraft:deepslate', 'minecraft:stone'),
-    deepCobble: pick('minecraft:cobbled_deepslate', 'minecraft:cobblestone'),
-    dripBlock: pick('minecraft:dripstone_block', 'minecraft:stone'),
-    gravel: pick('minecraft:gravel'),
-    plank: pick('minecraft:spruce_planks', 'minecraft:planks'),
-    web: pick('minecraft:web'),
-    lift: pick(CONFIG.blocks.lift, 'minecraft:iron_block'),
-    air: 'minecraft:air',
+/**
+ * The box of a cave level: x/z -R..R. The lift room sits at its south end: lit, timber floor, the lift in its south
+ * wall; players arrive in its middle (z = mid) and extract there.
+ */
+export function shape(level) {
+  const R = level.half;
+  return {
+    R,
+    W: 2 * R + 1,
+    mid: R - 5,
+    room: { x: [-3, 3], y: [4, 8], z: [R - 8, R - 2] },
+    guard: { x: [-4, 4], y: [2, 10], z: [R - 9, R] }, // no tunnel cuts into the room's walls
+    lift: [0, 5, R - 1],
   };
-  palette = Object.fromEntries(Object.entries(ids).map(([key, id]) => [key, permutation(id)]));
+}
+
+/** Rock of each palette: the plan uses the keys, the palette picks the blocks. */
+const ROCK = {
+  stone: {
+    shell: 'minecraft:stone', stone: 'minecraft:stone', andesite: 'minecraft:andesite', tuff: 'minecraft:tuff', cobble: 'minecraft:cobblestone',
+    moss: 'minecraft:mossy_cobblestone', deep: 'minecraft:deepslate', deepCobble: 'minecraft:cobbled_deepslate',
+    dripBlock: 'minecraft:dripstone_block', gravel: 'minecraft:gravel', web: 'minecraft:web',
+  },
+  deep: {
+    shell: 'minecraft:deepslate', stone: 'minecraft:deepslate', andesite: 'minecraft:tuff', tuff: 'minecraft:cobbled_deepslate',
+    cobble: 'minecraft:smooth_basalt', moss: 'minecraft:sculk', deep: 'minecraft:deepslate', deepCobble: 'minecraft:cobbled_deepslate',
+    dripBlock: 'minecraft:dripstone_block', gravel: 'minecraft:gravel', web: 'minecraft:web',
+  },
+  crystal: {
+    shell: 'minecraft:calcite', stone: 'minecraft:calcite', andesite: 'minecraft:smooth_basalt', tuff: 'minecraft:amethyst_block',
+    cobble: 'minecraft:calcite', moss: 'minecraft:amethyst_block', deep: 'minecraft:smooth_basalt', deepCobble: 'minecraft:tuff',
+    dripBlock: 'minecraft:amethyst_block', gravel: 'minecraft:moss_block', web: 'minecraft:air',
+  },
+  magma: {
+    shell: 'minecraft:blackstone', stone: 'minecraft:blackstone', andesite: 'minecraft:basalt', tuff: 'minecraft:smooth_basalt',
+    cobble: 'minecraft:gilded_blackstone', moss: 'minecraft:magma', deep: 'minecraft:basalt', deepCobble: 'minecraft:blackstone',
+    dripBlock: 'minecraft:basalt', gravel: 'minecraft:netherrack', web: 'minecraft:air',
+  },
+};
+const STATES = { 'minecraft:basalt': { pillar_axis: 'y' } };
+
+const palettes = new Map();
+function blocks(level) {
+  const name = level.palette ?? 'stone';
+  if (palettes.has(name)) return palettes.get(name);
+  const ids = { plank: pick('minecraft:spruce_planks', 'minecraft:planks'), lift: pick(CONFIG.blocks.lift, 'minecraft:iron_block'), air: 'minecraft:air' };
+  for (const [key, id] of Object.entries(ROCK[name] ?? ROCK.stone)) ids[key] = pick(id, ROCK.stone[key], 'minecraft:stone');
+  const palette = Object.fromEntries(Object.entries(ids).map(([key, id]) => [key, permutation(id, STATES[id])]));
   for (const ore of ORES) palette[`ore_${ore.id}`] = permutation(pick(ore.block, 'minecraft:stone'));
   palette.lantern = permutation(pick('minecraft:lantern'), { hanging: true });
-  palette.drip = permutation(pick('minecraft:pointed_dripstone'), { hanging: true, dripstone_thickness: 'tip' });
+  palette.drip = name === 'crystal'
+    ? permutation(pick('minecraft:amethyst_cluster', 'minecraft:pointed_dripstone'), { 'minecraft:block_face': 'down' })
+    : permutation(pick('minecraft:pointed_dripstone'), { hanging: true, dripstone_thickness: 'tip' });
+  palettes.set(name, palette);
   return palette;
 }
 
@@ -59,6 +82,7 @@ function weightsAt(level, t) {
  * plan.attached and the floor cells creatures can be sent to in plan.spawns. Generator: `yield* planCave(seed, level)`.
  */
 export function* planCave(seed, level) {
+  const { R, W, mid, room: ROOM, guard: GUARD, lift: LIFT } = shape(level);
   const rand = random(seed);
   const at = (x, y, z) => ((x + R) * HEIGHT + y) * W + (z + R);
   const inBox = (x, y, z) => Math.abs(x) <= R && Math.abs(z) <= R && y >= 0 && y <= TOP;
@@ -80,14 +104,14 @@ export function* planCave(seed, level) {
     for (let y = ROOM.y[0]; y <= ROOM.y[1]; y++) for (let z = ROOM.z[0]; z <= ROOM.z[1]; z++) open[at(x, y, z)] = 1;
   for (let y = 4; y <= 6; y++) {
     for (let x = -1; x <= 1; x++) for (const z of [GUARD.z[0], GUARD.z[0] + 1]) open[at(x, y, z)] = 1;
-    for (let z = 16; z <= 18; z++) for (const x of [-4, 4]) open[at(x, y, z)] = 1;
+    for (let z = mid - 1; z <= mid + 1; z++) for (const x of [-4, 4]) open[at(x, y, z)] = 1;
   }
 
   // Diggers: they wander, steer away from the walls, climb and dive a little, branch and open chambers.
   const worms = [
-    { x: 0, y: 5, z: GUARD.z[0] - 1, a: -Math.PI / 2, len: 70 + rand() * 40 },
-    { x: -5, y: 5, z: 17, a: Math.PI, len: 45 + rand() * 30 },
-    { x: 5, y: 5, z: 17, a: 0, len: 45 + rand() * 30 },
+    { x: 0, y: 5, z: GUARD.z[0] - 1, a: -Math.PI / 2, len: 70 + rand() * 40 + (R - 22) * 4 },
+    { x: -5, y: 5, z: mid, a: Math.PI, len: 45 + rand() * 30 + (R - 22) * 3 },
+    { x: 5, y: 5, z: mid, a: 0, len: 45 + rand() * 30 + (R - 22) * 3 },
   ];
   let chambers = 0;
   for (let w = 0; w < worms.length; w++) {
@@ -97,10 +121,10 @@ export function* planCave(seed, level) {
     for (let step = 0; step < worm.len; step++) {
       const r = 1.6 + noise(seed + w * 7, step * 0.37, w * 13, 4) * 1.1;
       carve(x, y, z, r, r, r);
-      if (rand() < 0.035 && worms.length < 11) {
+      if (rand() < 0.035 && worms.length < 11 + (R - 22)) {
         worms.push({ x, y, z, a: a + (rand() < 0.5 ? 1 : -1) * Math.PI / 2, len: 25 + rand() * 35 });
       }
-      if (rand() < 0.028 && chambers < 5 && step > 6) {
+      if (rand() < 0.028 && chambers < 5 + Math.floor((R - 22) / 2) && step > 6) {
         const rx = 4 + rand() * 2;
         const ry = 2.6 + rand();
         carve(x, y + 1, z, rx, ry, rx);
@@ -127,8 +151,8 @@ export function* planCave(seed, level) {
   const SIDES = [[1, 0], [-1, 0], [0, 1], [0, -1]];
   const walk = () => {
     const reached = new Uint8Array(open.length);
-    const queue = [[0, ROOM.y[0], 17]];
-    reached[at(0, ROOM.y[0], 17)] = 1;
+    const queue = [[0, ROOM.y[0], mid]];
+    reached[at(0, ROOM.y[0], mid)] = 1;
     const reach = (x, y, z) => {
       if (reached[at(x, y, z)]) return;
       reached[at(x, y, z)] = 1;
@@ -203,7 +227,7 @@ export function* planCave(seed, level) {
     for (let y = 1; y < TOP; y++) {
       for (let z = -R + 1; z < R; z++) {
         if (isOpen(x, y, z) || inside(GUARD, x, y, z) || !exposed(x, y, z) || hash(seed + 11, x * 97 + y, z) >= 0.022) continue;
-        const t = Math.min(1, Math.hypot(x, z - 17) / 38);
+        const t = Math.min(1, Math.hypot(x, z - mid) / (R + 16));
         const weights = weightsAt(level, t);
         let roll = hash(seed + 12, x, z * 31 + y) * weights.reduce((sum, [, v]) => sum + v, 0);
         let ore = weights[0][0];
@@ -231,7 +255,7 @@ export function* planCave(seed, level) {
   // The room: timber floor, the lift, lanterns.
   for (let x = ROOM.x[0]; x <= ROOM.x[1]; x++) for (let z = ROOM.z[0]; z <= ROOM.z[1]; z++) set(x, ROOM.y[0] - 1, z, 'plank');
   set(...LIFT, 'lift');
-  const attached = [[-2, ROOM.y[1], 17, 'lantern'], [2, ROOM.y[1], 17, 'lantern']];
+  const attached = [[-2, ROOM.y[1], mid, 'lantern'], [2, ROOM.y[1], mid, 'lantern']];
   // Cobwebs in tight corners, stalactites, spots creatures can be sent to.
   const spawns = [];
   for (let x = -R + 1; x < R; x++) {
@@ -244,7 +268,7 @@ export function* planCave(seed, level) {
         else if (solidBelow) {
           const walls = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dz]) => !isOpen(x + dx, y, z + dz)).length;
           if (walls >= 2 && hash(seed + 16, x, y * 11 + z) < 0.025) set(x, y, z, 'web');
-          else if (get(x, y + 1, z) === 'air' && Math.hypot(x, z - 17) > 10) spawns.push([x, y, z]);
+          else if (get(x, y + 1, z) === 'air' && Math.hypot(x, z - mid) > 10) spawns.push([x, y, z]);
         }
       }
     }
@@ -259,7 +283,8 @@ export function* planCave(seed, level) {
  * beforeFill() runs right before the rock goes in (to take away what is left in the old cave).
  */
 export function* buildCave(dimension, c, seed, level, done, beforeFill = () => {}) {
-  const B = blocks();
+  const B = blocks(level);
+  const { R, guard: GUARD } = shape(level);
   const plan = yield* planCave(seed, level);
   const box = (x1, y1, z1, x2, y2, z2, key) =>
     dimension.fillBlocks(new BlockVolume({ x: c.x + x1, y: c.y + y1, z: c.z + z1 }, { x: c.x + x2, y: c.y + y2, z: c.z + z2 }), B[key]);
@@ -300,12 +325,14 @@ export function* buildCave(dimension, c, seed, level, done, beforeFill = () => {
 }
 
 /** A few floor blocks under the arrival spot (the player's own chunk), placed before the real build. */
-export function safetyFloor(dimension, c) {
-  const B = blocks();
-  for (let x = -1; x <= 1; x++) for (let z = 16; z <= 18; z++) dimension.getBlock({ x: c.x + x, y: c.y + ROOM.y[0] - 1, z: c.z + z })?.setPermutation(B.plank);
+export function safetyFloor(dimension, c, level) {
+  const { mid, room } = shape(level);
+  const B = blocks(level);
+  for (let x = -1; x <= 1; x++) for (let z = mid - 1; z <= mid + 1; z++) dimension.getBlock({ x: c.x + x, y: c.y + room.y[0] - 1, z: c.z + z })?.setPermutation(B.plank);
 }
 
 /** Where players arrive in a cave: in the lift room, looking down the north tunnel. */
-export const caveArrival = (c) => ({ x: c.x + 0.5, y: c.y + ROOM.y[0], z: c.z + 17.5 });
-export const caveLookAt = (c) => ({ x: c.x + 0.5, y: c.y + ROOM.y[0] + 1, z: c.z });
-export const caveBounds = { half: R, height: TOP };
+export const caveArrival = (c, level) => ({ x: c.x + 0.5, y: c.y + shape(level).room.y[0], z: c.z + shape(level).mid + 0.5 });
+export const caveLookAt = (c, level) => ({ x: c.x + 0.5, y: c.y + shape(level).room.y[0] + 1, z: c.z });
+/** The largest cave box (for area checks). */
+export const caveBounds = { half: Math.max(...CONFIG.expedition.levels.map((l) => l.half)), height: TOP };

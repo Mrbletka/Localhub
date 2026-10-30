@@ -1,9 +1,9 @@
-// Money and upgrade levels of a player's active session, and the formulas that use them.
+// Numbers of a player's active session (money, rebirths and upgrade levels) and the formulas that use them.
 import { CONFIG } from './config.js';
 import { getNumber, setNumber } from './lib/util.js';
 import { activeSession, sessionKey } from './sessions.js';
 
-/** A number of the active session (money, income_level, rebirths, pick, mine_level); 0 when not in a session. */
+/** A number of the active session (money, rebirths, pick, lantern, backpack, cart); 0 when not in a session. */
 export function stat(player, name) {
   const slot = activeSession(player);
   return slot === undefined ? 0 : getNumber(player, sessionKey(slot, name));
@@ -17,13 +17,14 @@ export function setStat(player, name, value) {
 
 export const addStat = (player, name, delta) => setStat(player, name, stat(player, name) + delta);
 
-/** Pick tier (1 = Wooden Pick) and mine level (1 = Shallow Mine). Sessions from before hand mining start at 1. */
+/** Upgrade levels start at 1 (sessions from before an upgrade existed too). */
 export const pickTier = (player) => Math.max(1, stat(player, 'pick'));
-export const mineLevel = (player) => Math.max(1, stat(player, 'mine_level'));
+export const lanternLevel = (player) => Math.min(CONFIG.workshop.lantern.length, Math.max(1, stat(player, 'lantern')));
+export const backpackLevel = (player) => Math.min(CONFIG.workshop.backpack.length, Math.max(1, stat(player, 'backpack')));
+export const cartLevel = (player) => Math.min(CONFIG.expedition.levels.length, Math.max(1, stat(player, 'cart')));
+export const lightSeconds = (player) => CONFIG.workshop.lantern[lanternLevel(player) - 1].seconds;
+export const backpackSize = (player) => CONFIG.workshop.backpack[backpackLevel(player) - 1].size;
 
-/** Cash multiplier for ores and drills: ore value level x rebirth bonus. */
-export const valueMultiplier = (player) =>
-  (1 + stat(player, 'income_level') * CONFIG.upgrade.incomeBonusPerLevel) * (1 + stat(player, 'rebirths') * CONFIG.rebirth.bonusPerRebirth);
-
-export const valueCost = (level) => Math.floor(CONFIG.upgrade.baseCost * CONFIG.upgrade.costGrowth ** level);
+/** Sell bonus from rebirths: what the Ore Trader pays is multiplied by this. */
+export const valueMultiplier = (player) => 1 + stat(player, 'rebirths') * CONFIG.rebirth.bonusPerRebirth;
 export const rebirthCost = (rebirths) => Math.floor(CONFIG.rebirth.baseCost * CONFIG.rebirth.costGrowth ** rebirths);

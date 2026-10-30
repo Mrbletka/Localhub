@@ -1,0 +1,7 @@
+[
+  {
+    "flipbook_texture": "textures/mining_tycoon/blocks/props_on",
+    "atlas_tile": "mining_tycoon_props_on",
+    "ticks_per_frame": 3
+  }
+]
