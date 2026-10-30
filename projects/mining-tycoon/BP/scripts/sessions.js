@@ -235,9 +235,15 @@ export function deleteSession(player, slot) {
  * Before-events are read-only: messages go through system.run.
  */
 world.beforeEvents.playerBreakBlock.subscribe((event) => {
-  const plot = plotAt(event.dimension.id, event.block.location);
-  if (!plot) return;
   const player = event.player;
+  let plot;
+  try {
+    plot = plotAt(event.dimension.id, event.block.location);
+  } catch {
+    event.cancel = true; // if in doubt, protect the mine
+    return;
+  }
+  if (!plot) return;
   if (plot.owner !== player.id) {
     event.cancel = true;
     system.run(() => player.onScreenDisplay.setActionBar(`§cThis is ${plot.name}'s mine.`));

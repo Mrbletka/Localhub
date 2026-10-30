@@ -53,6 +53,18 @@ export function giveItem(player, typeId, amount = 1) {
   if (leftover) player.dimension.spawnItem(leftover, player.location);
 }
 
+/** Can the inventory take one more of this item (an empty slot, or a stack of it that is not full)? */
+export function hasRoom(player, typeId) {
+  const container = player.getComponent('minecraft:inventory')?.container;
+  if (!container) return false;
+  if (container.emptySlotsCount > 0) return true;
+  for (let i = 0; i < container.size; i++) {
+    const item = container.getItem(i);
+    if (item?.typeId === typeId && item.amount < item.maxAmount) return true;
+  }
+  return false;
+}
+
 export function hasItem(player, typeId) {
   const container = player.getComponent('minecraft:inventory')?.container;
   if (!container) return false;

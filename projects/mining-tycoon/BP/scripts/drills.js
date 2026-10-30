@@ -4,20 +4,47 @@
 import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { getJson, setJson, giveItem } from './lib/util.js';
+import { eachPlayer } from './lib/safe.js';
 import { activeSession, sessionKey, inActivePlot, onSessionDelete, onMineRebuild } from './sessions.js';
 import { padBlockId } from './mine_builder.js';
 import { giveGoods, goodIcon, goodName } from './goods.js';
 import { fullScreenMenu, icon } from './menu.js';
 
 const D = CONFIG.drills;
-const KEY = `${CONFIG.namespace}:generators`; // (the old name of drills: kept so placed drills survive updates)
+const LEGACY_KEY = `${CONFIG.namespace}:generators`; // all drills in one world property (older versions)
+const PLAYER_KEY = `${CONFIG.namespace}:drills`; // each player's drills: [[location key, slot, block], ...]
 const TIERS = new Map(D.tiers.map((t) => [t.block, t]));
 
-/** Placed drills: "dimension|x|y|z" -> { owner: playerId, slot: session slot, block: typeId } */
+/**
+ * Drills of the players who are online: "dimension|x|y|z" -> { owner: playerId, slot: session slot, block: typeId }.
+ * Each player's drills are stored on that player (a world property would run out of room on a big server); drills of
+ * offline players are protected by their mine (only the owner breaks blocks there).
+ */
 let drills = {};
+/** Drills from the old world property whose owners have not been back yet. */
+let legacy = {};
 
 const locKey = (dimensionId, { x, y, z }) => `${dimensionId}|${x}|${y}|${z}`;
-const save = () => setJson(world, KEY, drills);
+/** Write one player's drills (after any change to them). */
+function save(owner) {
+  const player = typeof owner === 'string' ? world.getAllPlayers().find((p) => p.id === owner) : owner;
+  if (!player) return;
+  setJson(player, PLAYER_KEY, Object.entries(drills).filter(([, d]) => d.owner === player.id).map(([k, d]) => [k, d.slot ?? 0, d.block]));
+}
+
+/** A player joins (or the scripts reload): their drills come into play, old world records move onto them. */
+function loadDrills(player) {
+  for (const [k, slot, block] of getJson(player, PLAYER_KEY, [])) drills[k] = { owner: player.id, slot, block };
+  const moved = Object.entries(legacy).filter(([, d]) => d.owner === player.id);
+  if (!moved.length) return;
+  for (const [k, d] of moved) {
+    drills[k] = { owner: d.owner, slot: d.slot ?? 0, block: d.block };
+    delete legacy[k];
+  }
+  save(player);
+  if (Object.keys(legacy).length) setJson(world, LEGACY_KEY, legacy);
+  else world.setDynamicProperty(LEGACY_KEY, undefined);
+}
 const count = (map) => Object.values(map).reduce((n, v) => n + v, 0);
 const list = (map) => Object.entries(map).filter(([, n]) => n > 0).map(([id, n]) => `${n} ${goodName(id)}`).join(', ');
 
@@ -36,7 +63,8 @@ export function drillRate(playerId, slot) {
 }
 
 function removeDrills(entries) {
-  for (const [key] of entries) {
+  const owners = new Set();
+  for (const [key, d] of entries) {
     const [dimensionId, x, y, z] = key.split('|');
     try {
       world.getDimension(dimensionId).getBlock({ x: +x, y: +y, z: +z })?.setType('minecraft:air');
@@ -44,8 +72,9 @@ function removeDrills(entries) {
       // chunk not loaded - the record is dropped either way
     }
     delete drills[key];
+    owners.add(d.owner);
   }
-  save();
+  for (const owner of owners) save(owner);
 }
 
 /** Rebirth: the session's drills and its bin are gone. */
@@ -105,7 +134,7 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   if (block.below()?.typeId !== padBlockId()) return refuse('§cPlace drills on the drill pads: the light tiles on the west side of your mine.');
   if (ownedDrills(player.id, slot).length >= D.max) return refuse(`§cDrill limit reached (${D.max}).`);
   drills[locKey(dimension.id, block.location)] = { owner: player.id, slot, block: block.typeId };
-  save();
+  save(player);
   player.onScreenDisplay.setActionBar(`§a${tier.name} placed: it digs into your drill bin. Tap a drill to collect.`);
 });
 
@@ -136,11 +165,11 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   }
 });
 
-world.afterEvents.playerBreakBlock.subscribe(({ block, dimension }) => {
+world.afterEvents.playerBreakBlock.subscribe(({ player, block, dimension }) => {
   const key = locKey(dimension.id, block.location);
   if (drills[key]) {
     delete drills[key];
-    save();
+    save(player);
   }
 });
 
@@ -154,21 +183,31 @@ onMineRebuild((player, slot) => {
     delete drills[key];
   }
   if (mine.length) {
-    save();
+    save(player);
     player.sendMessage(`§eYour mine was rebuilt: your ${mine.length} drill${mine.length > 1 ? 's are' : ' is'} back in your inventory. Place them on the drill pads (west side).`);
   }
 });
 
+world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
+  if (initialSpawn) loadDrills(player);
+});
+
+world.afterEvents.playerLeave.subscribe(({ playerId }) => {
+  for (const [k, d] of Object.entries(drills)) if (d.owner === playerId) delete drills[k];
+});
+
 world.afterEvents.worldLoad.subscribe(() => {
-  drills = getJson(world, KEY, {});
+  legacy = getJson(world, LEGACY_KEY, {});
+  drills = {};
+  for (const player of world.getAllPlayers()) loadDrills(player); // after a script reload players are still here
 
   // Every second the drills of each player's active session dig.
   system.runInterval(() => {
-    for (const player of world.getAllPlayers()) {
+    eachPlayer('drills', (player) => {
       const slot = activeSession(player);
-      if (slot === undefined) continue;
+      if (slot === undefined) return;
       const mine = ownedDrills(player.id, slot);
-      if (!mine.length) continue;
+      if (!mine.length) return;
       const bin = binOf(player, slot);
       let changed = false;
       D.tiers.forEach((tier, i) => {
@@ -184,7 +223,7 @@ world.afterEvents.worldLoad.subscribe(() => {
         if (count(bin.items) >= D.bin) bin.work[i] = Math.min(bin.work[i], 1);
       });
       if (changed) saveBin(player, slot, bin);
-    }
+    });
   }, 20);
 
   // Sparkles on loaded drills.

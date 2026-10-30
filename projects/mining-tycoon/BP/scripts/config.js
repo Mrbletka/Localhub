@@ -169,6 +169,24 @@ export const CONFIG = {
     ],
   },
   rebirth: { baseCost: 1000000, costGrowth: 4, bonusPerRebirth: 0.5 },
+  // Perks: every rebirth gives a star; stars buy permanent perks for that session (level n costs costs[n - 1] stars).
+  perks: [
+    { id: 'light', name: 'Bright Lantern', about: '+30 s of light on every expedition', per: 30, costs: [1, 2, 3] },
+    { id: 'pack', name: 'Deep Pockets', about: '+16 backpack room', per: 16, costs: [1, 2, 3] },
+    { id: 'speed', name: 'Quick Machines', about: 'machines work 15% faster', per: 0.15, costs: [1, 2, 3] },
+  ],
+  // The tutorial: quests for a new session (BP/scripts/tutorial.js), each with a money reward.
+  quests: [
+    { text: 'Mine 5 Coal at the vein', target: 'vein', count: 'mined_coal', goal: 5, reward: 25 },
+    { text: 'Sell your coal at the Ore Trader', target: 'trader', count: 'sold', goal: 1, reward: 25 },
+    { text: 'Craft a Stone Pick at the Pickaxe Station', target: 'picks', pick: 2, reward: 50 },
+    { text: 'Mine 8 Copper at the vein', target: 'vein', count: 'mined_copper', goal: 8, reward: 50 },
+    { text: 'Build the Smelter in its bay ($250)', target: 'smelter', machine: 'smelter', reward: 75 },
+    { text: 'Smelt 4 Copper Bars and collect them', target: 'smelter', count: 'made_copper_bar', goal: 4, reward: 100 },
+    { text: 'Craft the Copper Pick at the Pickaxe Station', target: 'picks', pick: 3, reward: 150 },
+    { text: 'Ride the lift into the Shallow Caves', target: 'lift', count: 'expeditions', goal: 1, reward: 50 },
+    { text: 'Bring a haul home: extract at the cave lift', target: 'cave_lift', count: 'extracts', goal: 1, reward: 250 },
+  ],
 
   // Save slots per player. Each session has its own mine plot, money, upgrades, rebirths and drills.
   sessions: { slots: 2 },

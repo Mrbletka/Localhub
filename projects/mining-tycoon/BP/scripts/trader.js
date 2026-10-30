@@ -6,9 +6,10 @@ import { CONFIG } from './config.js';
 import { formatNumber } from './lib/util.js';
 import { activeSession } from './sessions.js';
 import { addStat, valueMultiplier } from './economy.js';
-import { popup } from './mining.js';
 import { fullScreenMenu, icon } from './menu.js';
 import { onExpedition } from './expedition.js';
+import { record } from './progress.js';
+import { toast } from './hud.js';
 
 const PRODUCTS = new Set(CONFIG.products.map((g) => g.item));
 const GOODS = new Map([...CONFIG.resources, ...CONFIG.products].map((g) => [g.item, g]));
@@ -45,10 +46,16 @@ function sell(player, productsOnly) {
   }
   if (!count) return;
   cash *= valueMultiplier(player);
-  const money = addStat(player, 'money', cash);
+  addStat(player, 'money', cash);
   player.playSound('random.orb');
-  popup(player, `§a$${formatNumber(money)}  §e+$${formatNumber(cash)}`);
-  player.sendMessage(`§aSold ${count} item${count > 1 ? 's' : ''} for $${formatNumber(cash)}.`);
+  toast(player, `+$${formatNumber(cash)}`, `Sold ${count} item${count > 1 ? 's' : ''}`, 2.5);
+  try {
+    player.spawnParticle('mining_tycoon:burst', { x: player.location.x, y: player.location.y + 1.2, z: player.location.z });
+  } catch {
+    // particle not available
+  }
+  record(player, 'sold');
+  record(player, 'earned', cash);
 }
 
 function showTrader(player) {

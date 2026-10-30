@@ -4,11 +4,14 @@
 // fades. Back home the Ore Trader (trader.js) buys what you brought up, or the machines (machines.js) refine it.
 import { world, system, EntityDamageCause } from '@minecraft/server';
 import { CONFIG } from './config.js';
-import { formatNumber, getJson, setJson, giveItem } from './lib/util.js';
+import { formatNumber, getJson, setJson, giveItem, hasRoom } from './lib/util.js';
+import { eachPlayer, report } from './lib/safe.js';
 import { activeSession, sessionsOf, plotAt, playSession } from './sessions.js';
-import { buildCave, planCave, safetyFloor, caveArrival, caveLookAt, caveBounds } from './cave_builder.js';
+import { buildCave, planCave, safetyFloor, caveArrival, caveLookAt, caveBounds, shape } from './cave_builder.js';
 import { pickTier, valueMultiplier, lightSeconds, backpackSize, cartLevel } from './economy.js';
-import { pickProblem, popup, popupUntil } from './mining.js';
+import { pickProblem, popup } from './mining.js';
+import { showHud, toast, forgetHud } from './hud.js';
+import { record, records } from './progress.js';
 import { fullScreenMenu, icon, travel } from './menu.js';
 
 const NS = CONFIG.namespace;
@@ -79,8 +82,8 @@ const haulValue = (haul, player) =>
   Object.entries(haul).reduce((sum, [id, n]) => sum + (RESOURCES.get(id)?.sell ?? 0) * n, 0) * valueMultiplier(player);
 
 function save(player, run) {
-  const { slot, cave, seed, level, light, max, room, haul, phase } = run;
-  setJson(player, RUN_KEY, { slot, cave, seed, level, light, max, room, haul, phase });
+  const { slot, cave, seed, level, light, max, room, easy, haul, phase } = run;
+  setJson(player, RUN_KEY, { slot, cave, seed, level, light, max, room, easy, haul, phase });
 }
 
 function end(player) {
@@ -158,10 +161,12 @@ function enterCave(player, run, done) {
 
 function descend(player, level) {
   const slot = activeSession(player);
-  const record = slot === undefined ? undefined : sessionsOf(player.id)[slot];
-  if (!record || runs.has(player.id) || level >= cartLevel(player)) return;
+  const session = slot === undefined ? undefined : sessionsOf(player.id)[slot];
+  if (!session || runs.has(player.id) || level >= cartLevel(player)) return;
   const light = lightSeconds(player);
-  const run = { slot, cave: record.index, seed: Math.floor(Math.random() * 2147483647), level, light, max: light, room: backpackSize(player), haul: {}, phase: 'building', glow: '', spawns: [], nextSpawn: 0, dark: 0 };
+  // The very first expedition of a session is a quiet one: fewer creatures, and later.
+  const easy = !(records(player).expeditions > 0);
+  const run = { slot, cave: session.index, seed: Math.floor(Math.random() * 2147483647), level, light, max: light, room: backpackSize(player), easy, haul: {}, phase: 'building', glow: '', spawns: [], nextSpawn: 0, dark: 0 };
   runs.set(player.id, run);
   save(player, run);
   travel(player, `Riding the lift down into the ${E.levels[level].name}...`, (done) => enterCave(player, run, done), (ok) => {
@@ -173,10 +178,11 @@ function descend(player, level) {
       return travel(player, 'Back to your mine...', (done) => playSession(player, slot, done), () => {});
     }
     run.phase = 'active';
-    run.nextSpawn = system.currentTick + 200; // a moment of quiet before the first creature
+    run.nextSpawn = system.currentTick + (run.easy ? 800 : 200); // a moment of quiet before the first creature
     save(player, run);
     player.playSound('ambient.cave');
-    player.onScreenDisplay.setTitle(`§6${E.levels[level].name}`, { subtitle: `Your light lasts ${clock(run.light)}`, fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
+    toast(player, E.levels[level].name, `Your light lasts ${clock(run.light)}${run.easy ? ' - a quiet first trip' : ''}`, 4);
+    record(player, 'expeditions');
     player.sendMessage('§eMine what you can and get back to the lift before your light runs out. Die down here and your haul is lost.');
   });
 }
@@ -185,6 +191,9 @@ function extract(player, run) {
   if (runs.get(player.id) !== run || run.phase !== 'active') return;
   const haul = run.haul;
   end(player); // made it to the lift: the haul is safe
+  record(player, 'extracts');
+  record(player, 'best_haul', haulCount(haul), 'max');
+  record(player, 'deepest', run.level + 1, 'max');
   clearCreatures(run.cave);
   clearEffects(player);
   travel(player, 'Riding the lift up...', (done) => playSession(player, run.slot, done), () => {
@@ -214,12 +223,22 @@ function resume(player, stored) {
 
 // ---- light and creatures ------------------------------------------------------------------------------------------
 
-function hud(run) {
+/** The run HUD: light bar (10 segments), time left, haul and level. */
+function hud(player, run) {
   const left = run.light / run.max;
-  const lit = Math.ceil(left * 12);
   const color = left > 0.3 ? '§e' : left > 0.1 ? '§6' : '§c';
   const haul = haulCount(run.haul);
-  return `${color}Light ${clock(run.light)} ${'|'.repeat(lit)}§8${'|'.repeat(12 - lit)}  ${haul >= run.room ? '§c' : '§f'}Haul ${haul}/${run.room}`;
+  const text = `${color}${clock(run.light)} §7light  ${haul >= run.room ? '§c' : '§f'}Haul ${haul}/${run.room}\n§8${E.levels[run.level].name}`;
+  showHud(player, 'run', text, Math.ceil(left * 10));
+}
+
+/** The player's active cave run, for the guide marker: { liftFront } (in front of the cave lift), or undefined. */
+export function cave(player) {
+  const run = runs.get(player.id);
+  if (run?.phase !== 'active') return;
+  const c = caveCenter(run.cave);
+  const { lift } = shape(E.levels[run.level]);
+  return { liftFront: { x: c.x + lift[0] + 0.5, y: c.y + lift[1] + 1.2, z: c.z + lift[2] - 0.5 } };
 }
 
 /** Creatures come from spots 10-20 blocks away, one at a time, more of them (and faster) as the light fades. */
@@ -227,7 +246,7 @@ function sendCreatures(player, run, left) {
   if (system.currentTick < run.nextSpawn || !run.spawns.length) return;
   const c = caveCenter(run.cave);
   const dimension = player.dimension;
-  const max = E.levels[run.level].maxCreatures;
+  const max = run.easy ? 2 : E.levels[run.level].maxCreatures;
   const want = Math.min(max, 1 + Math.floor((1 - left) * max));
   if (dimension.getEntities({ location: c, maxDistance: REACH, tags: [caveTag(run.cave)] }).length >= want) return;
   const p = player.location;
@@ -276,13 +295,13 @@ function burn(player, run) {
   }
   if (run.light === 60 || run.light === 30 || run.light === 10) {
     player.playSound('note.bass', { pitch: 0.6 });
-    player.onScreenDisplay.setTitle(`§6${clock(run.light)}`, { subtitle: '§7of light left', fadeInDuration: 5, stayDuration: 30, fadeOutDuration: 10 });
+    toast(player, `${clock(run.light)} of light left`, run.light <= 10 ? 'Get to the lift now!' : 'Head back to the lift soon.', 2.5);
   } else if (run.light === 0 && run.dark === 1) {
     player.playSound('mob.warden.heartbeat');
-    player.onScreenDisplay.setTitle('§cYour light is out', { subtitle: '§7Get to the lift!', fadeInDuration: 5, stayDuration: 40, fadeOutDuration: 10 });
+    toast(player, '§cYour light is out', 'The dark hurts: get to the lift!', 4);
   }
   sendCreatures(player, run, left);
-  if (system.currentTick >= (popupUntil.get(player.id) ?? 0)) player.onScreenDisplay.setActionBar(hud(run));
+  hud(player, run);
   if (run.light % 5 === 0) save(player, run);
 }
 
@@ -365,13 +384,18 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const cave = caveAt(event.dimension.id, event.block.location);
   if (cave === undefined) return;
   const player = event.player;
-  const run = runs.get(player.id);
-  const ore = ORES.get(event.block.typeId);
   let message;
-  if (run?.cave !== cave || run.phase !== 'active') message = '§7This cave is not yours.';
-  else if (!ore) message = '§7Only ores can be mined down here.';
-  else if (haulCount(run.haul) >= run.room) message = `§cYour backpack is full (${run.room}): get back to the lift! The Gear Bench makes it bigger.`;
-  else message = pickProblem(event.itemStack, ore);
+  try {
+    const run = runs.get(player.id);
+    const ore = ORES.get(event.block.typeId);
+    const res = ore && RESOURCES.get(ore.id);
+    if (run?.cave !== cave || run.phase !== 'active') message = '§7This cave is not yours.';
+    else if (!ore) message = '§7Only ores can be mined down here.';
+    else if (haulCount(run.haul) >= run.room) message = `§cYour backpack is full (${run.room}): get back to the lift! The Gear Bench makes it bigger.`;
+    else message = pickProblem(event.itemStack, ore) ?? (res && !hasRoom(player, res.item) ? '§cYour inventory is full: make room or extract.' : undefined);
+  } catch {
+    message = '§7Try again in a moment.'; // never let an error turn into a free break
+  }
   if (!message) return;
   event.cancel = true;
   system.run(() => popup(player, message));
@@ -386,8 +410,11 @@ world.afterEvents.playerBreakBlock.subscribe(({ player, block, dimension, broken
   giveItem(player, res.item);
   run.haul[res.id] = (run.haul[res.id] ?? 0) + 1;
   save(player, run);
-  popup(player, `§e+1 ${res.name}  §7Haul ${haulCount(run.haul)}`);
+  popup(player, `§e+1 ${res.name}  §7Haul ${haulCount(run.haul)}/${run.room}`);
   player.playSound('random.pop', { volume: 0.6, pitch: 0.8 + ore.pick * 0.12 });
+  hud(player, run);
+  record(player, `mined_${res.id}`);
+  record(player, 'mined');
 });
 
 // Nothing can be built in a cave (drills are refused by main.js).
@@ -418,6 +445,7 @@ world.afterEvents.entityDie.subscribe(
     run.phase = 'dead'; // the haul is taken when they respawn
     save(player, run);
     clearCreatures(run.cave);
+    record(player, 'deaths');
   },
   { entityTypes: ['minecraft:player'] },
 );
@@ -440,11 +468,16 @@ world.afterEvents.playerLeave.subscribe(({ playerId }) => {
   const run = runs.get(playerId);
   if (run) clearCreatures(run.cave);
   runs.delete(playerId); // the stored run stays: the haul is taken when they come back
+  forgetHud(playerId);
 });
 
 world.afterEvents.worldLoad.subscribe(() => {
   // Picks and the tablet are never lost; the haul is taken on respawn instead of dropped.
-  world.gameRules.keepInventory = true;
+  try {
+    world.gameRules.keepInventory = true;
+  } catch (error) {
+    report('keepInventory', error);
+  }
   for (const player of world.getAllPlayers()) {
     const stored = getJson(player, RUN_KEY, undefined);
     if (stored?.phase === 'building') {
@@ -457,9 +490,9 @@ world.afterEvents.worldLoad.subscribe(() => {
     }
   }
   system.runInterval(() => {
-    for (const player of world.getAllPlayers()) {
+    eachPlayer('expedition', (player) => {
       const run = runs.get(player.id);
       if (run?.phase === 'active') burn(player, run);
-    }
+    });
   }, 20);
 });

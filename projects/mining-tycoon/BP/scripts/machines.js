@@ -6,7 +6,10 @@ import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { formatNumber, getJson, setJson, giveItem } from './lib/util.js';
 import { activeSession, sessionKey, sessionsOf, plotAt, plotCenter, onSessionEnter, onSessionDelete } from './sessions.js';
-import { stat, addStat } from './economy.js';
+import { stat, addStat, machineTimeFactor } from './economy.js';
+import { eachPlayer } from './lib/safe.js';
+import { record } from './progress.js';
+import { toast } from './hud.js';
 import { fullScreenMenu, icon } from './menu.js';
 
 const GOODS = new Map([...CONFIG.resources, ...CONFIG.products].map((g) => [g.id, g]));
@@ -126,7 +129,7 @@ function bayAt(player, dimensionId, location) {
 // ---- work ---------------------------------------------------------------------------------------------------------
 
 /** One second of work. Returns 'changed', 'done' (the last item finished), 'fuel' (out of coal) or undefined. */
-function tick(m, s) {
+function tick(m, s, factor = 1) {
   const next = () => m.recipes.find((r) => s.in[r.in] > 0);
   if (!next()) return;
   if (m.fuel && !(s.fuel > 0)) {
@@ -136,7 +139,7 @@ function tick(m, s) {
   }
   s.idle = undefined;
   s.work += 1;
-  const time = m.seconds[s.level - 1];
+  const time = m.seconds[s.level - 1] * factor;
   while (s.work >= time) {
     const r = next();
     if (!r || (m.fuel && !(s.fuel > 0))) break;
@@ -152,7 +155,7 @@ function tick(m, s) {
 }
 
 /** Seconds until everything loaded is done (ignoring fuel). */
-const timeLeft = (m, s) => Math.max(0, count(s.in) * m.seconds[s.level - 1] - s.work);
+const timeLeft = (m, s, factor = 1) => Math.max(0, count(s.in) * m.seconds[s.level - 1] * factor - s.work);
 const clock = (seconds) => `${Math.floor(seconds / 60)}:${String(Math.ceil(seconds % 60)).padStart(2, '0')}`;
 
 // ---- menus --------------------------------------------------------------------------------------------------------
@@ -197,7 +200,7 @@ function load(player, slot, m) {
   s.idle = undefined;
   save(player, slot);
   player.playSound('random.pop');
-  if (loaded) player.sendMessage(`§aLoaded ${loaded} into the ${m.name}: done in about ${clock(timeLeft(m, s))}.`);
+  if (loaded) player.sendMessage(`§aLoaded ${loaded} into the ${m.name}: done in about ${clock(timeLeft(m, s, machineTimeFactor(player)))}.`);
 }
 
 function collect(player, slot, m) {
@@ -209,6 +212,7 @@ function collect(player, slot, m) {
   give(player, goods);
   player.playSound('random.orb');
   player.sendMessage(`§aCollected ${list(goods)}.`);
+  for (const [id, n] of Object.entries(goods)) record(player, `made_${id}`, n);
 }
 
 function upgrade(player, slot, m) {
@@ -238,7 +242,7 @@ function showMachine(player, slot, m) {
   const s = machinesOf(player, slot)[m.id];
   const time = m.seconds[s.level - 1];
   const lines = [`§6${m.name}§r - level ${s.level}, ${secondsText(time)} per item`];
-  lines.push(count(s.in) ? `Working: ${list(s.in)} (${clock(timeLeft(m, s))} left)` : '§7Empty: load it with what you carry.');
+  lines.push(count(s.in) ? `Working: ${list(s.in)} (${clock(timeLeft(m, s, machineTimeFactor(player)))} left)` : '§7Empty: load it with what you carry.');
   if (m.fuel) lines.push(`${s.fuel > 0 ? '§7' : '§c'}Fuel: ${s.fuel ?? 0} item${s.fuel === 1 ? '' : 's'} (1 Coal Chunk smelts ${m.fuel.items})`);
   if (count(s.out)) lines.push(`§aReady: ${list(s.out)}`);
   const buttons = [];
@@ -314,32 +318,33 @@ world.afterEvents.playerLeave.subscribe(({ playerId }) => {
 world.afterEvents.worldLoad.subscribe(() => {
   // Every second the machines of each player's active session work one second.
   system.runInterval(() => {
-    for (const player of world.getAllPlayers()) {
+    eachPlayer('machines', (player) => {
       const slot = activeSession(player);
-      if (slot === undefined) continue;
+      if (slot === undefined) return;
       const machines = machinesOf(player, slot);
+      const factor = machineTimeFactor(player);
       let changed = false;
       for (const m of MACHINES) {
         const s = machines[m.id];
-        const result = s && tick(m, s);
+        const result = s && tick(m, s, factor);
         if (!result) continue;
         changed = true;
-        if (result === 'done') player.sendMessage(`§aYour ${m.name} is done: ${list(s.out)} ready to collect.`);
-        if (result === 'fuel') player.sendMessage(`§eYour ${m.name} is out of fuel: load Coal Chunks to keep it going.`);
+        if (result === 'done') toast(player, `${m.name} done`, `${list(s.out)} ready to collect`, 3);
+        if (result === 'fuel') toast(player, `${m.name} out of fuel`, 'Load Coal Chunks to keep it going', 3);
       }
       if (changed) save(player, slot);
       // The bays show which machines are at work (only while the mine is loaded around its owner).
       const plot = plotAt(player.dimension.id, player.location);
       if (plot?.owner === player.id && plot.slot === slot) syncBays(player, slot, plotCenter(plot.index));
-    }
+    });
   }, 20);
 
   // Working machines smoke and sparkle (only in the mine their owner stands in).
   system.runInterval(() => {
-    for (const player of world.getAllPlayers()) {
+    eachPlayer('machine fx', (player) => {
       const slot = activeSession(player);
       const plot = slot === undefined ? undefined : plotAt(player.dimension.id, player.location);
-      if (plot?.owner !== player.id || plot.slot !== slot) continue;
+      if (plot?.owner !== player.id || plot.slot !== slot) return;
       const c = plotCenter(plot.index);
       const machines = machinesOf(player, slot);
       for (const m of MACHINES) {
@@ -352,6 +357,6 @@ world.afterEvents.worldLoad.subscribe(() => {
           // not loaded
         }
       }
-    }
+    });
   }, 30);
 });

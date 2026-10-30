@@ -13,6 +13,8 @@ import { syncPick, rerollField } from './mining.js';
 import { hasMachine } from './machines.js';
 import { ownedDrills, giveDrill } from './drills.js';
 import { fullScreenMenu, icon } from './menu.js';
+import { toast } from './hud.js';
+import { record } from './progress.js';
 
 const W = CONFIG.workshop;
 const LEVELS = CONFIG.expedition.levels;
@@ -36,15 +38,16 @@ const ROUTE = [
   { cart: 4 }, { lantern: 5 }, { backpack: 5 },
 ];
 
+/** A step as { name, where, needs, target } - target: what the guide marker points at (see tutorial.js). */
 function describe(step) {
-  if (step.pick) return { name: CONFIG.picks[step.pick - 1].name, where: 'Pickaxe Station', needs: CONFIG.picks[step.pick - 1].needs };
+  if (step.pick) return { name: CONFIG.picks[step.pick - 1].name, where: 'Pickaxe Station', needs: CONFIG.picks[step.pick - 1].needs, target: 'picks' };
   if (step.machine) {
     const m = MACHINE.get(step.machine);
-    return { name: m.name, where: 'machine bay', needs: { money: m.cost } };
+    return { name: m.name, where: `${m.name} bay`, needs: { money: m.cost }, target: m.id };
   }
-  if (step.lantern) return { name: `Lantern ${clock(W.lantern[step.lantern - 1].seconds)}`, where: 'Gear Bench', needs: W.lantern[step.lantern - 1].needs };
-  if (step.backpack) return { name: `Backpack ${W.backpack[step.backpack - 1].size}`, where: 'Gear Bench', needs: W.backpack[step.backpack - 1].needs };
-  return { name: LEVELS[step.cart - 1].name, where: 'Mine Cart', needs: LEVELS[step.cart - 1].needs };
+  if (step.lantern) return { name: `Lantern ${clock(W.lantern[step.lantern - 1].seconds)}`, where: 'Gear Bench', needs: W.lantern[step.lantern - 1].needs, target: 'gear' };
+  if (step.backpack) return { name: `Backpack ${W.backpack[step.backpack - 1].size}`, where: 'Gear Bench', needs: W.backpack[step.backpack - 1].needs, target: 'gear' };
+  return { name: LEVELS[step.cart - 1].name, where: 'Mine Cart', needs: LEVELS[step.cart - 1].needs, target: 'cart' };
 }
 
 function done(player, slot, step) {
@@ -69,7 +72,13 @@ export const goalText = (player, goal) => `§e${goal.name}§7 at the ${goal.wher
 function crafted(player, text) {
   player.playSound('random.anvil_use');
   player.playSound('random.levelup');
-  player.onScreenDisplay.setTitle('§6Crafted!', { subtitle: text, fadeInDuration: 5, stayDuration: 40, fadeOutDuration: 10 });
+  toast(player, 'Crafted!', text, 4);
+  try {
+    player.spawnParticle('mining_tycoon:burst', { x: player.location.x, y: player.location.y + 1.2, z: player.location.z });
+  } catch {
+    // particle not available
+  }
+  record(player, 'crafted');
   const goal = nextGoal(player);
   player.sendMessage(`§a${text}${goal ? `\n§7Next: ${goalText(player, goal)}` : ''}`);
 }

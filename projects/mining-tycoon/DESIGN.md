@@ -98,8 +98,8 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   session). They dig chunks into the session's drill bin (`s<slot>:drill_bin`, max 256) while you play that session;
   tap any drill: **Collect N** / **Close**. Only the owner breaks them, from their session; a rebuilt mine hands them
   back. Placed drills live in the world property `mining_tycoon:generators` (old name kept for old worlds).
-- **Miner's Tablet** (`main.js`): body = session, money (+ sell bonus), pick, light, backpack, deepest cave, next goal
-  with progress. Pages: **How to play** (the loop in five lines), **Rebirth** (confirm), **Main menu**. On an
+- **Miner's Tablet** (`main.js`): body = session, money (+ sell bonus), pick, light, backpack, deepest cave, the quest
+  or next goal with progress. Pages: **How to play**, **Rebirth** (confirm); buttons **Perks & records**, **Main menu**. On an
   expedition the tablet shows the run instead (Keep mining / Give up with a confirm page).
 - **Rebirth**: needs the money; resets money, pick, lantern, backpack, cart, machines (contents returned) and drills
   (and the bin); +1 rebirth. Announced to everyone.
@@ -144,6 +144,41 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   the player (`mining_tycoon:run`: slot, cave, seed, level, light, max, room, haul, phase), saved on every ore and every
   5 s. After a script reload a player still in their cave carries on.
 - `keepInventory` is on (world load): picks and the tablet are never dropped.
+
+## Guide, HUD and later goals
+- **Tutorial** (`BP/scripts/tutorial.js`, config `quests`): 9 quests for a new session, each with a money reward:
+  mine 5 Coal ($25) -> sell at the Ore Trader ($25) -> Stone Pick ($50) -> mine 8 Copper ($50) -> build the Smelter
+  ($75) -> smelt and collect 4 Copper Bars ($100) -> Copper Pick ($150) -> ride the lift ($50) -> extract a haul ($250).
+  Count quests use the session records; pick / machine quests are checked every second. Done quests pay at once with a
+  toast, a gold burst and a chat line naming the next one. Sessions already on their way (Copper Pick, Smelter or a
+  rebirth) skip the tutorial. After it, the workshop route (`nextGoal`) takes over.
+- **Guide marker**: every second gold sparkles (`mining_tycoon:guide`, only that player sees them) float over the place
+  of the current quest or goal: the vein, the trader's stall, a station or bay, the lift - in a cave, the cave lift.
+- **Quiet first expedition**: the first expedition of a session sends at most 2 creatures, the first after 40 s.
+- **Studio HUD** (`BP/scripts/hud.js`, `tools/gen_hud.py` -> `RP/ui/hud_screen.json`): scripts send the HUD inside
+  the title text behind an invisible prefix; the HUD draws it as stone & gold panels and hides the plain title.
+  - Home (top-left): coin + money (and sell bonus), flag + the quest (`Quest 3/9: ...`, progress and reward) or the next
+    goal (`Next: Copper Pick at the Pickaxe Station`, then what you have / need in green and red).
+  - Expedition (top-centre): lantern + a 10-segment light bar (last 3 segments red), time left, backpack + haul
+    `12/48`, the cave level.
+  - Toasts (subtitle channel, own gold banner under the HUD): crafted, quest done, sold, machine done / out of fuel,
+    rebirth, light warnings, cave arrival. Small popups (`+1 Coal Chunk`, refusals) stay in the action bar.
+- **Records** (`BP/scripts/progress.js`, `s<slot>:records`, survive rebirth): mined per resource, ores, sold, earned,
+  made per product, crafted, expeditions, extracts, deaths, best haul, deepest level.
+- **Rebirth stars and perks** (config `perks`): one star per rebirth; tablet > **Perks & records** shows the records
+  and buys perks for the session: Bright Lantern (+30 s light per level), Deep Pockets (+16 backpack), Quick Machines
+  (15 % faster); 3 levels each, costing 1, 2, 3 stars.
+
+## Robustness
+- Every per-second loop runs players one by one through `eachPlayer` (`lib/safe.js`): an error is logged once (with
+  a label) and the other players carry on. Break protections fail safe (an error cancels the break).
+- Mining (home and caves) is refused while the inventory has no room for the chunk, instead of dropping it.
+- Drills are stored on their owner (`mining_tycoon:drills`), not in one world property that would run out of room on
+  a big server; the old world record is moved onto each owner when they join.
+- Magma Core floors are crimson nylium (fire from blazes burns out) instead of netherrack.
+- Tests (simulator, before every push): sessions, mine, migration, expeditions, machines, the whole loop, the tutorial
+  and perks, all cave levels, and a chaos test (3 players doing random things for 1500 steps on several seeds) - every
+  suite fails on any logged script error.
 
 ## Look
 - **3D models** (`tools/gen_models.py` -> `RP/models/blocks/*.geo.json`, BP block files, `blocks/props.png` and the
@@ -239,5 +274,6 @@ Every number is a first guess (all in `BP/scripts/config.js`; ore hardness in `B
   drills as helpers with a bin, tablet hub with the next goal, mine layout 4, 3D models with animated machines.
 - [ ] **E4 Depths:** hazards (falling gravel, lava pockets, gas), custom creatures, a boss at the Magma Core.
 - [ ] **E5 Balance:** tune every price from real play (see Balance notes).
-- [ ] **HUD:** a drawn money / light / haul panel instead of action bar text.
+- [x] **Guide + HUD + later goals:** tutorial quests with rewards, guide markers, studio HUD and toasts, quiet first
+  expedition, records, rebirth stars and perks, robustness pass (see STYLE.md for the studio look).
 - [ ] **Extras:** offline machine/drill progress, leaderboard, daily bonus, co-op expeditions.

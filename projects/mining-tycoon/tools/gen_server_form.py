@@ -43,11 +43,12 @@ FORMS = {
     ])),
     'tablet': ('§m§t§t', Page([
         Nav('go_help', 'How to play', 'Back', icon='play', page=Page(heading=(
+            'Follow the quests at the top left - gold sparkles mark where to go. '
             'Mine the vein in the north wall, or ride the lift at the end of the tunnel into the caves: '
             'your light is the timer, die down there and you lose that haul. '
             'Sell chunks at the Ore Trader (east stall), or refine them in the machines (landing, west side): '
             'bars and cut gems are worth far more. Spend money + bars at the workshop (landing, east side) on '
-            'a better pick, lantern, backpack, deeper caves and drills. The tablet always shows your next goal.'), items=[])),
+            'a better pick, lantern, backpack, deeper caves and drills. Rebirth for a sell bonus and stars for perks.'), items=[])),
         Nav('go_rebirth', 'Rebirth', 'Not yet', icon='rebirth', page=Page(
             heading='Rebirth? Money, pick, lantern, backpack, caves, drills and machines of this session reset. Everything sells for more, for good.',
             items=[List('tablet_rebirth')])),

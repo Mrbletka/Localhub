@@ -48,7 +48,7 @@ const ROCK = {
   magma: {
     shell: 'minecraft:blackstone', stone: 'minecraft:blackstone', andesite: 'minecraft:basalt', tuff: 'minecraft:smooth_basalt',
     cobble: 'minecraft:gilded_blackstone', moss: 'minecraft:magma', deep: 'minecraft:basalt', deepCobble: 'minecraft:blackstone',
-    dripBlock: 'minecraft:basalt', gravel: 'minecraft:netherrack', web: 'minecraft:air',
+    dripBlock: 'minecraft:basalt', gravel: 'minecraft:crimson_nylium', web: 'minecraft:air', // (not netherrack: blaze fire would burn on it forever)
   },
 };
 const STATES = { 'minecraft:basalt': { pillar_axis: 'y' } };

@@ -1,6 +1,6 @@
 // Numbers of a player's active session (money, rebirths and upgrade levels) and the formulas that use them.
 import { CONFIG } from './config.js';
-import { getNumber, setNumber } from './lib/util.js';
+import { getNumber, setNumber, getJson } from './lib/util.js';
 import { activeSession, sessionKey } from './sessions.js';
 
 /** A number of the active session (money, rebirths, pick, lantern, backpack, cart); 0 when not in a session. */
@@ -22,8 +22,16 @@ export const pickTier = (player) => Math.max(1, stat(player, 'pick'));
 export const lanternLevel = (player) => Math.min(CONFIG.workshop.lantern.length, Math.max(1, stat(player, 'lantern')));
 export const backpackLevel = (player) => Math.min(CONFIG.workshop.backpack.length, Math.max(1, stat(player, 'backpack')));
 export const cartLevel = (player) => Math.min(CONFIG.expedition.levels.length, Math.max(1, stat(player, 'cart')));
-export const lightSeconds = (player) => CONFIG.workshop.lantern[lanternLevel(player) - 1].seconds;
-export const backpackSize = (player) => CONFIG.workshop.backpack[backpackLevel(player) - 1].size;
+/** Rebirth perks of the active session: { perkId: level }. */
+export function perks(player) {
+  const slot = activeSession(player);
+  return slot === undefined ? {} : getJson(player, sessionKey(slot, 'perks'), {});
+}
+const perkBonus = (player, id) => (perks(player)[id] ?? 0) * (CONFIG.perks.find((p) => p.id === id)?.per ?? 0);
+export const lightSeconds = (player) => CONFIG.workshop.lantern[lanternLevel(player) - 1].seconds + perkBonus(player, 'light');
+export const backpackSize = (player) => CONFIG.workshop.backpack[backpackLevel(player) - 1].size + perkBonus(player, 'pack');
+/** Machines take this share of their normal time per item (Quick Machines perk). */
+export const machineTimeFactor = (player) => Math.max(0.2, 1 - perkBonus(player, 'speed'));
 
 /** Sell bonus from rebirths: what the Ore Trader pays is multiplied by this. */
 export const valueMultiplier = (player) => 1 + stat(player, 'rebirths') * CONFIG.rebirth.bonusPerRebirth;

@@ -3,9 +3,11 @@
 // only grows ores the session's pick can mine (CONFIG.vein); a better pick re-rolls it. Picks follow the session.
 import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
-import { getNumber, giveItem } from './lib/util.js';
+import { getNumber, giveItem, hasRoom } from './lib/util.js';
+import { eachPlayer } from './lib/safe.js';
 import { activeSession, plotAt, plotCenter, onSessionEnter, sessionKey } from './sessions.js';
 import { pickTier } from './economy.js';
+import { record } from './progress.js';
 
 const V = CONFIG.mine.vein;
 const ORES = new Map(CONFIG.ores.map((o) => [o.block, o]));
@@ -114,12 +116,17 @@ function scheduleRegrow(owner, index, location) {
 world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const ore = ORES.get(event.block.typeId);
   if (!ore) return;
-  const plot = plotAt(event.dimension.id, event.block.location);
   const player = event.player;
-  if (!plot || plot.owner !== player.id) return; // not in a mine, or someone else's (sessions.js stops that)
   let message;
-  if (plot.slot !== activeSession(player)) message = '§cThis mine belongs to your other session.';
-  else message = pickProblem(event.itemStack, ore);
+  try {
+    const plot = plotAt(event.dimension.id, event.block.location);
+    if (!plot || plot.owner !== player.id) return; // not in a mine, or someone else's (sessions.js stops that)
+    const res = RESOURCES.get(ore.id);
+    if (plot.slot !== activeSession(player)) message = '§cThis mine belongs to your other session.';
+    else message = pickProblem(event.itemStack, ore) ?? (res && !hasRoom(player, res.item) ? '§cYour inventory is full: sell or refine your goods first.' : undefined);
+  } catch {
+    message = '§7Try again in a moment.'; // never let an error turn into a free break
+  }
   if (!message) return;
   event.cancel = true;
   system.run(() => popup(player, message));
@@ -135,6 +142,8 @@ world.afterEvents.playerBreakBlock.subscribe(({ player, block, dimension, broken
     giveItem(player, res.item);
     popup(player, `§e+1 ${res.name}`);
     player.playSound('random.pop', { volume: 0.5, pitch: 0.8 + Math.min(ore.pick, 6) * 0.12 });
+    record(player, `mined_${res.id}`);
+    record(player, 'mined');
   }
   if (inField(plotCenter(plot.index), block.location)) scheduleRegrow(player.id, plot.index, { ...block.location });
 });
@@ -157,8 +166,8 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
 // Mining is the job, not eating: players in a session stay fed.
 world.afterEvents.worldLoad.subscribe(() => {
   system.runInterval(() => {
-    for (const player of world.getAllPlayers()) {
+    eachPlayer('saturation', (player) => {
       if (activeSession(player) !== undefined) player.addEffect('saturation', 20, { showParticles: false });
-    }
+    });
   }, 200);
 });

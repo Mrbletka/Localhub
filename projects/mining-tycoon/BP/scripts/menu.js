@@ -10,6 +10,7 @@ import { CONFIG } from './config.js';
 import { formatNumber } from './lib/util.js';
 import { MENU } from './menu_layout.js';
 import { sessionsOf, hasSessions, activeSession, lastSession, sessionStats, playSession, createSession, deleteSession } from './sessions.js';
+import { toast } from './hud.js';
 
 const SHADE = { red: 0.06, green: 0.045, blue: 0.03 };
 const open = new Set();
@@ -149,7 +150,7 @@ function enter(player, slot) {
     if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
     if (!fresh) return player.sendMessage(`§aWelcome back to Session ${slot + 1}!`);
     player.playSound('random.levelup');
-    player.onScreenDisplay.setTitle(`§6Session ${slot + 1}`, { subtitle: 'Mine coal, sell it, craft a Stone Pick', fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 10 });
+    toast(player, `Session ${slot + 1}`, 'Follow the quests at the top left - the gold sparkles show the way', 6);
     player.sendMessage("§aYour mine is ready! Mine coal at the vein (north wall) and sell it at the Ore Trader (the stall on the east side). Then craft a Stone Pick at the Pickaxe Station - the workshop by the tunnel. Your Miner's Tablet always shows the next goal.");
   });
 }

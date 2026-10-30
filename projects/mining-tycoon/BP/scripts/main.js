@@ -8,12 +8,15 @@ import { CONFIG } from './config.js';
 import { formatNumber, getNumber, setNumber, giveItem, hasItem } from './lib/util.js';
 import { loadSessions, sessionsOf, activeSession, sessionKey } from './sessions.js';
 import { stat, setStat, pickTier, lightSeconds, backpackSize, cartLevel, valueMultiplier, rebirthCost } from './economy.js';
-import { syncPick, rerollField, popupUntil } from './mining.js';
+import { syncPick, rerollField } from './mining.js';
 import { showStartMenu, fullScreenMenu, icon } from './menu.js';
 import { onExpedition, showRunMenu } from './expedition.js';
 import { resetMachines } from './machines.js';
 import { resetDrills } from './drills.js';
-import { nextGoal, goalText } from './workshop.js';
+import { guideLines } from './tutorial.js';
+import { showPerks } from './progress.js';
+import { showHud, toast } from './hud.js';
+import { eachPlayer } from './lib/safe.js';
 import './trader.js';
 
 const NS = CONFIG.namespace;
@@ -32,6 +35,7 @@ function rebirth(player, slot) {
   syncPick(player);
   rerollField(player);
   player.playSound('random.totem');
+  toast(player, `Rebirth ${rebirths + 1}!`, `Sell bonus x${+valueMultiplier(player).toFixed(2)} and a star for a perk (tablet > Perks & records)`, 6);
   world.sendMessage(`§d${player.name} reached rebirth ${rebirths + 1}! Everything sells for x${+valueMultiplier(player).toFixed(2)} now.`);
 }
 
@@ -40,13 +44,14 @@ function openMenu(player) {
   const slot = activeSession(player);
   if (slot === undefined) return showStartMenu(player);
   const rebirths = stat(player, 'rebirths');
-  const goal = nextGoal(player);
+  const [quest, detail] = guideLines(player);
   const body =
     `Session ${slot + 1} - Money §a$${formatNumber(stat(player, 'money'))}§r${rebirths ? ` - Sell bonus x${+valueMultiplier(player).toFixed(2)}` : ''}\n` +
     `${CONFIG.picks[pickTier(player) - 1].name} - Light ${clock(lightSeconds(player))} - Backpack ${backpackSize(player)} - ${CONFIG.expedition.levels[cartLevel(player) - 1].name}\n` +
-    (goal ? `Next: ${goalText(player, goal)}` : '§aEverything is crafted. Time to rebirth!');
+    `${quest}\n${detail}`;
   const buttons = [
     { list: 'tablet_rebirth', text: `Rebirth! - $${formatNumber(rebirthCost(rebirths))}\n§7Sell bonus x${+(1 + (rebirths + 1) * CONFIG.rebirth.bonusPerRebirth).toFixed(2)}`, icon: icon('rebirth'), run: (p) => rebirth(p, slot) },
+    { list: 'tablet_bottom', text: 'Perks & records\n§7Rebirth stars buy permanent perks', icon: icon('upgrades'), run: showPerks },
     { list: 'tablet_bottom', text: 'Main menu', icon: icon('home'), run: showStartMenu },
   ];
   fullScreenMenu(player, { form: 'tablet', body, buttons });
@@ -77,13 +82,13 @@ world.afterEvents.worldLoad.subscribe(() => {
   const board = world.scoreboard.getObjective(`${NS}_money`);
   if (board) world.scoreboard.removeObjective(board);
 
-  // Money and the next goal in the action bar, every second (mining popups and expeditions have their own).
+  // The home HUD every second: money, then the quest or the next goal (expeditions show their own HUD).
   system.runInterval(() => {
-    for (const player of world.getAllPlayers()) {
-      if (activeSession(player) === undefined || onExpedition(player)) continue;
-      if (system.currentTick < (popupUntil.get(player.id) ?? 0)) continue;
-      const goal = nextGoal(player);
-      player.onScreenDisplay.setActionBar(`§a$${formatNumber(stat(player, 'money'))}${goal ? `  §7Next: §f${goal.name}§7 - ${goal.where}` : ''}`);
-    }
+    eachPlayer('hud', (player) => {
+      if (activeSession(player) === undefined || onExpedition(player)) return;
+      const rebirths = stat(player, 'rebirths');
+      const [quest, detail] = guideLines(player);
+      showHud(player, 'home', `§6$${formatNumber(stat(player, 'money'))}${rebirths ? ` §7- sell x${+valueMultiplier(player).toFixed(2)}` : ''}\n${quest}\n${detail}`);
+    });
   }, 20);
 });
