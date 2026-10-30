@@ -257,13 +257,13 @@ def flip(name, frames, step, fps, loop):
 
 def tech_text(text, **extra):
     d = {'type': 'label', 'text': text, 'color': CYAN_TEXT, 'shadow': False, 'font_scale_factor': 0.8, 'layer': 6,
-         'size': ['default', 'default']}
+         'size': ['default', 'default'], 'localize': False}  # (localized text drops a lone '%')
     d.update(extra)
     return d
 
 def typed(name, text, delay, y, width=190):
     """A boot line that types itself: a clipping panel grows from nothing to the line's width."""
-    return {name: {'type': 'panel', 'clip_children': True, 'anchor_from': 'bottom_left', 'anchor_to': 'bottom_left',
+    return {name: {'type': 'panel', 'clips_children': True, 'anchor_from': 'bottom_left', 'anchor_to': 'bottom_left',
                    'offset': [14, y], 'layer': 6,
                    'size': seq(f'mining_tycoon_type_{name}', 'size', [(delay, [0, 10], [0, 10]), (1.0, [0, 10], [width, 10])]),
                    'controls': [{'text': tech_text(text, anchor_from='left_middle', anchor_to='left_middle')}]}}
@@ -307,7 +307,7 @@ ui['mining_tycoon_mineos'] = {
         # the screen is off (black) until the CRT opens
         {'off': {'type': 'image', 'texture': 'textures/ui/Black', 'size': ['100%', '100%'], 'keep_ratio': False, 'layer': 0,
                  'alpha': seq('mining_tycoon_screen_off', 'alpha', [(0.15, 1, 1), (0.5, 1, 0, 'in_quad')])}},
-        {'crt': {'type': 'panel', 'anchor_from': 'center', 'anchor_to': 'center', 'clip_children': True, 'layer': 1,
+        {'crt': {'type': 'panel', 'anchor_from': 'center', 'anchor_to': 'center', 'clips_children': True, 'layer': 1,
                  'size': seq('mining_tycoon_crt', 'size', [(0.12, ['100%', 2], ['100%', 2]), (0.45, ['100%', 2], ['100%', '100%'], 'out_expo')]),
                  'controls': [
             {'tint': {'type': 'image', 'texture': f'{TECH}/tint', 'size': ['100%', '100%'], 'keep_ratio': False, 'layer': 1}},
@@ -445,7 +445,7 @@ ui['mining_tycoon_tech_button@common.button'] = {
     ],
 }
 ui['mining_tycoon_tech_state'] = {
-    'type': 'image', 'texture': '$state_texture', 'size': ['100%', '100%'], 'clip_children': True,
+    'type': 'image', 'texture': '$state_texture', 'size': ['100%', '100%'], 'clips_children': True,
     '$state_text_offset|default': [0, 0], '$state_icon_offset|default': [7, 0],
     'controls': [
         icon(offset='$state_icon_offset'),
@@ -474,7 +474,7 @@ for name, tex, color, text, ico, bob in [
     ('back_hover', 'glass_hover', TECH_HOVER, '$nav_back_text', '$nav_back_icon', True),
 ]:
     ui[f'mining_tycoon_tech_nav_{name}'] = {
-        'type': 'image', 'texture': f'{UI}/tech/{tex}', 'size': ['100%', '100%'], 'clip_children': True,
+        'type': 'image', 'texture': f'{UI}/tech/{tex}', 'size': ['100%', '100%'], 'clips_children': True,
         'controls': [{'icon': {**icon(ico, ICON_BOB if bob else (7, 0))['icon'], 'visible': ico + '_visible'}},
                      {'label': label(text, color, size=['100% - 48px', 'default'], layer=1)}, STREAK],
     }

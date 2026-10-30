@@ -1609,7 +1609,7 @@
           "type": "panel",
           "anchor_from": "center",
           "anchor_to": "center",
-          "clip_children": true,
+          "clips_children": true,
           "layer": 1,
           "size": "@server_form.mining_tycoon_crt_0",
           "controls": [
@@ -1737,6 +1737,7 @@
                         "default",
                         "default"
                       ],
+                      "localize": false,
                       "anchor_from": "bottom_middle",
                       "anchor_to": "bottom_middle",
                       "offset": [
@@ -1761,6 +1762,7 @@
                         "default",
                         "default"
                       ],
+                      "localize": false,
                       "anchor_from": "bottom_middle",
                       "anchor_to": "bottom_middle",
                       "offset": [
@@ -1826,6 +1828,7 @@
                         "default",
                         "default"
                       ],
+                      "localize": false,
                       "anchor_from": "bottom_middle",
                       "anchor_to": "bottom_middle",
                       "offset": [
@@ -1850,6 +1853,7 @@
                         "default",
                         "default"
                       ],
+                      "localize": false,
                       "anchor_from": "bottom_middle",
                       "anchor_to": "bottom_middle",
                       "offset": [
@@ -1921,7 +1925,7 @@
             {
               "boot_1": {
                 "type": "panel",
-                "clip_children": true,
+                "clips_children": true,
                 "anchor_from": "bottom_left",
                 "anchor_to": "bottom_left",
                 "offset": [
@@ -1947,6 +1951,7 @@
                         "default",
                         "default"
                       ],
+                      "localize": false,
                       "anchor_from": "left_middle",
                       "anchor_to": "left_middle"
                     }
@@ -1957,7 +1962,7 @@
             {
               "boot_2": {
                 "type": "panel",
-                "clip_children": true,
+                "clips_children": true,
                 "anchor_from": "bottom_left",
                 "anchor_to": "bottom_left",
                 "offset": [
@@ -1983,6 +1988,7 @@
                         "default",
                         "default"
                       ],
+                      "localize": false,
                       "anchor_from": "left_middle",
                       "anchor_to": "left_middle"
                     }
@@ -1993,7 +1999,7 @@
             {
               "boot_3": {
                 "type": "panel",
-                "clip_children": true,
+                "clips_children": true,
                 "anchor_from": "bottom_left",
                 "anchor_to": "bottom_left",
                 "offset": [
@@ -2019,6 +2025,7 @@
                         "default",
                         "default"
                       ],
+                      "localize": false,
                       "anchor_from": "left_middle",
                       "anchor_to": "left_middle"
                     }
@@ -5723,7 +5730,7 @@
       "100%",
       "100%"
     ],
-    "clip_children": true,
+    "clips_children": true,
     "$state_text_offset|default": [
       0,
       0
@@ -5837,7 +5844,7 @@
       "100%",
       "100%"
     ],
-    "clip_children": true,
+    "clips_children": true,
     "controls": [
       {
         "icon": {
@@ -5899,7 +5906,7 @@
       "100%",
       "100%"
     ],
-    "clip_children": true,
+    "clips_children": true,
     "controls": [
       {
         "icon": {
@@ -5958,7 +5965,7 @@
       "100%",
       "100%"
     ],
-    "clip_children": true,
+    "clips_children": true,
     "controls": [
       {
         "icon": {
@@ -6020,7 +6027,7 @@
       "100%",
       "100%"
     ],
-    "clip_children": true,
+    "clips_children": true,
     "controls": [
       {
         "icon": {

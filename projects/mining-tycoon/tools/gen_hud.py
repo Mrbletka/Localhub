@@ -2,10 +2,11 @@
 # Run after changing the HUD:  python3 projects/mining-tycoon/tools/gen_hud.py
 #
 # How it works: BP/scripts/hud.js puts what the HUD shows in the title text behind an invisible prefix (formatting
-# codes). The title text is a global UI binding, so panels in the HUD's root panel can show it all the time; the plain
-# title is hidden while it carries a HUD prefix. Toasts ride in the subtitle (prefix TOAST) and get their own banner.
+# codes) and keeps such a title up all the time. The game's title control (hud_title_text) is replaced by our panels,
+# which read the title and subtitle text (global UI bindings). Toasts ride in the subtitle (prefix TOAST) and get
+# their own banner; titles that are not ours show plainly.
 # - home: "§h§u§1" + lines (money, next goal, where)              -> top-left panel with a coin and a flag
-# - run:  "§h§u§2" + level mark "§q§q§<0-9a>" + lines (time, haul) -> top-centre panel with a 10-segment light bar
+# - run:  "§h§u§2" + level mark "§q§q§<0-9a>" + lines (time, haul) -> top-left panel with a 10-segment light bar
 import json
 import pathlib
 from PIL import Image
@@ -143,10 +144,6 @@ def image(texture, size, **extra):
 
 
 ui = {'namespace': 'hud'}
-# The plain title (and its subtitle) stays hidden while it carries HUD data or a toast.
-ui['hud_title_text'] = {'bindings': [GLOBAL_TITLE, GLOBAL_SUB, view(
-    f"(not ({has('#hud_title_text_string', HOME)} or {has('#hud_title_text_string', RUN)} or {has('#hud_subtitle_text_string', TOAST)}))")]}
-
 ICON = 10  # icon size in the HUD (16x16 art, drawn smaller)
 LINE = 10  # label line height
 
@@ -174,7 +171,7 @@ for k in range(1, 11):
     ]}})
 run = {
     'type': 'image', 'texture': f'{UI}/hud_panel', 'size': ['100%c + 12px', '100%c + 8px'], 'layer': 1,
-    'anchor_from': 'top_middle', 'anchor_to': 'top_middle', 'offset': [0, 4],
+    'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [4, 4],  # (top centre is under the phone's buttons)
     'bindings': [GLOBAL_TITLE, view(has('#hud_title_text_string', RUN))],
     'controls': [{'col': {'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%cm', '100%c'], 'controls': [
         {'light': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 10], 'controls': [
@@ -196,10 +193,27 @@ toast = {
     'bindings': [GLOBAL_SUB, view(has('#hud_subtitle_text_string', TOAST))],
     'controls': [{'text': label(strip('#hud_subtitle_text_string', TOAST), GLOBAL_SUB, text_alignment='center', max_size=[220, 60])}],
 }
-ui['mining_tycoon_hud'] = {'type': 'panel', 'size': ['100%', '100%'], 'layer': 30, 'controls': [
-    {'home': home}, {'run': run}, {'toast': toast}]}
-ui['root_panel'] = {'modifications': [{'array_name': 'controls', 'operation': 'insert_back', 'value': [
-    {'mining_tycoon_hud@hud.mining_tycoon_hud': {}}]}]}
+# A title that is not ours (another add-on, a /title command) still shows, plainly.
+plain = {
+    'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%', '100%c'], 'anchor_from': 'center', 'anchor_to': 'center',
+    'offset': [0, -40], 'layer': 6,
+    'controls': [
+        {'title': label('#hud_title_text_string', GLOBAL_TITLE, font_size='extra_large', text_alignment='center', size=['100%', 'default'],
+                        max_size=['100%', 120]) | {'bindings': [GLOBAL_TITLE, view('#hud_title_text_string', '#text'),
+                                                                view(f"(not ({has('#hud_title_text_string', HOME)} or {has('#hud_title_text_string', RUN)}))")]}},
+        {'subtitle': label('#hud_subtitle_text_string', GLOBAL_SUB, text_alignment='center', size=['100%', 'default'], max_size=['100%', 60])
+                     | {'bindings': [GLOBAL_TITLE, GLOBAL_SUB, view('#hud_subtitle_text_string', '#text'),
+                                     view(f"(not ({has('#hud_subtitle_text_string', TOAST)} or {has('#hud_title_text_string', HOME)} or {has('#hud_title_text_string', RUN)}))")]}},
+    ],
+}
+# The game shows a title with this control (made by the title factory, replaced by every new title, gone when the
+# title has run out). It becomes the studio HUD: hud.js keeps a HUD title up all the time, so there is no plain
+# title to hide - an earlier version hid it with a binding, which failed while the title changed every second.
+ui['hud_title_text'] = {
+    'size': ['100%', '100%'], 'offset': [0, 0],
+    'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [
+        {'home': home}, {'run': run}, {'toast': toast}, {'plain': plain}]}}],
+}
 
 
 def main():

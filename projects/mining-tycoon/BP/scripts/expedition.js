@@ -228,7 +228,7 @@ function hud(player, run) {
   const left = run.light / run.max;
   const color = left > 0.3 ? '§e' : left > 0.1 ? '§6' : '§c';
   const haul = haulCount(run.haul);
-  const text = `${color}${clock(run.light)} §7light  ${haul >= run.room ? '§c' : '§f'}Haul ${haul}/${run.room}\n§8${E.levels[run.level].name}`;
+  const text = `${color}${clock(run.light)} §7light  ${haul >= run.room ? '§c' : '§f'}Haul ${haul}/${run.room}\n§7${E.levels[run.level].name}`;
   showHud(player, 'run', text, Math.ceil(left * 10));
 }
 

@@ -1,767 +1,51 @@
 {
   "namespace": "hud",
   "hud_title_text": {
-    "bindings": [
-      {
-        "binding_name": "#hud_title_text_string"
-      },
-      {
-        "binding_name": "#hud_subtitle_text_string"
-      },
-      {
-        "binding_type": "view",
-        "source_property_name": "(not ((not ((#hud_title_text_string - '§h§u§1') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§h§u§2') = #hud_title_text_string)) or (not ((#hud_subtitle_text_string - '§t§q§s') = #hud_subtitle_text_string))))",
-        "target_property_name": "#visible"
-      }
-    ]
-  },
-  "mining_tycoon_hud": {
-    "type": "panel",
     "size": [
       "100%",
       "100%"
     ],
-    "layer": 30,
+    "offset": [
+      0,
+      0
+    ],
     "controls": [
       {
-        "home": {
-          "type": "image",
-          "texture": "textures/mining_tycoon/ui/hud_panel",
+        "mining_tycoon_hud": {
+          "type": "panel",
           "size": [
-            "100%c + 10px",
-            "100%c + 8px"
-          ],
-          "layer": 1,
-          "anchor_from": "top_left",
-          "anchor_to": "top_left",
-          "offset": [
-            4,
-            4
-          ],
-          "bindings": [
-            {
-              "binding_name": "#hud_title_text_string"
-            },
-            {
-              "binding_type": "view",
-              "source_property_name": "(not ((#hud_title_text_string - '§h§u§1') = #hud_title_text_string))",
-              "target_property_name": "#visible"
-            }
+            "100%",
+            "100%"
           ],
           "controls": [
             {
-              "row": {
-                "type": "stack_panel",
-                "orientation": "horizontal",
+              "home": {
+                "type": "image",
+                "texture": "textures/mining_tycoon/ui/hud_panel",
                 "size": [
-                  "100%c",
-                  "100%cm"
+                  "100%c + 10px",
+                  "100%c + 8px"
                 ],
-                "controls": [
+                "layer": 1,
+                "anchor_from": "top_left",
+                "anchor_to": "top_left",
+                "offset": [
+                  4,
+                  4
+                ],
+                "bindings": [
                   {
-                    "icons": {
-                      "type": "stack_panel",
-                      "orientation": "vertical",
-                      "size": [
-                        10,
-                        "100%c"
-                      ],
-                      "controls": [
-                        {
-                          "coin": {
-                            "type": "image",
-                            "texture": "textures/mining_tycoon/ui/icons/coin",
-                            "size": [
-                              10,
-                              10
-                            ],
-                            "layer": 2
-                          }
-                        },
-                        {
-                          "goal": {
-                            "type": "image",
-                            "texture": "textures/mining_tycoon/ui/icons/goal",
-                            "size": [
-                              10,
-                              10
-                            ],
-                            "layer": 2
-                          }
-                        }
-                      ]
-                    }
+                    "binding_name": "#hud_title_text_string"
                   },
                   {
-                    "gap": {
-                      "type": "panel",
-                      "size": [
-                        4,
-                        1
-                      ]
-                    }
-                  },
-                  {
-                    "text": {
-                      "type": "label",
-                      "text": "#text",
-                      "color": [
-                        1,
-                        1,
-                        1
-                      ],
-                      "shadow": true,
-                      "size": [
-                        "default",
-                        "default"
-                      ],
-                      "max_size": [
-                        180,
-                        80
-                      ],
-                      "layer": 3,
-                      "bindings": [
-                        {
-                          "binding_name": "#hud_title_text_string"
-                        },
-                        {
-                          "binding_type": "view",
-                          "source_property_name": "(#hud_title_text_string - '§h§u§1')",
-                          "target_property_name": "#text"
-                        }
-                      ]
-                    }
+                    "binding_type": "view",
+                    "source_property_name": "(not ((#hud_title_text_string - '§h§u§1') = #hud_title_text_string))",
+                    "target_property_name": "#visible"
                   }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        "run": {
-          "type": "image",
-          "texture": "textures/mining_tycoon/ui/hud_panel",
-          "size": [
-            "100%c + 12px",
-            "100%c + 8px"
-          ],
-          "layer": 1,
-          "anchor_from": "top_middle",
-          "anchor_to": "top_middle",
-          "offset": [
-            0,
-            4
-          ],
-          "bindings": [
-            {
-              "binding_name": "#hud_title_text_string"
-            },
-            {
-              "binding_type": "view",
-              "source_property_name": "(not ((#hud_title_text_string - '§h§u§2') = #hud_title_text_string))",
-              "target_property_name": "#visible"
-            }
-          ],
-          "controls": [
-            {
-              "col": {
-                "type": "stack_panel",
-                "orientation": "vertical",
-                "size": [
-                  "100%cm",
-                  "100%c"
                 ],
                 "controls": [
                   {
-                    "light": {
-                      "type": "stack_panel",
-                      "orientation": "horizontal",
-                      "size": [
-                        "100%c",
-                        10
-                      ],
-                      "controls": [
-                        {
-                          "lantern": {
-                            "type": "image",
-                            "texture": "textures/mining_tycoon/ui/icons/expedition",
-                            "size": [
-                              10,
-                              10
-                            ],
-                            "layer": 2
-                          }
-                        },
-                        {
-                          "gap": {
-                            "type": "panel",
-                            "size": [
-                              3,
-                              1
-                            ]
-                          }
-                        },
-                        {
-                          "bar": {
-                            "type": "stack_panel",
-                            "orientation": "horizontal",
-                            "size": [
-                              "100%c",
-                              8
-                            ],
-                            "offset": [
-                              0,
-                              1
-                            ],
-                            "controls": [
-                              {
-                                "seg_1": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§1') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_low",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§1') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_2": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_low",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_3": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_low",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_4": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_on",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_5": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_on",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_6": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_on",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_7": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_on",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_8": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_on",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_9": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_on",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              },
-                              {
-                                "seg_10": {
-                                  "type": "panel",
-                                  "size": [
-                                    5,
-                                    8
-                                  ],
-                                  "controls": [
-                                    {
-                                      "off": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_off",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    },
-                                    {
-                                      "on": {
-                                        "type": "image",
-                                        "texture": "textures/mining_tycoon/ui/hud_seg_on",
-                                        "size": [
-                                          4,
-                                          8
-                                        ],
-                                        "layer": 2,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_title_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "((not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
-                                            "target_property_name": "#visible"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "row_gap": {
-                      "type": "panel",
-                      "size": [
-                        1,
-                        2
-                      ]
-                    }
-                  },
-                  {
-                    "haul": {
+                    "row": {
                       "type": "stack_panel",
                       "orientation": "horizontal",
                       "size": [
@@ -770,21 +54,44 @@
                       ],
                       "controls": [
                         {
-                          "pack": {
-                            "type": "image",
-                            "texture": "textures/mining_tycoon/ui/icons/backpack",
+                          "icons": {
+                            "type": "stack_panel",
+                            "orientation": "vertical",
                             "size": [
                               10,
-                              10
+                              "100%c"
                             ],
-                            "layer": 2
+                            "controls": [
+                              {
+                                "coin": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/icons/coin",
+                                  "size": [
+                                    10,
+                                    10
+                                  ],
+                                  "layer": 2
+                                }
+                              },
+                              {
+                                "goal": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/icons/goal",
+                                  "size": [
+                                    10,
+                                    10
+                                  ],
+                                  "layer": 2
+                                }
+                              }
+                            ]
                           }
                         },
                         {
                           "gap": {
                             "type": "panel",
                             "size": [
-                              3,
+                              4,
                               1
                             ]
                           }
@@ -814,7 +121,7 @@
                               },
                               {
                                 "binding_type": "view",
-                                "source_property_name": "(#hud_title_text_string - '§h§u§2' - '§q§q§0' - '§q§q§1' - '§q§q§2' - '§q§q§3' - '§q§q§4' - '§q§q§5' - '§q§q§6' - '§q§q§7' - '§q§q§8' - '§q§q§9' - '§q§q§a')",
+                                "source_property_name": "(#hud_title_text_string - '§h§u§1')",
                                 "target_property_name": "#text"
                               }
                             ]
@@ -825,83 +132,858 @@
                   }
                 ]
               }
-            }
-          ]
-        }
-      },
-      {
-        "toast": {
-          "type": "image",
-          "texture": "textures/mining_tycoon/ui/hud_toast",
-          "size": [
-            "100%c + 16px",
-            "100%c + 10px"
-          ],
-          "layer": 6,
-          "anchor_from": "top_middle",
-          "anchor_to": "top_middle",
-          "offset": [
-            0,
-            46
-          ],
-          "bindings": [
-            {
-              "binding_name": "#hud_subtitle_text_string"
             },
             {
-              "binding_type": "view",
-              "source_property_name": "(not ((#hud_subtitle_text_string - '§t§q§s') = #hud_subtitle_text_string))",
-              "target_property_name": "#visible"
-            }
-          ],
-          "controls": [
-            {
-              "text": {
-                "type": "label",
-                "text": "#text",
-                "color": [
-                  1,
-                  1,
-                  1
-                ],
-                "shadow": true,
+              "run": {
+                "type": "image",
+                "texture": "textures/mining_tycoon/ui/hud_panel",
                 "size": [
-                  "default",
-                  "default"
+                  "100%c + 12px",
+                  "100%c + 8px"
                 ],
-                "max_size": [
-                  220,
-                  60
+                "layer": 1,
+                "anchor_from": "top_left",
+                "anchor_to": "top_left",
+                "offset": [
+                  4,
+                  4
                 ],
-                "layer": 3,
+                "bindings": [
+                  {
+                    "binding_name": "#hud_title_text_string"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(not ((#hud_title_text_string - '§h§u§2') = #hud_title_text_string))",
+                    "target_property_name": "#visible"
+                  }
+                ],
+                "controls": [
+                  {
+                    "col": {
+                      "type": "stack_panel",
+                      "orientation": "vertical",
+                      "size": [
+                        "100%cm",
+                        "100%c"
+                      ],
+                      "controls": [
+                        {
+                          "light": {
+                            "type": "stack_panel",
+                            "orientation": "horizontal",
+                            "size": [
+                              "100%c",
+                              10
+                            ],
+                            "controls": [
+                              {
+                                "lantern": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/icons/expedition",
+                                  "size": [
+                                    10,
+                                    10
+                                  ],
+                                  "layer": 2
+                                }
+                              },
+                              {
+                                "gap": {
+                                  "type": "panel",
+                                  "size": [
+                                    3,
+                                    1
+                                  ]
+                                }
+                              },
+                              {
+                                "bar": {
+                                  "type": "stack_panel",
+                                  "orientation": "horizontal",
+                                  "size": [
+                                    "100%c",
+                                    8
+                                  ],
+                                  "offset": [
+                                    0,
+                                    1
+                                  ],
+                                  "controls": [
+                                    {
+                                      "seg_1": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§1') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_low",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§1') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_2": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_low",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_3": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_low",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_4": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_on",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_5": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_on",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_6": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_on",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_7": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_on",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_8": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_on",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_9": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_on",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "seg_10": {
+                                        "type": "panel",
+                                        "size": [
+                                          5,
+                                          8
+                                        ],
+                                        "controls": [
+                                          {
+                                            "off": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_off",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "(not ((not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string))))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "on": {
+                                              "type": "image",
+                                              "texture": "textures/mining_tycoon/ui/hud_seg_on",
+                                              "size": [
+                                                4,
+                                                8
+                                              ],
+                                              "layer": 2,
+                                              "bindings": [
+                                                {
+                                                  "binding_name": "#hud_title_text_string"
+                                                },
+                                                {
+                                                  "binding_type": "view",
+                                                  "source_property_name": "((not ((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)))",
+                                                  "target_property_name": "#visible"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "row_gap": {
+                            "type": "panel",
+                            "size": [
+                              1,
+                              2
+                            ]
+                          }
+                        },
+                        {
+                          "haul": {
+                            "type": "stack_panel",
+                            "orientation": "horizontal",
+                            "size": [
+                              "100%c",
+                              "100%cm"
+                            ],
+                            "controls": [
+                              {
+                                "pack": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/icons/backpack",
+                                  "size": [
+                                    10,
+                                    10
+                                  ],
+                                  "layer": 2
+                                }
+                              },
+                              {
+                                "gap": {
+                                  "type": "panel",
+                                  "size": [
+                                    3,
+                                    1
+                                  ]
+                                }
+                              },
+                              {
+                                "text": {
+                                  "type": "label",
+                                  "text": "#text",
+                                  "color": [
+                                    1,
+                                    1,
+                                    1
+                                  ],
+                                  "shadow": true,
+                                  "size": [
+                                    "default",
+                                    "default"
+                                  ],
+                                  "max_size": [
+                                    180,
+                                    80
+                                  ],
+                                  "layer": 3,
+                                  "bindings": [
+                                    {
+                                      "binding_name": "#hud_title_text_string"
+                                    },
+                                    {
+                                      "binding_type": "view",
+                                      "source_property_name": "(#hud_title_text_string - '§h§u§2' - '§q§q§0' - '§q§q§1' - '§q§q§2' - '§q§q§3' - '§q§q§4' - '§q§q§5' - '§q§q§6' - '§q§q§7' - '§q§q§8' - '§q§q§9' - '§q§q§a')",
+                                      "target_property_name": "#text"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "toast": {
+                "type": "image",
+                "texture": "textures/mining_tycoon/ui/hud_toast",
+                "size": [
+                  "100%c + 16px",
+                  "100%c + 10px"
+                ],
+                "layer": 6,
+                "anchor_from": "top_middle",
+                "anchor_to": "top_middle",
+                "offset": [
+                  0,
+                  46
+                ],
                 "bindings": [
                   {
                     "binding_name": "#hud_subtitle_text_string"
                   },
                   {
                     "binding_type": "view",
-                    "source_property_name": "(#hud_subtitle_text_string - '§t§q§s')",
-                    "target_property_name": "#text"
+                    "source_property_name": "(not ((#hud_subtitle_text_string - '§t§q§s') = #hud_subtitle_text_string))",
+                    "target_property_name": "#visible"
                   }
                 ],
-                "text_alignment": "center"
+                "controls": [
+                  {
+                    "text": {
+                      "type": "label",
+                      "text": "#text",
+                      "color": [
+                        1,
+                        1,
+                        1
+                      ],
+                      "shadow": true,
+                      "size": [
+                        "default",
+                        "default"
+                      ],
+                      "max_size": [
+                        220,
+                        60
+                      ],
+                      "layer": 3,
+                      "bindings": [
+                        {
+                          "binding_name": "#hud_subtitle_text_string"
+                        },
+                        {
+                          "binding_type": "view",
+                          "source_property_name": "(#hud_subtitle_text_string - '§t§q§s')",
+                          "target_property_name": "#text"
+                        }
+                      ],
+                      "text_alignment": "center"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "plain": {
+                "type": "stack_panel",
+                "orientation": "vertical",
+                "size": [
+                  "100%",
+                  "100%c"
+                ],
+                "anchor_from": "center",
+                "anchor_to": "center",
+                "offset": [
+                  0,
+                  -40
+                ],
+                "layer": 6,
+                "controls": [
+                  {
+                    "title": {
+                      "type": "label",
+                      "text": "#text",
+                      "color": [
+                        1,
+                        1,
+                        1
+                      ],
+                      "shadow": true,
+                      "size": [
+                        "100%",
+                        "default"
+                      ],
+                      "max_size": [
+                        "100%",
+                        120
+                      ],
+                      "layer": 3,
+                      "bindings": [
+                        {
+                          "binding_name": "#hud_title_text_string"
+                        },
+                        {
+                          "binding_type": "view",
+                          "source_property_name": "#hud_title_text_string",
+                          "target_property_name": "#text"
+                        },
+                        {
+                          "binding_type": "view",
+                          "source_property_name": "(not ((not ((#hud_title_text_string - '§h§u§1') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§h§u§2') = #hud_title_text_string))))",
+                          "target_property_name": "#visible"
+                        }
+                      ],
+                      "font_size": "extra_large",
+                      "text_alignment": "center"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "type": "label",
+                      "text": "#text",
+                      "color": [
+                        1,
+                        1,
+                        1
+                      ],
+                      "shadow": true,
+                      "size": [
+                        "100%",
+                        "default"
+                      ],
+                      "max_size": [
+                        "100%",
+                        60
+                      ],
+                      "layer": 3,
+                      "bindings": [
+                        {
+                          "binding_name": "#hud_title_text_string"
+                        },
+                        {
+                          "binding_name": "#hud_subtitle_text_string"
+                        },
+                        {
+                          "binding_type": "view",
+                          "source_property_name": "#hud_subtitle_text_string",
+                          "target_property_name": "#text"
+                        },
+                        {
+                          "binding_type": "view",
+                          "source_property_name": "(not ((not ((#hud_subtitle_text_string - '§t§q§s') = #hud_subtitle_text_string)) or (not ((#hud_title_text_string - '§h§u§1') = #hud_title_text_string)) or (not ((#hud_title_text_string - '§h§u§2') = #hud_title_text_string))))",
+                          "target_property_name": "#visible"
+                        }
+                      ],
+                      "text_alignment": "center"
+                    }
+                  }
+                ]
               }
             }
           ]
         }
-      }
-    ]
-  },
-  "root_panel": {
-    "modifications": [
-      {
-        "array_name": "controls",
-        "operation": "insert_back",
-        "value": [
-          {
-            "mining_tycoon_hud@hud.mining_tycoon_hud": {}
-          }
-        ]
       }
     ]
   }

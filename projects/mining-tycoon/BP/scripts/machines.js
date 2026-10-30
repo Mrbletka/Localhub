@@ -19,7 +19,8 @@ const FRAME = CONFIG.machineFrame;
 const BAY_BLOCKS = new Set([FRAME, ...MACHINES.flatMap((m) => [m.block, `${m.block}_on`])]);
 /** Barrels of the first landing layout that stood where the bays are now (taken away when the bays are set up). */
 const OLD_BARRELS = [[-5, 1, 11], [-5, 1, 10]];
-const PARTICLES = { smelter: 'minecraft:basic_smoke_particle', crusher: 'minecraft:basic_crit_particle', cutter: 'minecraft:villager_happy' };
+// Our own particles: vanilla ones like basic_crit_particle expect values (a direction) that scripts don't pass.
+const PARTICLES = { smelter: 'mining_tycoon:smoke', crusher: 'mining_tycoon:dust', cutter: 'mining_tycoon:guide' };
 
 const goodName = (id) => GOODS.get(id)?.name ?? id;
 const itemIcon = (id) => `textures/mining_tycoon/items/${GOODS.get(id)?.item.split(':')[1]}`;
