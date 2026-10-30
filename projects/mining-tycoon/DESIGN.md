@@ -158,9 +158,11 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
 - **Studio HUD** (`BP/scripts/hud.js`, `tools/gen_hud.py` -> `RP/ui/hud_screen.json`): scripts send the HUD inside
   the title text behind an invisible prefix and keep such a title up all the time; the game's title control
   (`hud_title_text`) is replaced by our panels, which read the title / subtitle text. (Hiding the plain title with a
-  binding instead failed in caves, where the title changes every second.) Titles that are not ours show plainly.
-  Every visibility test is one simple comparison; several conditions are nested panels (a compound
-  `(not (A or B))` text test evaluated wrong on the phone). The light bar gets one mark per lit segment.
+  binding instead failed in caves, where the title changes every second.) Titles from elsewhere (other add-ons,
+  `/title`) are not shown while the HUD owns the title. Every HUD visibility test is a single "contains" test
+  `(not ((#s - 'code') = #s))`: on the phone the negated form and compound `(not (A or B))` tests came out true when
+  they should not (`tools/check_ui.py` rejects them). The light bar gets one mark per lit segment, drawn over an
+  always-visible empty segment.
   - Home (top-left): coin + money (and sell bonus), flag + the quest (`Quest 3/9: ...`, progress and reward) or the next
     goal (`Next: Copper Pick at the Pickaxe Station`, then what you have / need in green and red).
   - Expedition (top-left; the top centre is under the phone's buttons): lantern + a 10-segment light bar (last 3 segments red), time left, backpack + haul

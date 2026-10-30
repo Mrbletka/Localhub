@@ -4,12 +4,13 @@
 # How it works: BP/scripts/hud.js puts what the HUD shows in the title text behind an invisible prefix (formatting
 # codes) and keeps such a title up all the time. The game's title control (hud_title_text) is replaced by our panels,
 # which read the title and subtitle text (global UI bindings). Toasts ride in the subtitle (prefix TOAST) and get
-# their own banner; titles that are not ours show plainly.
+# their own banner.
 # - home: "§h§u§1" + lines (money, next goal, where)              -> top-left panel with a coin and a flag
 # - run:  "§h§u§2" + one mark "§q§q§<1-9a>" per lit segment + lines (time, haul) -> top-left panel with a light bar
 #
-# Every visibility test is ONE simple comparison: on the phone a compound test like (not (A or B)) came out wrong (it
-# showed the plain title in caves), so several conditions are nested panels, one test each (as in the menus).
+# Every visibility test has the one form that is reliable in the HUD on the phone: "contains" = (not ((#s - 'code') =
+# #s)). The negated form ((#s - 'code') = #s) and compound tests (not (A or B)) came out true when they should not
+# (a plain-title fallback showed the HUD text big in the middle), so the HUD never needs "does not contain".
 import json
 import pathlib
 from PIL import Image
@@ -129,15 +130,7 @@ def has(prop, s):
     return f"(not (({prop} - '{s}') = {prop}))"
 
 
-def lacks(prop, s):
-    return f"(({prop} - '{s}') = {prop})"
 
-
-def when(conds, name, control):
-    """Nest a control in one panel per condition (binding, expression): all must hold for it to show."""
-    for i, (binding, expr) in enumerate(reversed(conds)):
-        control = {f'{name}_if{i}': {'type': 'stack_panel', 'size': ['100%', '100%c'], 'bindings': [binding, view(expr)], 'controls': [control]}}
-    return control
 
 
 def strip(prop, *codes):
@@ -176,11 +169,11 @@ home = {
 }
 
 segments = []
-for k in range(1, 11):  # segment k is lit when its own mark is in the title (hud.js sends a mark per lit segment)
+for k in range(1, 11):  # an empty segment, and over it the lit one when its own mark is in the title
     tex = 'hud_seg_low' if k <= 3 else 'hud_seg_on'
     segments.append({f'seg_{k}': {'type': 'panel', 'size': [5, 8], 'controls': [
-        {'off': image(f'{UI}/hud_seg_off', [4, 8], bindings=[GLOBAL_TITLE, view(lacks('#hud_title_text_string', mark(k)))])},
-        {'on': image(f'{UI}/{tex}', [4, 8], bindings=[GLOBAL_TITLE, view(has('#hud_title_text_string', mark(k)))])},
+        {'off': image(f'{UI}/hud_seg_off', [4, 8])},
+        {'on': image(f'{UI}/{tex}', [4, 8], layer=3, bindings=[GLOBAL_TITLE, view(has('#hud_title_text_string', mark(k)))])},
     ]}})
 run = {
     'type': 'image', 'texture': f'{UI}/hud_panel', 'size': ['100%c + 12px', '100%c + 8px'], 'layer': 1,
@@ -207,24 +200,13 @@ toast = {
     'controls': [{'text': label(strip('#hud_subtitle_text_string', TOAST), GLOBAL_SUB, text_alignment='center', max_size=[220, 60])}],
 }
 # A title that is not ours (another add-on, a /title command) still shows, plainly.
-not_ours = [(GLOBAL_TITLE, lacks('#hud_title_text_string', HOME)), (GLOBAL_TITLE, lacks('#hud_title_text_string', RUN))]
-plain = {
-    'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%', '100%c'], 'anchor_from': 'center', 'anchor_to': 'center',
-    'offset': [0, -40], 'layer': 6,
-    'controls': [
-        when(not_ours, 'title', {'title': label('#hud_title_text_string', GLOBAL_TITLE, font_size='extra_large', text_alignment='center',
-                                                size=['100%', 'default'], max_size=['100%', 120])}),
-        when(not_ours + [(GLOBAL_SUB, lacks('#hud_subtitle_text_string', TOAST))], 'subtitle',
-             {'subtitle': label('#hud_subtitle_text_string', GLOBAL_SUB, text_alignment='center', size=['100%', 'default'], max_size=['100%', 60])}),
-    ],
-}
 # The game shows a title with this control (made by the title factory, replaced by every new title, gone when the
 # title has run out). It becomes the studio HUD: hud.js keeps a HUD title up all the time, so there is no plain
-# title to hide - an earlier version hid it with a binding, which failed while the title changed every second.
+# title to hide. Titles from elsewhere (other add-ons, /title) are not shown while the HUD owns the title.
 ui['hud_title_text'] = {
     'size': ['100%', '100%'], 'offset': [0, 0],
     'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [
-        {'home': home}, {'run': run}, {'toast': toast}, {'plain': plain}]}}],
+        {'home': home}, {'run': run}, {'toast': toast}]}}],
 }
 
 

@@ -1,8 +1,8 @@
 # Checks our JSON UI files before they reach the phone:
 # - every property name against the documented JSON UI properties (a typo like "clip_children" for "clips_children"
 #   otherwise shows up as content-log errors in game);
-# - no compound text tests in view bindings (string subtraction combined with or/and evaluated wrong on the phone:
-#   nest one simple test per panel instead).
+# - no compound text tests in view bindings (string subtraction combined with or/and evaluated wrong on the phone);
+# - in the HUD, visibility only from "contains" tests: the negated form came out true when it should not.
 # Run after the UI generators:  python3 projects/mining-tycoon/tools/check_ui.py
 import json
 import pathlib
@@ -88,9 +88,16 @@ def compound(expr):
     return isinstance(expr, str) and " - '" in expr and (' or ' in expr or ' and ' in expr)
 
 
+def negated(expr, path):
+    """In the HUD only "contains" ((not ((#s - 'x') = #s))) is reliable on the phone; ((#s - 'x') = #s) came out true."""
+    return path and path[0] == 'hud_screen.json' and isinstance(expr, str) and " - '" in expr and not expr.startswith('(not ')
+
+
 def walk(node, path, problems):
     if isinstance(node, dict) and node.get('binding_type') == 'view' and compound(node.get('source_property_name')):
         problems.append(f"{'/'.join(path)}: compound text test - nest one test per panel instead")
+    if isinstance(node, dict) and node.get('target_property_name') == '#visible' and negated(node.get('source_property_name'), path):
+        problems.append(f"{'/'.join(path)}: 'does not contain' test in the HUD - only 'contains' works there")
     if isinstance(node, list):
         for item in node:
             walk(item, path, problems)

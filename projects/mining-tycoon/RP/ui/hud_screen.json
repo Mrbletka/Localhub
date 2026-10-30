@@ -226,17 +226,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§1') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -247,7 +237,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -279,17 +269,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§2') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -300,7 +280,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -332,17 +312,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§3') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -353,7 +323,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -385,17 +355,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§4') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -406,7 +366,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -438,17 +398,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§5') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -459,7 +409,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -491,17 +441,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§6') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -512,7 +452,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -544,17 +484,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§7') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -565,7 +495,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -597,17 +527,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§8') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -618,7 +538,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -650,17 +570,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§9') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -671,7 +581,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -703,17 +613,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
-                                              "bindings": [
-                                                {
-                                                  "binding_name": "#hud_title_text_string"
-                                                },
-                                                {
-                                                  "binding_type": "view",
-                                                  "source_property_name": "((#hud_title_text_string - '§q§q§a') = #hud_title_text_string)",
-                                                  "target_property_name": "#visible"
-                                                }
-                                              ]
+                                              "layer": 2
                                             }
                                           },
                                           {
@@ -724,7 +624,7 @@
                                                 4,
                                                 8
                                               ],
-                                              "layer": 2,
+                                              "layer": 3,
                                               "bindings": [
                                                 {
                                                   "binding_name": "#hud_title_text_string"
@@ -880,195 +780,6 @@
                         }
                       ],
                       "text_alignment": "center"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "plain": {
-                "type": "stack_panel",
-                "orientation": "vertical",
-                "size": [
-                  "100%",
-                  "100%c"
-                ],
-                "anchor_from": "center",
-                "anchor_to": "center",
-                "offset": [
-                  0,
-                  -40
-                ],
-                "layer": 6,
-                "controls": [
-                  {
-                    "title_if1": {
-                      "type": "stack_panel",
-                      "size": [
-                        "100%",
-                        "100%c"
-                      ],
-                      "bindings": [
-                        {
-                          "binding_name": "#hud_title_text_string"
-                        },
-                        {
-                          "binding_type": "view",
-                          "source_property_name": "((#hud_title_text_string - '§h§u§1') = #hud_title_text_string)",
-                          "target_property_name": "#visible"
-                        }
-                      ],
-                      "controls": [
-                        {
-                          "title_if0": {
-                            "type": "stack_panel",
-                            "size": [
-                              "100%",
-                              "100%c"
-                            ],
-                            "bindings": [
-                              {
-                                "binding_name": "#hud_title_text_string"
-                              },
-                              {
-                                "binding_type": "view",
-                                "source_property_name": "((#hud_title_text_string - '§h§u§2') = #hud_title_text_string)",
-                                "target_property_name": "#visible"
-                              }
-                            ],
-                            "controls": [
-                              {
-                                "title": {
-                                  "type": "label",
-                                  "text": "#text",
-                                  "color": [
-                                    1,
-                                    1,
-                                    1
-                                  ],
-                                  "shadow": true,
-                                  "size": [
-                                    "100%",
-                                    "default"
-                                  ],
-                                  "max_size": [
-                                    "100%",
-                                    120
-                                  ],
-                                  "layer": 3,
-                                  "bindings": [
-                                    {
-                                      "binding_name": "#hud_title_text_string"
-                                    },
-                                    {
-                                      "binding_type": "view",
-                                      "source_property_name": "#hud_title_text_string",
-                                      "target_property_name": "#text"
-                                    }
-                                  ],
-                                  "font_size": "extra_large",
-                                  "text_alignment": "center"
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "subtitle_if2": {
-                      "type": "stack_panel",
-                      "size": [
-                        "100%",
-                        "100%c"
-                      ],
-                      "bindings": [
-                        {
-                          "binding_name": "#hud_title_text_string"
-                        },
-                        {
-                          "binding_type": "view",
-                          "source_property_name": "((#hud_title_text_string - '§h§u§1') = #hud_title_text_string)",
-                          "target_property_name": "#visible"
-                        }
-                      ],
-                      "controls": [
-                        {
-                          "subtitle_if1": {
-                            "type": "stack_panel",
-                            "size": [
-                              "100%",
-                              "100%c"
-                            ],
-                            "bindings": [
-                              {
-                                "binding_name": "#hud_title_text_string"
-                              },
-                              {
-                                "binding_type": "view",
-                                "source_property_name": "((#hud_title_text_string - '§h§u§2') = #hud_title_text_string)",
-                                "target_property_name": "#visible"
-                              }
-                            ],
-                            "controls": [
-                              {
-                                "subtitle_if0": {
-                                  "type": "stack_panel",
-                                  "size": [
-                                    "100%",
-                                    "100%c"
-                                  ],
-                                  "bindings": [
-                                    {
-                                      "binding_name": "#hud_subtitle_text_string"
-                                    },
-                                    {
-                                      "binding_type": "view",
-                                      "source_property_name": "((#hud_subtitle_text_string - '§t§q§s') = #hud_subtitle_text_string)",
-                                      "target_property_name": "#visible"
-                                    }
-                                  ],
-                                  "controls": [
-                                    {
-                                      "subtitle": {
-                                        "type": "label",
-                                        "text": "#text",
-                                        "color": [
-                                          1,
-                                          1,
-                                          1
-                                        ],
-                                        "shadow": true,
-                                        "size": [
-                                          "100%",
-                                          "default"
-                                        ],
-                                        "max_size": [
-                                          "100%",
-                                          60
-                                        ],
-                                        "layer": 3,
-                                        "bindings": [
-                                          {
-                                            "binding_name": "#hud_subtitle_text_string"
-                                          },
-                                          {
-                                            "binding_type": "view",
-                                            "source_property_name": "#hud_subtitle_text_string",
-                                            "target_property_name": "#text"
-                                          }
-                                        ],
-                                        "text_alignment": "center"
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
                     }
                   }
                 ]
