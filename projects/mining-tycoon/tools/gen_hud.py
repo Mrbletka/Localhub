@@ -6,7 +6,10 @@
 # which read the title and subtitle text (global UI bindings). Toasts ride in the subtitle (prefix TOAST) and get
 # their own banner; titles that are not ours show plainly.
 # - home: "§h§u§1" + lines (money, next goal, where)              -> top-left panel with a coin and a flag
-# - run:  "§h§u§2" + level mark "§q§q§<0-9a>" + lines (time, haul) -> top-left panel with a 10-segment light bar
+# - run:  "§h§u§2" + one mark "§q§q§<1-9a>" per lit segment + lines (time, haul) -> top-left panel with a light bar
+#
+# Every visibility test is ONE simple comparison: on the phone a compound test like (not (A or B)) came out wrong (it
+# showed the plain title in caves), so several conditions are nested panels, one test each (as in the menus).
 import json
 import pathlib
 from PIL import Image
@@ -126,6 +129,17 @@ def has(prop, s):
     return f"(not (({prop} - '{s}') = {prop}))"
 
 
+def lacks(prop, s):
+    return f"(({prop} - '{s}') = {prop})"
+
+
+def when(conds, name, control):
+    """Nest a control in one panel per condition (binding, expression): all must hold for it to show."""
+    for i, (binding, expr) in enumerate(reversed(conds)):
+        control = {f'{name}_if{i}': {'type': 'stack_panel', 'size': ['100%', '100%c'], 'bindings': [binding, view(expr)], 'controls': [control]}}
+    return control
+
+
 def strip(prop, *codes):
     return '(' + prop + ''.join(f" - '{c}'" for c in codes) + ')'
 
@@ -162,12 +176,11 @@ home = {
 }
 
 segments = []
-for k in range(1, 11):
-    lit = f"({' or '.join(has('#hud_title_text_string', mark(n)) for n in range(k, 11))})"
+for k in range(1, 11):  # segment k is lit when its own mark is in the title (hud.js sends a mark per lit segment)
     tex = 'hud_seg_low' if k <= 3 else 'hud_seg_on'
     segments.append({f'seg_{k}': {'type': 'panel', 'size': [5, 8], 'controls': [
-        {'off': image(f'{UI}/hud_seg_off', [4, 8], bindings=[GLOBAL_TITLE, view(f'(not {lit})')])},
-        {'on': image(f'{UI}/{tex}', [4, 8], bindings=[GLOBAL_TITLE, view(lit)])},
+        {'off': image(f'{UI}/hud_seg_off', [4, 8], bindings=[GLOBAL_TITLE, view(lacks('#hud_title_text_string', mark(k)))])},
+        {'on': image(f'{UI}/{tex}', [4, 8], bindings=[GLOBAL_TITLE, view(has('#hud_title_text_string', mark(k)))])},
     ]}})
 run = {
     'type': 'image', 'texture': f'{UI}/hud_panel', 'size': ['100%c + 12px', '100%c + 8px'], 'layer': 1,
@@ -194,16 +207,15 @@ toast = {
     'controls': [{'text': label(strip('#hud_subtitle_text_string', TOAST), GLOBAL_SUB, text_alignment='center', max_size=[220, 60])}],
 }
 # A title that is not ours (another add-on, a /title command) still shows, plainly.
+not_ours = [(GLOBAL_TITLE, lacks('#hud_title_text_string', HOME)), (GLOBAL_TITLE, lacks('#hud_title_text_string', RUN))]
 plain = {
     'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%', '100%c'], 'anchor_from': 'center', 'anchor_to': 'center',
     'offset': [0, -40], 'layer': 6,
     'controls': [
-        {'title': label('#hud_title_text_string', GLOBAL_TITLE, font_size='extra_large', text_alignment='center', size=['100%', 'default'],
-                        max_size=['100%', 120]) | {'bindings': [GLOBAL_TITLE, view('#hud_title_text_string', '#text'),
-                                                                view(f"(not ({has('#hud_title_text_string', HOME)} or {has('#hud_title_text_string', RUN)}))")]}},
-        {'subtitle': label('#hud_subtitle_text_string', GLOBAL_SUB, text_alignment='center', size=['100%', 'default'], max_size=['100%', 60])
-                     | {'bindings': [GLOBAL_TITLE, GLOBAL_SUB, view('#hud_subtitle_text_string', '#text'),
-                                     view(f"(not ({has('#hud_subtitle_text_string', TOAST)} or {has('#hud_title_text_string', HOME)} or {has('#hud_title_text_string', RUN)}))")]}},
+        when(not_ours, 'title', {'title': label('#hud_title_text_string', GLOBAL_TITLE, font_size='extra_large', text_alignment='center',
+                                                size=['100%', 'default'], max_size=['100%', 120])}),
+        when(not_ours + [(GLOBAL_SUB, lacks('#hud_subtitle_text_string', TOAST))], 'subtitle',
+             {'subtitle': label('#hud_subtitle_text_string', GLOBAL_SUB, text_alignment='center', size=['100%', 'default'], max_size=['100%', 60])}),
     ],
 }
 # The game shows a title with this control (made by the title factory, replaced by every new title, gone when the

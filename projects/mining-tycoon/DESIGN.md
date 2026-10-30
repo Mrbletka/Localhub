@@ -159,6 +159,8 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   the title text behind an invisible prefix and keep such a title up all the time; the game's title control
   (`hud_title_text`) is replaced by our panels, which read the title / subtitle text. (Hiding the plain title with a
   binding instead failed in caves, where the title changes every second.) Titles that are not ours show plainly.
+  Every visibility test is one simple comparison; several conditions are nested panels (a compound
+  `(not (A or B))` text test evaluated wrong on the phone). The light bar gets one mark per lit segment.
   - Home (top-left): coin + money (and sell bonus), flag + the quest (`Quest 3/9: ...`, progress and reward) or the next
     goal (`Next: Copper Pick at the Pickaxe Station`, then what you have / need in green and red).
   - Expedition (top-left; the top centre is under the phone's buttons): lantern + a 10-segment light bar (last 3 segments red), time left, backpack + haul
@@ -178,8 +180,8 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
 - Drills are stored on their owner (`mining_tycoon:drills`), not in one world property that would run out of room on
   a big server; the old world record is moved onto each owner when they join.
 - Magma Core floors are crimson nylium (fire from blazes burns out) instead of netherrack.
-- `tools/check_ui.py` checks every property name in `RP/ui/*.json` against the documented JSON UI properties (run it
-  after the UI generators): typos like `clip_children` (it is `clips_children`) used to reach the phone as content-log
+- `tools/check_ui.py` checks every property name in `RP/ui/*.json` against the documented JSON UI properties and
+  rejects compound text tests (run it after the UI generators): typos like `clip_children` (it is `clips_children`) used to reach the phone as content-log
   errors. Particles are our own (`mining_tycoon:smoke`, `dust`, `guide`, `burst`): vanilla ones such as
   `basic_crit_particle` expect values (a direction) that scripts don't pass and log Molang errors.
 - Tests (simulator, before every push): sessions, mine, migration, expeditions, machines, the whole loop, the tutorial

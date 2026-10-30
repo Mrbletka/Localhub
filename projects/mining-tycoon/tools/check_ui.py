@@ -1,5 +1,8 @@
-# Checks the property names in our JSON UI files against the documented JSON UI properties, so a typo (for example
-# "clip_children" instead of "clips_children") is caught here instead of as a content-log error on the phone.
+# Checks our JSON UI files before they reach the phone:
+# - every property name against the documented JSON UI properties (a typo like "clip_children" for "clips_children"
+#   otherwise shows up as content-log errors in game);
+# - no compound text tests in view bindings (string subtraction combined with or/and evaluated wrong on the phone:
+#   nest one simple test per panel instead).
 # Run after the UI generators:  python3 projects/mining-tycoon/tools/check_ui.py
 import json
 import pathlib
@@ -80,7 +83,14 @@ BINDING_KEYS = {'binding_name', 'binding_name_override', 'binding_type', 'bindin
                 'source_control_name', 'source_property_name', 'target_property_name', 'resolve_sibling_scope'}
 
 
+def compound(expr):
+    """A text test (string subtraction) combined with or/and: on the phone such a test came out wrong."""
+    return isinstance(expr, str) and " - '" in expr and (' or ' in expr or ' and ' in expr)
+
+
 def walk(node, path, problems):
+    if isinstance(node, dict) and node.get('binding_type') == 'view' and compound(node.get('source_property_name')):
+        problems.append(f"{'/'.join(path)}: compound text test - nest one test per panel instead")
     if isinstance(node, list):
         for item in node:
             walk(item, path, problems)
@@ -96,7 +106,7 @@ def walk(node, path, problems):
             continue
         if name not in KNOWN and re.match(r'^[a-z_0-9]+$', name) and path and path[-1] not in ('control_ids', 'value'):
             problems.append(f"{'/'.join(path)}: {name}")
-        if isinstance(value, (dict, list)) and name not in ('bindings', 'variables'):
+        if isinstance(value, (dict, list)) and name != 'variables':
             walk(value, path + [name], problems)
 
 
@@ -108,8 +118,8 @@ def main():
             if key != 'namespace':
                 walk(value, [f.name, key.split('@')[0]], problems)
     for p in problems:
-        print('unknown UI property:', p)
-    print(f'checked {len(list(UI.glob("*.json")))} UI files: {len(problems)} unknown properties')
+        print('UI problem:', p)
+    print(f'checked {len(list(UI.glob("*.json")))} UI files: {len(problems)} problems')
     sys.exit(1 if problems else 0)
 
 

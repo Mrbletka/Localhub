@@ -6,9 +6,9 @@ import { system } from '@minecraft/server';
 
 /** Invisible prefixes (formatting codes) - must match tools/gen_hud.py. */
 export const HUD_CODES = { home: '§h§u§1', run: '§h§u§2', toast: '§t§q§s' };
-const LEVELS = '0123456789a';
-/** Light bar level 0..10 inside a run HUD text (the HUD shows that many segments). */
-export const levelMark = (n) => `§q§q§${LEVELS[Math.max(0, Math.min(10, n))]}`;
+const SEGMENTS = '123456789a';
+/** Light bar level 0..10 inside a run HUD text: one mark per lit segment (the HUD tests each mark on its own). */
+export const levelMark = (n) => [...SEGMENTS.slice(0, Math.max(0, Math.min(10, n)))].map((c) => `§q§q§${c}`).join('');
 
 const toasts = new Map(); // playerId -> { text, until }
 const shown = new Map(); // playerId -> the HUD title last sent
