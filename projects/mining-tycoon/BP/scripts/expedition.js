@@ -10,7 +10,7 @@ import { activeSession, sessionsOf, plotAt, playSession } from './sessions.js';
 import { buildCave, planCave, safetyFloor, caveArrival, caveLookAt, caveBounds, shape } from './cave_builder.js';
 import { pickTier, valueMultiplier, lightSeconds, backpackSize, cartLevel } from './economy.js';
 import { pickProblem, popup } from './mining.js';
-import { showHud, toast, forgetHud } from './hud.js';
+import { showHud, toast, forgetHud, pickup } from './hud.js';
 import { record, records } from './progress.js';
 import { fullScreenMenu, icon, travel } from './menu.js';
 
@@ -410,7 +410,7 @@ world.afterEvents.playerBreakBlock.subscribe(({ player, block, dimension, broken
   giveItem(player, res.item);
   run.haul[res.id] = (run.haul[res.id] ?? 0) + 1;
   save(player, run);
-  popup(player, `§e+1 ${res.name}  §7Haul ${haulCount(run.haul)}/${run.room}`);
+  pickup(player, res.name, `  §7Haul ${haulCount(run.haul)}/${run.room}`);
   player.playSound('random.pop', { volume: 0.6, pitch: 0.8 + ore.pick * 0.12 });
   hud(player, run);
   record(player, `mined_${res.id}`);
@@ -423,7 +423,7 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   const item = block.getItemStack(1);
   block.setType('minecraft:air');
   if (item) player.getComponent('minecraft:inventory')?.container?.addItem(item);
-  player.onScreenDisplay.setActionBar('§7Nothing can be built down here.');
+  popup(player, '§7Nothing can be built down here.');
 });
 
 // Caves and mines are dark: monsters that spawn there by themselves are removed, only the expedition's creatures

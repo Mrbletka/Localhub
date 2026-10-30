@@ -4,6 +4,7 @@ import { world, system } from '@minecraft/server';
 import { CONFIG } from './config.js';
 import { getJson, setJson, getNumber, setNumber, giveItem } from './lib/util.js';
 import { buildMine, arrival, lookAt, safetyFloor } from './mine_builder.js';
+import { notify } from './hud.js';
 
 const NS = CONFIG.namespace;
 const P = CONFIG.plots;
@@ -246,10 +247,10 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   if (!plot) return;
   if (plot.owner !== player.id) {
     event.cancel = true;
-    system.run(() => player.onScreenDisplay.setActionBar(`§cThis is ${plot.name}'s mine.`));
+    system.run(() => notify(player, `§cThis is ${plot.name}'s mine.`));
   } else if (!BREAKABLE.has(event.block.typeId)) {
     event.cancel = true;
-    system.run(() => player.onScreenDisplay.setActionBar('§7Only ores and drills can be broken in your mine.'));
+    system.run(() => notify(player, '§7Only ores and drills can be broken in your mine.'));
   }
 });
 
@@ -261,5 +262,5 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   const item = block.getItemStack(1);
   block.setType('minecraft:air');
   if (item) player.getComponent('minecraft:inventory')?.container?.addItem(item);
-  player.onScreenDisplay.setActionBar(plot.owner === player.id ? '§7Only drills can be placed in your mine.' : `§cThis is ${plot.name}'s mine.`);
+  notify(player, plot.owner === player.id ? '§7Only drills can be placed in your mine.' : `§cThis is ${plot.name}'s mine.`);
 });

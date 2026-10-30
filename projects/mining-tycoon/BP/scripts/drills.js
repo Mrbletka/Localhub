@@ -9,6 +9,7 @@ import { activeSession, sessionKey, inActivePlot, onSessionDelete, onMineRebuild
 import { padBlockId } from './mine_builder.js';
 import { giveGoods, goodIcon, goodName } from './goods.js';
 import { fullScreenMenu, icon } from './menu.js';
+import { toast } from './hud.js';
 
 const D = CONFIG.drills;
 const LEGACY_KEY = `${CONFIG.namespace}:generators`; // all drills in one world property (older versions)
@@ -135,7 +136,7 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   if (ownedDrills(player.id, slot).length >= D.max) return refuse(`§cDrill limit reached (${D.max}).`);
   drills[locKey(dimension.id, block.location)] = { owner: player.id, slot, block: block.typeId };
   save(player);
-  player.onScreenDisplay.setActionBar(`§a${tier.name} placed: it digs into your drill bin. Tap a drill to collect.`);
+  toast(player, `${tier.name} placed`, 'It digs into your drill bin - tap a drill to collect');
 });
 
 // Tapping a drill opens the bin.

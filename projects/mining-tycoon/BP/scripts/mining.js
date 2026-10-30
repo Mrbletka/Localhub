@@ -8,6 +8,7 @@ import { eachPlayer } from './lib/safe.js';
 import { activeSession, plotAt, plotCenter, onSessionEnter, sessionKey } from './sessions.js';
 import { pickTier } from './economy.js';
 import { record } from './progress.js';
+import { notify, pickup } from './hud.js';
 
 const V = CONFIG.mine.vein;
 const ORES = new Map(CONFIG.ores.map((o) => [o.block, o]));
@@ -15,8 +16,6 @@ const ORE_BY_ID = new Map(CONFIG.ores.map((o) => [o.id, o]));
 const PICK_TIER = new Map(CONFIG.picks.map((p, i) => [p.item, i + 1]));
 const RESOURCES = new Map(CONFIG.resources.map((r) => [r.id, r]));
 
-/** Tick until which the per-second money action bar leaves a mining popup alone. */
-export const popupUntil = new Map();
 
 function* fieldCells(c) {
   for (let y = V.y[0]; y <= V.y[1]; y++)
@@ -83,11 +82,8 @@ export function syncPick(player) {
   if (!has) giveItem(player, want);
 }
 
-/** A short action bar message that the per-second money (or expedition) bar leaves alone for a moment. */
-export function popup(player, text) {
-  popupUntil.set(player.id, system.currentTick + 25);
-  player.onScreenDisplay.setActionBar(text);
-}
+/** A small notification (the MINE-OS card; see hud.js). */
+export const popup = (player, text) => notify(player, text, 1, 1.2);
 
 /** Why the held item can't break an ore (needs a better pick), or undefined when it can. */
 export function pickProblem(itemStack, ore) {
@@ -140,7 +136,7 @@ world.afterEvents.playerBreakBlock.subscribe(({ player, block, dimension, broken
   const res = RESOURCES.get(ore.id);
   if (res) {
     giveItem(player, res.item);
-    popup(player, `§e+1 ${res.name}`);
+    pickup(player, res.name);
     player.playSound('random.pop', { volume: 0.5, pitch: 0.8 + Math.min(ore.pick, 6) * 0.12 });
     record(player, `mined_${res.id}`);
     record(player, 'mined');
