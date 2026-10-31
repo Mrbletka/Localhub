@@ -183,6 +183,15 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
     refusals. `hud.js` queues them: a toast stays at least 2 s before the next toast (1.5 s before a small card), at
     most two toasts wait (a newer one pushes out the oldest), small cards keep 0.7 s apart (only the latest shows) and
     a toast cuts a small card short.
+  - **Profile** (top right, below the hunger bar phones show there; `BP/scripts/profile.js`, config `profile`): a
+    MINE-OS panel `MINE-OS // PROFILE` with the player's own model (the game's paper doll renderer, always on) in a
+    holo frame with a scan beam and the rank badge, the name, `Prospector Lv 12 45/185 XP` and a gold 10-segment XP
+    bar. It rides in the subtitle of the HUD title (`§p§f§1` + rank `§z§z§<n>` + XP marks). XP belongs to the player
+    (`mining_tycoon:xp`, all sessions, survives rebirth): every ore mined at home or in a cave gives its pick tier
+    (Coal 1 ... Diamond 6). Level L -> L + 1 takes 20 + 15 x (L - 1) XP (Lv 10 at 720 XP, max 99). Ranks: Rookie (1),
+    Digger (5), Prospector (10), Miner (15), Expert (20), Master (30), Legend (40), badge = that tier's pick (Legend:
+    a cut diamond). Level up: a card (`Level 5!` / `New rank: Digger`), a sound and a gold burst. The tablet shows
+    the profile line too.
   - **No chat**: every message is a card (refusals, results, warnings, rebirths of other players); scripts never
     write to chat (the sim fails a suite on any chat line).
 - **Records** (`BP/scripts/progress.js`, `s<slot>:records`, survive rebirth): mined per resource, ores, sold, earned,

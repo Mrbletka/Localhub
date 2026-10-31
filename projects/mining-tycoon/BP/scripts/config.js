@@ -175,6 +175,21 @@ export const CONFIG = {
     { id: 'pack', name: 'Deep Pockets', about: '+16 backpack room', per: 16, costs: [1, 2, 3] },
     { id: 'speed', name: 'Quick Machines', about: 'machines work 15% faster', per: 0.15, costs: [1, 2, 3] },
   ],
+  // The player profile (BP/scripts/profile.js, top-right HUD): XP for every ore mined at home or in a cave (its pick
+  // tier: Coal 1 ... Diamond 6), levels and ranks. It belongs to the player (all sessions) and survives rebirth.
+  profile: {
+    xp: { base: 20, step: 15 }, // XP from level L to L + 1 = base + step x (L - 1): 20, 35, 50 ... (to Lv 10: 720 XP)
+    maxLevel: 99,
+    ranks: [ // from this level on; badge = an item texture shown on the avatar
+      { level: 1, name: 'Rookie', badge: 'pick_1' },
+      { level: 5, name: 'Digger', badge: 'pick_2' },
+      { level: 10, name: 'Prospector', badge: 'pick_3' },
+      { level: 15, name: 'Miner', badge: 'pick_4' },
+      { level: 20, name: 'Expert', badge: 'pick_5' },
+      { level: 30, name: 'Master', badge: 'pick_6' },
+      { level: 40, name: 'Legend', badge: 'cut_diamond' },
+    ],
+  },
   // The tutorial: quests for a new session (BP/scripts/tutorial.js), each with a money reward.
   quests: [
     { text: 'Mine 5 Coal at the vein', target: 'vein', count: 'mined_coal', goal: 5, reward: 25 },

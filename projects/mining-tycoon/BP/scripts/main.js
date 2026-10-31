@@ -18,6 +18,7 @@ import { showPerks } from './progress.js';
 import { showHud, toast } from './hud.js';
 import { eachPlayer } from './lib/safe.js';
 import './trader.js';
+import { profileText } from './profile.js';
 
 const NS = CONFIG.namespace;
 const clock = (seconds) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -48,6 +49,7 @@ function openMenu(player) {
   const rebirths = stat(player, 'rebirths');
   const [quest, detail] = guideLines(player);
   const body =
+    `§b${player.name}: ${profileText(player)}§r\n` +
     `Session ${slot + 1} - Money §a$${formatNumber(stat(player, 'money'))}§r${rebirths ? ` - Sell bonus x${+valueMultiplier(player).toFixed(2)}` : ''}\n` +
     `${CONFIG.picks[pickTier(player) - 1].name} - Light ${clock(lightSeconds(player))} - Backpack ${backpackSize(player)} - ${CONFIG.expedition.levels[cartLevel(player) - 1].name}\n` +
     `${quest}\n${detail}`;

@@ -7,6 +7,8 @@
 # which reads the title text (a global UI binding), so no title is ever shown as a title.
 # - home: "§h§u§1" + one mark "§q§q§<1-9a>" per lit progress segment + lines (money, quest or goal, progress)
 # - run:  "§h§u§2" + one mark per lit light segment + lines (time, haul, cave level)
+# - the subtitle carries the profile (top-right panel): "§p§f§1" + rank "§z§z§<1-7>" + one mark per lit XP segment +
+#   lines (name; rank, level, XP)
 # Notifications (hud.js notify/toast) use the action bar: its control (hud_actionbar_text) becomes a MINE-OS card above
 # the hotbar that slides up with a flicker, pings, sweeps a light streak over the glass, wipes its text in and drains
 # a timer line before it fades.
@@ -27,7 +29,9 @@ RP = PROJECT / 'RP'
 UI = 'textures/mining_tycoon/ui'
 TECH = f'{UI}/tech'
 ART = RP / UI
-HOME, RUN = '§h§u§1', '§h§u§2'
+HOME, RUN, PROFILE = '§h§u§1', '§h§u§2', '§p§f§1'
+RANKS = ['pick_1', 'pick_2', 'pick_3', 'pick_4', 'pick_5', 'pick_6', 'cut_diamond']  # badge per rank (config.js profile.ranks)
+rank_code = lambda n: f'§z§z§{n}'
 LEVELS = '0123456789a'
 mark = lambda n: f'§q§q§{LEVELS[n]}'
 MARKS = [mark(n) for n in range(11)]
@@ -172,6 +176,23 @@ def led(core, edge):
     return paint((3, 3), lambda x, y: hexc(core) if (x, y) == (1, 1) else hexc(edge, 200) if x == 1 or y == 1 else hexc(edge, 90))
 
 
+def avatar_frame():
+    """26x26 holo frame for the player model: dark glass, a faint grid, chamfered cyan rim with bright corners."""
+    def c(x, y):
+        cx, cy = min(x, 25 - x), min(y, 25 - y)
+        if cx + cy < 2:
+            return None
+        if cx + cy == 2 or (cx + cy <= 4 and min(cx, cy) == 0):
+            return CYAN + (255,)
+        if cx == 0 or cy == 0:
+            return CYAN + (190,)
+        if x % 5 == 2 or y % 5 == 2:
+            return (16, 66, 80, 238)
+        glow = max(0, 1 - math.hypot(x - 12.5, y - 15) / 14)
+        return (6 + int(20 * glow), 22 + int(40 * glow), 30 + int(45 * glow), 240)
+    return paint((26, 26), c)
+
+
 def write_art():
     glass(242).save(ART / 'hud_board.png')
     glass(250).save(ART / 'hud_note.png')
@@ -190,6 +211,8 @@ def write_art():
     led('#ffd0c8', '#e02a2a').save(ART / 'hud_led_red.png')
     paint((16, 3), lambda x, y: (200, 255, 255, 170) if y == 1 else CYAN + (45,)).save(ART / 'hud_beam.png')
     bar((6, 4), ('#d8feff', '#5ff6ff', '#1a9fb0')).save(ART / 'hud_prog_on.png')
+    bar((6, 4), ('#fff3b0', '#ffc844', '#c47a12')).save(ART / 'hud_xp_on.png')
+    avatar_frame().save(ART / 'hud_avatar.png')
     paint((6, 4), lambda x, y: CYAN + (80,) if x in (0, 5) or y in (0, 3) else (6, 30, 40, 200)).save(ART / 'hud_prog_off.png')
     bar((4, 8), ('#d8feff', '#5ff6ff', '#1a9fb0')).save(ART / 'hud_seg_on.png')
     bar((4, 8), ('#ffb08a', '#ff5a3a', '#b02a1a')).save(ART / 'hud_seg_low.png')
@@ -200,6 +223,8 @@ def write_art():
 ui = {'namespace': 'hud'}
 GLOBAL_TITLE = {'binding_name': '#hud_title_text_string'}
 TITLE = '#hud_title_text_string'
+GLOBAL_SUB = {'binding_name': '#hud_subtitle_text_string'}
+SUB = '#hud_subtitle_text_string'
 
 
 def view(expr, target='#visible'):
@@ -288,9 +313,10 @@ def header(mode):
     ]}}
 
 
-def board(code, mode, led_texture, content):
-    """A MINE-OS glass board at the top left (below the phone's hearts): sized by its content, with a frame of
-    effects as big as the board (the frame's only sibling is the content, so '100%sm' is the board's size)."""
+def board(code, mode, led_texture, content, side='left', prop=TITLE, binding=GLOBAL_TITLE):
+    """A MINE-OS glass board in a top corner (below the hearts / hunger phones show there): sized by its content,
+    with a frame of effects as big as the board (the frame's only sibling is the content, so '100%sm' is the board's
+    size). Shown while the title (or subtitle) text has the board's code."""
     body = {'type': 'panel', 'size': ['100%c + 13px', '100%c + 9px'], 'controls': [
         {'col': {'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%cm', '100%c'], 'layer': 3,
                  'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [8, 4], 'controls': [
@@ -314,14 +340,14 @@ def board(code, mode, led_texture, content):
     ]}
     return {
         'type': 'image', 'texture': f'{UI}/hud_board', 'size': ['100%cm', '100%cm'], 'layer': 1,
-        'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [4, 22],  # (hearts are at the top left on phones)
-        'bindings': [GLOBAL_TITLE, view(has(TITLE, code))],
+        'anchor_from': f'top_{side}', 'anchor_to': f'top_{side}', 'offset': [4 if side == 'left' else -4, 22],
+        'bindings': [binding, view(has(prop, code))],
         'controls': [{'body': body}, {'frame': frame}],
     }
 
 
-def segments(prefix, on, off, size, low=0, low_texture=None):
-    """10 segments: an empty one, and over it the lit one when its own mark is in the title."""
+def segments(prefix, on, off, size, low=0, low_texture=None, prop=TITLE, binding=GLOBAL_TITLE):
+    """10 segments: an empty one, and over it the lit one when its own mark is in the title (or subtitle)."""
     w, h = size
     out = []
     for k in range(1, 11):
@@ -329,7 +355,7 @@ def segments(prefix, on, off, size, low=0, low_texture=None):
         out.append({f'{prefix}_{k}': {'type': 'panel', 'size': [w + 1, h], 'controls': [
             {'off': image(f'{UI}/{off}', [w, h], keep_ratio=False, anchor_from='left_middle', anchor_to='left_middle')},
             {'on': image(f'{UI}/{tex}', [w, h], keep_ratio=False, layer=3, anchor_from='left_middle', anchor_to='left_middle',
-                         bindings=[GLOBAL_TITLE, view(has(TITLE, mark(k)))])},
+                         bindings=[binding, view(has(prop, mark(k)))])},
         ]}})
     return out
 
@@ -365,12 +391,38 @@ run = board(RUN, 'EXPEDITION', 'hud_led_red', [
     ]}},
 ])
 
+# The profile: the player's own model (the game's paper doll renderer, without its "only while sprinting" binding)
+# in a holo frame with the rank badge, then name / rank, level, XP and a gold XP bar.
+avatar = {'type': 'panel', 'size': [26, 26], 'controls': [
+    {'frame': image(f'{UI}/hud_avatar', [26, 26], layer=1)},
+    {'model': {'type': 'custom', 'renderer': 'hud_player_renderer', 'size': [24, 24], 'layer': 3}},
+    {'scan': {'type': 'panel', 'size': [24, 24], 'clips_children': True, 'layer': 4, 'controls': [
+        {'beam': image(f'{UI}/hud_beam', ['100%', 3], keep_ratio=False, alpha=0.6, anchor_from='top_middle', anchor_to='top_middle',
+                       offset=loop('hud_avatar_beam', 'offset', [(1.2, [0, -4], [0, -4]), (0.7, [0, -4], [0, '100%'], 'in_out_sine'), (2.1, [0, '100%'], [0, '100%'])]))},
+    ]}},
+    *[{f'badge_{i + 1}': image(f'textures/mining_tycoon/items/{tex}', [10, 10], layer=6, anchor_from='bottom_right', anchor_to='bottom_right',
+                               offset=[3, 3], bindings=[GLOBAL_SUB, view(has(SUB, rank_code(i + 1)))])} for i, tex in enumerate(RANKS)],
+]}
+profile = board(PROFILE, 'PROFILE', 'hud_led', [
+    {'row': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', '100%cm'], 'controls': [
+        {'avatar': avatar},
+        {'gap': gap(6, 1)},
+        {'info': {'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%cm', '100%c'], 'controls': [
+            {'pad': gap(1, 1)},
+            {'text': label(strip(SUB, PROFILE, *[rank_code(n) for n in range(1, len(RANKS) + 1)], *MARKS), GLOBAL_SUB)},
+            {'bar_gap': gap(1, 3)},
+            {'xp': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 4], 'controls':
+                segments('xp', 'hud_xp_on', 'hud_prog_off', (6, 4), prop=SUB, binding=GLOBAL_SUB)}},
+        ]}},
+    ]}},
+], side='right', prop=SUB, binding=GLOBAL_SUB)
+
 # The game shows a title with this control (made by the title factory, replaced by every new title, gone when the
 # title has run out). It becomes the studio HUD: hud.js keeps a HUD title up all the time, so there is no plain
 # title to hide. Titles from elsewhere (other add-ons, /title) are not shown while the HUD owns the title.
 ui['hud_title_text'] = {
     'size': ['100%', '100%'], 'offset': [0, 0],
-    'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [{'home': home}, {'run': run}]}}],
+    'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [{'home': home}, {'run': run}, {'profile': profile}]}}],
 }
 
 
