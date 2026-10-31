@@ -8,7 +8,7 @@
 import json
 import pathlib
 
-from transit import door_controls, TEX as TRANSIT, PERCENT_W, PERCENT_H
+from transit import door_controls, TEX as TRANSIT, PERCENT_W, PERCENT_H, PERCENT_FPS, PERCENT_VALUES
 
 SLOTS = 2  # must match CONFIG.sessions.slots
 
@@ -343,12 +343,8 @@ ui['mining_tycoon_screen_bg']['controls'].append({'transit': {
 
 BAR_W = 148
 FILL = [(2.5, [0, 5], [round(BAR_W * 0.9), 5]), (10, [round(BAR_W * 0.9), 5], [round(BAR_W * 0.99), 5])]
-ui['mining_tycoon_pct_a'] = {'anim_type': 'flip_book', 'initial_uv': [0, 0], 'frame_count': 90, 'frame_step': PERCENT_W, 'fps': 36,
-                             'next': '@server_form.mining_tycoon_pct_b'}
-ui['mining_tycoon_pct_b'] = {'anim_type': 'flip_book', 'initial_uv': [90 * PERCENT_W, 0], 'frame_count': 10, 'frame_step': PERCENT_W,
-                             'fps': 1, 'next': '@server_form.mining_tycoon_pct_c'}
-ui['mining_tycoon_pct_c'] = {'anim_type': 'flip_book', 'initial_uv': [99 * PERCENT_W, 0], 'frame_count': 1, 'frame_step': PERCENT_W,
-                             'fps': 1, 'next': '@server_form.mining_tycoon_pct_c'}  # stays at 99 %
+ui['mining_tycoon_pct'] = {'anim_type': 'flip_book', 'initial_uv': [0, 0], 'frame_count': len(PERCENT_VALUES),
+                           'frame_step': PERCENT_W, 'fps': PERCENT_FPS, 'looping': False}  # stops on its last frame (99 %)
 
 def transit_line(name, text, delay, y):
     return {name: {'type': 'panel', 'clips_children': True, 'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [8, y], 'layer': 6,
@@ -380,7 +376,7 @@ TRANSIT_PANEL = [{'transit': {'type': 'image', 'texture': f'{UI}/hud_board', 'si
         ]}},
     ]}},
     {'percent': {'type': 'image', 'texture': f'{TRANSIT}/percent', 'size': [PERCENT_W, PERCENT_H], 'uv_size': [PERCENT_W, PERCENT_H],
-                 'uv': '@server_form.mining_tycoon_pct_a', 'disable_anim_fast_forward': True, 'layer': 4,
+                 'uv': '@server_form.mining_tycoon_pct', 'disable_anim_fast_forward': True, 'layer': 4,
                  'anchor_from': 'top_right', 'anchor_to': 'top_right', 'offset': [-6, 19]}},
     transit_line('line_1', '> LIFT LINK ............... OK', 0.5, 30),
     transit_line('line_2', '> MAPPING STRATA .......... OK', 1.3, 39),

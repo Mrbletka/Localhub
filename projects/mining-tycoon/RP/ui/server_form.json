@@ -2298,38 +2298,16 @@
     "from": 1,
     "to": 0
   },
-  "mining_tycoon_pct_a": {
+  "mining_tycoon_pct": {
     "anim_type": "flip_book",
     "initial_uv": [
       0,
       0
     ],
-    "frame_count": 90,
+    "frame_count": 100,
     "frame_step": 18,
-    "fps": 36,
-    "next": "@server_form.mining_tycoon_pct_b"
-  },
-  "mining_tycoon_pct_b": {
-    "anim_type": "flip_book",
-    "initial_uv": [
-      1620,
-      0
-    ],
-    "frame_count": 10,
-    "frame_step": 18,
-    "fps": 1,
-    "next": "@server_form.mining_tycoon_pct_c"
-  },
-  "mining_tycoon_pct_c": {
-    "anim_type": "flip_book",
-    "initial_uv": [
-      1782,
-      0
-    ],
-    "frame_count": 1,
-    "frame_step": 18,
-    "fps": 1,
-    "next": "@server_form.mining_tycoon_pct_c"
+    "fps": 8,
+    "looping": false
   },
   "mining_tycoon_transit_radar": {
     "anim_type": "flip_book",
@@ -5162,7 +5140,7 @@
                               18,
                               7
                             ],
-                            "uv": "@server_form.mining_tycoon_pct_a",
+                            "uv": "@server_form.mining_tycoon_pct",
                             "disable_anim_fast_forward": true,
                             "layer": 4,
                             "anchor_from": "top_right",

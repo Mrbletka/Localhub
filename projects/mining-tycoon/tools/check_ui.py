@@ -2,7 +2,9 @@
 # - every property name against the documented JSON UI properties (a typo like "clip_children" for "clips_children"
 #   otherwise shows up as content-log errors in game);
 # - no compound text tests in view bindings (string subtraction combined with or/and evaluated wrong on the phone);
-# - in the HUD, visibility only from "contains" tests: the negated form came out true when it should not.
+# - in the HUD, visibility only from "contains" tests: the negated form came out true when it should not;
+# - no "initial_uv" on an animation another animation starts with "next" (the game reports it as an unknown property
+#   there; only the first flip_book of a chain, or one that only loops onto itself, may have it).
 # Run after the UI generators:  python3 projects/mining-tycoon/tools/check_ui.py
 import json
 import pathlib
@@ -68,7 +70,7 @@ KNOWN = {
     'start_event', 'starting_rotation', 'state_controls', 'stonecutter_block', 'tab', 'tab_control', 'tab_group',
     'tab_index', 'target_property_name', 'text', 'text_alignment', 'text_box_name', 'text_color', 'text_control',
     'text_edit_box_grid_collection_name', 'text_tts', 'text_type', 'texture', 'texture_file_system', 'tiled',
-    'tiled_scale', 'timer_duration', 'to', 'to_button_id', 'toggle', 'toggle_default_state',
+    'tiled_scale', 'timer_duration', 'to', 'looping', 'to_button_id', 'toggle', 'toggle_default_state',
     'toggle_grid_collection_name', 'toggle_group_default_selected', 'toggle_group_forced_index', 'toggle_name',
     'toggle_off_button', 'toggle_on_button', 'toggle_on_hover', 'touch_mode', 'tts_control_header',
     'tts_control_type_order_priority', 'tts_ignore_count', 'tts_ignore_subsections', 'tts_index_priority',
@@ -117,6 +119,16 @@ def walk(node, path, problems):
             walk(value, path + [name], problems)
 
 
+def chained_uv(f, data, problems):
+    ns = data.get('namespace')
+    for key, value in data.items():
+        nxt = isinstance(value, dict) and value.get('next')
+        if isinstance(nxt, str) and nxt.startswith('@'):
+            target = nxt.split('.', 1)[1]
+            if target != key and 'initial_uv' in data.get(target, {}):
+                problems.append(f"{f.name}/{target}: initial_uv on an animation that {ns}.{key} starts with next")
+
+
 def main():
     problems = []
     for f in sorted(UI.glob('*.json')):
@@ -124,6 +136,7 @@ def main():
         for key, value in data.items():
             if key != 'namespace':
                 walk(value, [f.name, key.split('@')[0]], problems)
+        chained_uv(f, data, problems)
     for p in problems:
         print('UI problem:', p)
     print(f'checked {len(list(UI.glob("*.json")))} UI files: {len(problems)} problems')

@@ -4,8 +4,8 @@
 #
 # Art (RP/textures/mining_tycoon/ui/transit/): door (steel nine-slice), door_grid (plate seams, tiled), hazard
 # (yellow/black stripes, tiled), seam (the glowing door edge), emblem_l / emblem_r (the two halves of the MINE-OS
-# emblem that meet when the doors close), flash, load_frame (nine-slice) + load_fill (segment tile), percent
-# ("  0%".."99%", one frame each, for a flip_book).
+# emblem that meet when the doors close), flash, load_frame (nine-slice) + load_fill (segment tile), percent (the
+# counter as one flip_book strip: the frames carry the timing - 0 to 90 % in 2.5 s, then 1 % a second up to 99 %).
 import json
 import math
 import pathlib
@@ -16,6 +16,11 @@ TEX = 'textures/mining_tycoon/ui/transit'
 CYAN = (95, 246, 255)
 GOLD = (255, 200, 70)
 PERCENT_W, PERCENT_H = 18, 7
+# The counter is ONE non-looping flip_book (a flip_book started by another one's "next" may not have initial_uv, so
+# speeds can't be chained): at a steady 8 fps the frames hold 0..85 % for 2.5 s (20 frames), then 90..99 % for a
+# second each (8 frames each). The loading bar's fill animation follows the same curve.
+PERCENT_FPS = 8
+PERCENT_VALUES = [round(90 * i / 20) for i in range(20)] + [v for v in range(90, 100) for _ in range(PERCENT_FPS)]
 
 FONT = {'0': ['111', '101', '101', '101', '111'], '1': ['010', '110', '010', '010', '111'], '2': ['111', '001', '111', '100', '111'],
         '3': ['111', '001', '111', '001', '111'], '4': ['101', '101', '111', '001', '001'], '5': ['111', '100', '111', '001', '111'],
@@ -93,9 +98,9 @@ def emblem():
 
 
 def percent_strip():
-    frames = Image.new('RGBA', (PERCENT_W * 100, PERCENT_H))
-    for n in range(100):
-        text = f'{n:>3}%'
+    frames = Image.new('RGBA', (PERCENT_W * len(PERCENT_VALUES), PERCENT_H))
+    for n, value in enumerate(PERCENT_VALUES):
+        text = f'{value:>3}%'
         for i, ch in enumerate(text):
             for gy, row in enumerate(FONT[ch]):
                 for gx, bit in enumerate(row):

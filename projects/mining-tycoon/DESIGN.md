@@ -259,7 +259,8 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   seam where the halves of the MINE-OS emblem meet) slide in over the dark world and slam shut with a shake, a flash
   on the seam and a heavy door sound; the emblem then steps back and the transit panel lights up under the logo and
   the travel text: `MINE-OS // TRANSIT` with a mini radar and a blinking LED, a segmented loading bar with a glint and
-  a percent counter (a flip-book: 90 % in 2.5 s, then crawling to 99 % until the screen closes), and boot lines that
+  a percent counter (one non-looping flip-book whose frames hold the timing: 90 % in 2.5 s, then 1 % a second up
+  to 99 %; chained flip-books can't set `initial_uv`), and boot lines that
   type themselves (`LIFT LINK ... OK`, `MAPPING STRATA ... OK`, `STABILIZING SHAFT ...`). It opens a moment after the
   teleport (teleports close open forms), comes back if anything closes it while the area is still loading, stays at
   least 2 s and closes (`uiManager.closeAllForms`, repeated until it is really gone) 1 s after the player stands
