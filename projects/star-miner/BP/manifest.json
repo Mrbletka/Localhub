@@ -1,0 +1,62 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Star Miner BP",
+    "description": "Star Miner behavior pack",
+    "uuid": "9a522774-12fc-4a95-89c2-ada07b047257",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      90
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "36aa374f-0d82-4488-ba3a-4e277a1fefc4",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "504fdcee-e902-4c0b-af64-9d41b4b8cdf5",
+      "version": [
+        1,
+        0,
+        0
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "8bd622c7-c496-4973-a3ec-f37fc4191d59",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    }
+  ],
+  "metadata": {
+    "authors": [],
+    "generated_with": {
+      "localhub_bedrock_studio": [
+        "0.1.0"
+      ]
+    }
+  }
+}

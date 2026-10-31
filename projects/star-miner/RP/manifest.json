@@ -1,0 +1,47 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Star Miner RP",
+    "description": "Star Miner resource pack",
+    "uuid": "8bd622c7-c496-4973-a3ec-f37fc4191d59",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      90
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "697e2542-2325-4504-b56b-d7b33bb5b8d0",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "9a522774-12fc-4a95-89c2-ada07b047257",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [],
+    "generated_with": {
+      "localhub_bedrock_studio": [
+        "0.1.0"
+      ]
+    }
+  }
+}

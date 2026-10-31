@@ -1,0 +1,24 @@
+{
+  "name": "Star Miner",
+  "slug": "star-miner",
+  "type": "tycoon",
+  "namespace": "star_miner",
+  "version": [
+    1,
+    0,
+    0
+  ],
+  "description": "Captain a mining starship: drop to planets, mine before your oxygen runs out, grow the ship room by room, bring friends as crew.",
+  "author": "",
+  "tags": [
+    "tycoon",
+    "space",
+    "multiplayer"
+  ],
+  "created": "2026-10-31T00:58:24.030Z",
+  "library": {
+    "summary": "Captain a mining starship: drop to planets, mine before your oxygen runs out, grow the ship room by room, bring friends as crew.",
+    "featured": false,
+    "icon": "RP/pack_icon.png"
+  }
+}
