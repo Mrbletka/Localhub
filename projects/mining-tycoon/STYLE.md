@@ -7,7 +7,8 @@ dark carved stone, warm gold, crisp pixel art, short friendly words, and the scr
 | Role | Colour | Used for |
 |---|---|---|
 | Outline | `#120d08` | 1 px outline around every icon, panel and button |
-| Stone dark | `#2a211a` / `#30261d` | panel fill (see-through on the HUD: alpha 215) |
+| Stone dark | `#2a211a` / `#30261d` | panel fill in menus |
+| Glass | `#06161e` | HUD board and notification card fill, nearly solid (alpha 242 / 250): the game's Interface Opacity setting fades the HUD further |
 | Stone mid | `#5a5650` / `#74716e` | machine bricks, frames |
 | Gold light | `#ffe08a` | lit edge (top-left), highlights, sparkles |
 | Gold | `#d9a640` | rims, money, titles |

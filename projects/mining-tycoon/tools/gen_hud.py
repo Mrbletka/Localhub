@@ -56,7 +56,8 @@ def paint(size, fn):
 
 
 def glass(fill_alpha):
-    """16x16 nine-slice: dark cyan glass, chamfered corners with bright corner ticks, a thin cyan rim."""
+    """16x16 nine-slice: dark cyan glass, chamfered corners with bright corner ticks, a thin cyan rim. Nearly solid:
+    the game's Interface Opacity setting makes the whole HUD more see-through on top of this."""
     def c(x, y):
         cx, cy = min(x, 15 - x), min(y, 15 - y)
         if cx + cy < 2:
@@ -64,7 +65,7 @@ def glass(fill_alpha):
         if cx + cy == 2 or (cx + cy == 3 and min(cx, cy) == 0):
             return CYAN + (255,)  # corner ticks
         if cx == 0 or cy == 0:
-            return CYAN + (200 if y == 0 else 120,)
+            return CYAN + (245 if y == 0 else 190,)
         if y == 1:
             return (40, 120, 140, min(255, fill_alpha + 10))  # glass highlight under the top rim
         return (6, 22, 30, fill_alpha) if y < 8 else (4, 15, 22, min(255, fill_alpha + 6))
@@ -172,8 +173,8 @@ def led(core, edge):
 
 
 def write_art():
-    glass(200).save(ART / 'hud_board.png')
-    glass(222).save(ART / 'hud_note.png')
+    glass(242).save(ART / 'hud_board.png')
+    glass(250).save(ART / 'hud_note.png')
     for name in ('hud_board', 'hud_note'):
         (ART / f'{name}.json').write_text(json.dumps({'nineslice_size': 4, 'base_size': [16, 16]}, indent=2) + '\n')
     paint((2, 16), lambda x, y: GOLD_HI if y < 5 else GOLD if y < 11 else GOLD_LO).save(ART / 'hud_note_accent.png')
