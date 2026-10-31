@@ -254,11 +254,17 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   only while no menu is up: joining, Back on the start menu, the teleport into a mine. The full-screen menus and the
   loading screen cover everything else. A long fade can't be cut short on phones, so it would stay dark after the
   loading screen; when the player is in the mine the HUD comes back and `camera.clear()` ends any fade left.
-- Loading screen: entering a session shows a third full-screen form (tag `§m§t§l`, no buttons): cave, logo,
-  "Building your mine..." / "Heading into Session N..." and a gold pick striking a shaking gold ore. It opens a moment
-  after the teleport (teleports close open forms), comes back if anything closes it while the mine is still loading,
-  stays at least 2 s and closes (`uiManager.closeAllForms`, repeated until it is really gone) 1 s after the player
-  stands in the mine; then the world fades in.
+- Loading screen = **MINE-OS transit** (every `travel()`: entering a session, the lift down and up; tag `§m§t§l`, no
+  buttons; art and doors: `tools/transit.py`): two steel blast doors (plate grid, hazard stripes and a glowing cyan
+  seam where the halves of the MINE-OS emblem meet) slide in over the dark world and slam shut with a shake, a flash
+  on the seam and a heavy door sound; the emblem then steps back and the transit panel lights up under the logo and
+  the travel text: `MINE-OS // TRANSIT` with a mini radar and a blinking LED, a segmented loading bar with a glint and
+  a percent counter (a flip-book: 90 % in 2.5 s, then crawling to 99 % until the screen closes), and boot lines that
+  type themselves (`LIFT LINK ... OK`, `MAPPING STRATA ... OK`, `STABILIZING SHAFT ...`). It opens a moment after the
+  teleport (teleports close open forms), comes back if anything closes it while the area is still loading, stays at
+  least 2 s and closes (`uiManager.closeAllForms`, repeated until it is really gone) 1 s after the player stands
+  there. **Arrival**: `openDoors()` (hud.js) puts the door code `§d§o§r` in the HUD title for under a second: the same
+  doors stand shut over the world in the HUD, unlock with a flash and slide apart (0.65 s), with a door-open sound.
 - Sessions (`BP/scripts/sessions.js`, world property `mining_tycoon:sessions`): 2 save slots per player (config
   `sessions.slots`). Each session is its own save: own mine plot, money, upgrades, rebirths (player properties
   `mining_tycoon:s<slot>:<name>`), placed drills (`slot` in each drill record) and unplaced drill items (stashed when

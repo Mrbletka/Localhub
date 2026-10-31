@@ -24,6 +24,9 @@ Light always comes from the top-left: lighter rim top/left, darker bottom/right.
 - **HUD board** (`ui/hud_board`, nine-slice 4): MINE-OS glass with a `MINE-OS // MODE` header, mini radar, status
   LED, gold accent strip, icons (turning coin, hologram target, lantern, backpack) and 10-segment cyan bars.
   The profile panel (top right) is the same glass: the player's model in a holo frame, rank badge, gold XP bar.
+- **Transit** (`tools/transit.py`): steel blast doors with hazard stripes and a cyan seam close over the screen for
+  every trip (the MINE-OS emblem meets in the middle) and open over the world on arrival; the loading bar is cyan
+  segments in a glass frame with a glint and a pixel percent counter.
 - **Notification card** (`ui/hud_note`, nine-slice 4; the action bar, `tools/gen_hud.py`): the MINE-OS accent in the
   HUD. Dark cyan glass, chamfered corners with bright ticks, gold accent strip, pulsing hologram icon, scanlines. It
   slides up above the hotbar with a flicker, flash and ping, wipes its text in, sweeps a light streak and drains a

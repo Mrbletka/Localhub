@@ -10,7 +10,7 @@ import { CONFIG } from './config.js';
 import { formatNumber } from './lib/util.js';
 import { MENU } from './menu_layout.js';
 import { sessionsOf, hasSessions, activeSession, lastSession, sessionStats, playSession, createSession, deleteSession } from './sessions.js';
-import { toast } from './hud.js';
+import { toast, openDoors } from './hud.js';
 
 const SHADE = { red: 0.06, green: 0.045, blue: 0.03 };
 const open = new Set();
@@ -76,20 +76,32 @@ function summary(player, slot) {
   return `$${formatNumber(s.money)} - Rebirth ${s.rebirths}`;
 }
 
+function sound(player, id, pitch) {
+  try {
+    if (player.isValid) player.playSound(id, { pitch, volume: 0.8 });
+  } catch {
+    // player left
+  }
+}
+
 /** Players on the loading screen -> tick before which it may not close (so it never just flashes). */
 const loading = new Map();
 /** Players whose loading screen form is open or on its way (its promise has not settled). */
 const loadingOpen = new Set();
 
 /**
- * Full-screen loading screen (a pick striking ore) while a mine is built or loaded. It opens a moment after the
- * teleport, and anything that closes it early (teleporting, terrain loading, Back) only brings it back.
+ * Full-screen loading screen (MINE-OS transit: blast doors slam shut, a loading bar fills) while a mine or cave is
+ * built or loaded. It opens a moment after the teleport, and anything that closes it early (teleporting, terrain
+ * loading, Back) only brings it back.
  */
 function showLoading(player, text) {
   loading.set(player.id, system.currentTick + 40);
+  let first = true;
   const attempt = () => {
     if (!player.isValid || !loading.has(player.id)) return;
     loadingOpen.add(player.id);
+    if (first) system.runTimeout(() => sound(player, 'random.door_close', 0.5), 7); // the doors slam shut
+    first = false;
     new ActionFormData()
       .title(MENU.forms.loading + CONFIG.title)
       .body(text)
@@ -138,6 +150,8 @@ export function travel(player, text, go, after) {
   showLoading(player, text);
   go((ok) => hideLoading(player, () => {
     uncover(player);
+    openDoors(player); // the doors slide apart over the world
+    sound(player, 'random.door_open', 0.6);
     afterLoading(player, () => after(ok));
   }));
 }

@@ -9,7 +9,7 @@
 import { system } from '@minecraft/server';
 
 /** Invisible prefixes (formatting codes) - must match tools/gen_hud.py. */
-export const HUD_CODES = { home: '§h§u§1', run: '§h§u§2', profile: '§p§f§1' };
+export const HUD_CODES = { home: '§h§u§1', run: '§h§u§2', profile: '§p§f§1', doors: '§d§o§r' };
 const SEGMENTS = '123456789a';
 /** Light bar level 0..10 inside a run HUD text: one mark per lit segment (the HUD tests each mark on its own). */
 export const levelMark = (n) => [...SEGMENTS.slice(0, Math.max(0, Math.min(10, n)))].map((c) => `§q§q§${c}`).join('');
@@ -22,12 +22,16 @@ const READ = 40; // ticks a toast stays before the next toast (30 before a small
 const WAITING = 2; // toasts that may wait; a newer one pushes out the oldest
 const shown = new Map(); // playerId -> the HUD title last sent
 const profiles = new Map(); // playerId -> the profile (subtitle) last sent
+const doorsUntil = new Map(); // playerId -> tick until which the title carries the door code (arrival)
 const sentAt = new Map(); // playerId -> tick it was sent (re-sent every few seconds so it never runs out)
 
 function send(player, title) {
-  sentAt.set(player.id, system.currentTick);
+  const now = system.currentTick;
+  sentAt.set(player.id, now);
+  const until = doorsUntil.get(player.id);
+  if (until !== undefined && now >= until) doorsUntil.delete(player.id);
   try {
-    player.onScreenDisplay.setTitle(title, { fadeInDuration: 0, stayDuration: 400, fadeOutDuration: 0, subtitle: profiles.get(player.id) ?? ' ' });
+    player.onScreenDisplay.setTitle((doorsUntil.has(player.id) ? HUD_CODES.doors : '') + title, { fadeInDuration: 0, stayDuration: 400, fadeOutDuration: 0, subtitle: profiles.get(player.id) ?? ' ' });
   } catch {
     // the player is leaving or not loaded yet
   }
@@ -107,6 +111,19 @@ export function showProfile(player, text, level, rank) {
   if (shown.has(player.id)) send(player, shown.get(player.id));
 }
 
+/**
+ * Arrival: the MINE-OS blast doors the loading screen closed stand shut over the world and slide apart. The door code
+ * rides in the title for under a second (the doors take 0.65 s), then the title is sent again without it.
+ */
+export function openDoors(player) {
+  const until = system.currentTick + 16;
+  doorsUntil.set(player.id, until);
+  send(player, shown.get(player.id) ?? ' ');
+  system.runTimeout(() => {
+    if (player.isValid && doorsUntil.get(player.id) === until) send(player, shown.get(player.id) ?? ' ');
+  }, 17);
+}
+
 /** No HUD (not playing a session). */
 export function clearHud(player) {
   shown.delete(player.id);
@@ -120,5 +137,6 @@ export function forgetHud(playerId) {
   combos.delete(playerId);
   shown.delete(playerId);
   profiles.delete(playerId);
+  doorsUntil.delete(playerId);
   sentAt.delete(playerId);
 }

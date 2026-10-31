@@ -34,15 +34,16 @@ export const MENU = {
     "exit",
     "expedition",
     "extract",
-    "goal",
     "home",
     "lock",
     "new_slot",
+    "notify",
     "play",
     "rebirth",
     "sell",
     "session",
     "sessions",
+    "target",
     "upgrades"
   ]
 };

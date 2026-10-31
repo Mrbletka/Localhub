@@ -7,6 +7,8 @@
 # which reads the title text (a global UI binding), so no title is ever shown as a title.
 # - home: "§h§u§1" + one mark "§q§q§<1-9a>" per lit progress segment + lines (money, quest or goal, progress)
 # - run:  "§h§u§2" + one mark per lit light segment + lines (time, haul, cave level)
+# - "§d§o§r" in front of either, for a moment on arrival: the MINE-OS blast doors (tools/transit.py) stand shut
+#   over the world and slide apart (the loading screen closed them)
 # - the subtitle carries the profile (top-right panel): "§p§f§1" + rank "§z§z§<1-7>" + one mark per lit XP segment +
 #   lines (name; rank, level, XP)
 # Notifications (hud.js notify/toast) use the action bar: its control (hud_actionbar_text) becomes a MINE-OS card above
@@ -24,12 +26,14 @@ import math
 import pathlib
 from PIL import Image
 
+from transit import door_controls
+
 PROJECT = pathlib.Path(__file__).resolve().parent.parent
 RP = PROJECT / 'RP'
 UI = 'textures/mining_tycoon/ui'
 TECH = f'{UI}/tech'
 ART = RP / UI
-HOME, RUN, PROFILE = '§h§u§1', '§h§u§2', '§p§f§1'
+HOME, RUN, PROFILE, DOORS = '§h§u§1', '§h§u§2', '§p§f§1', '§d§o§r'
 RANKS = ['pick_1', 'pick_2', 'pick_3', 'pick_4', 'pick_5', 'pick_6', 'cut_diamond']  # badge per rank (config.js profile.ranks)
 rank_code = lambda n: f'§z§z§{n}'
 LEVELS = '0123456789a'
@@ -367,7 +371,7 @@ home = board(HOME, 'MINE CONTROL', 'hud_led', [
             {'goal': image(f'{UI}/icons/target', [ICON, LINE])},
         ]}},
         {'gap': gap(4, 1)},
-        {'text': label(strip(TITLE, HOME, *MARKS), GLOBAL_TITLE)},
+        {'text': label(strip(TITLE, DOORS, HOME, *MARKS), GLOBAL_TITLE)},
     ]}},
     {'bar_gap': gap(1, 3)},
     {'progress': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 4], 'controls': [
@@ -387,7 +391,7 @@ run = board(RUN, 'EXPEDITION', 'hud_led_red', [
     {'haul': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', '100%cm'], 'controls': [
         {'pack': image(f'{UI}/icons/backpack', [ICON, ICON])},
         {'gap': gap(4, 1)},
-        {'text': label(strip(TITLE, RUN, *MARKS), GLOBAL_TITLE)},
+        {'text': label(strip(TITLE, DOORS, RUN, *MARKS), GLOBAL_TITLE)},
     ]}},
 ])
 
@@ -424,12 +428,17 @@ profile = board(PROFILE, 'PROFILE', 'hud_led', [
     ]}},
 ], side='right', prop=SUB, binding=GLOBAL_SUB)
 
+# Arrival: the doors the loading screen closed stand shut over the world for a moment, unlock with a flash on the
+# seam and slide apart (one-shot: hud.js puts the code in the title for under a second, so they never linger).
+doors = {'type': 'panel', 'size': ['100%', '100%'], 'layer': 40, 'bindings': [GLOBAL_TITLE, view(has(TITLE, DOORS))],
+         'controls': door_controls(lambda name, kind, steps: seq(name, kind, steps), 'arrive', closing=False)}
+
 # The game shows a title with this control (made by the title factory, replaced by every new title, gone when the
 # title has run out). It becomes the studio HUD: hud.js keeps a HUD title up all the time, so there is no plain
 # title to hide. Titles from elsewhere (other add-ons, /title) are not shown while the HUD owns the title.
 ui['hud_title_text'] = {
     'size': ['100%', '100%'], 'offset': [0, 0],
-    'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [{'home': home}, {'run': run}, {'profile': profile}]}}],
+    'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [{'home': home}, {'run': run}, {'profile': profile}, {'doors': doors}]}}],
 }
 
 

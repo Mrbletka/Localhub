@@ -8,6 +8,8 @@
 import json
 import pathlib
 
+from transit import door_controls, TEX as TRANSIT, PERCENT_W, PERCENT_H
+
 SLOTS = 2  # must match CONFIG.sessions.slots
 
 
@@ -213,14 +215,6 @@ def background_fx():
                             'controls': [{'cart': {'type': 'image', 'texture': f'{UI}/fx_minecart', 'size': ['100%', '100%'], 'keep_ratio': False}}]}})
     return fx
 
-# Loader: a gold pick strikes a gold ore that shakes on every hit (both loops last 0.67 s, so they stay in step).
-LOADER = [{'loader': {'type': 'panel', 'size': ['100%', 44], 'controls': [
-    {'ore': {'type': 'image', 'texture': 'textures/mining_tycoon/blocks/ore_gold', 'size': [28, 28], 'offset': chain('mining_tycoon_loader_ore', 'offset',
-        [(0.12, [6, 4], [6, 4]), (0.05, [6, 4], [8, 4]), (0.05, [8, 4], [4, 4]), (0.05, [4, 4], [6, 4]), (0.4, [6, 4], [6, 4])])}},
-    {'pick': {'type': 'image', 'texture': 'textures/mining_tycoon/items/pick_5', 'size': [28, 28], 'layer': 1, 'offset': chain('mining_tycoon_loader_pick', 'offset',
-        [(0.12, [-14, -12], [-6, -2], 'in_quad'), (0.35, [-6, -2], [-14, -12], 'out_cubic'), (0.2, [-14, -12], [-14, -12])])}},
-]}}]
-
 # The cave goes in the screen's background slot ($screen_bg_content -> "bg_no_safezone_screen_panel" in
 # common.base_screen): it fills the whole screen. Everything in the form itself is laid out inside the phone's safe
 # area, so a background there always stopped short of the screen edges.
@@ -230,7 +224,9 @@ ui['mining_tycoon_screen_bg'] = {
     'bindings': [{'binding_name': '#title_text'}, view(f'(not ({not_ours} = #title_text))')],  # only behind our menus
     'controls': [{'background': {'type': 'image', 'texture': f'{UI}/menu_bg', 'size': ['100%', '100%'], 'layer': 1,
                                  'keep_ratio': False,  # images keep the 2:1 ratio of their art by default: on a wider
-                                 'controls': background_fx()}}],  # screen the cave stopped short of both edges
+                                 # screen the cave stopped short of both edges; the loading screen has the doors instead
+                                 'bindings': [{'binding_name': '#title_text'}, view(f"((#title_text - '{FORMS['loading'][0]}') = #title_text)")],
+                                 'controls': background_fx()}}],
 }
 
 # ---- MINE-OS: the welcome menu as a holo terminal (art: tools/gen_tech.py) ---------------------------------------
@@ -333,6 +329,64 @@ ui['mining_tycoon_mineos'] = {
 }
 ui['mining_tycoon_screen_bg']['controls'].append({'mineos@server_form.mining_tycoon_mineos': {}})
 
+# ---- MINE-OS transit: the loading screen (art: tools/transit.py) -------------------------------------------------
+# Two blast doors slide in over the (dark) world and slam shut with a shake and a flash on the seam, where the halves
+# of the MINE-OS emblem meet. Then the transit panel lights up: a segmented loading bar with a glint and a percent
+# counter (90 % in 2.5 s, then crawling to 99 % until the script closes the screen), a mini radar, a status LED and
+# boot lines typing themselves. On arrival the HUD opens the same doors over the world (tools/gen_hud.py).
+LOADING_TAG = FORMS['loading'][0]
+ui['mining_tycoon_screen_bg']['controls'].append({'transit': {
+    'type': 'panel', 'size': ['100%', '100%'], 'layer': 4,
+    'bindings': [{'binding_name': '#title_text'}, view(contains('#title_text', LOADING_TAG))],
+    'controls': door_controls(lambda name, kind, steps: seq(name, kind, steps), 'mining_tycoon_transit', closing=True),
+}})
+
+BAR_W = 148
+FILL = [(2.5, [0, 5], [round(BAR_W * 0.9), 5]), (10, [round(BAR_W * 0.9), 5], [round(BAR_W * 0.99), 5])]
+ui['mining_tycoon_pct_a'] = {'anim_type': 'flip_book', 'initial_uv': [0, 0], 'frame_count': 90, 'frame_step': PERCENT_W, 'fps': 36,
+                             'next': '@server_form.mining_tycoon_pct_b'}
+ui['mining_tycoon_pct_b'] = {'anim_type': 'flip_book', 'initial_uv': [90 * PERCENT_W, 0], 'frame_count': 10, 'frame_step': PERCENT_W,
+                             'fps': 1, 'next': '@server_form.mining_tycoon_pct_c'}
+ui['mining_tycoon_pct_c'] = {'anim_type': 'flip_book', 'initial_uv': [99 * PERCENT_W, 0], 'frame_count': 1, 'frame_step': PERCENT_W,
+                             'fps': 1, 'next': '@server_form.mining_tycoon_pct_c'}  # stays at 99 %
+
+def transit_line(name, text, delay, y):
+    return {name: {'type': 'panel', 'clips_children': True, 'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [8, y], 'layer': 6,
+                   'size': seq(f'mining_tycoon_transit_{name}', 'size', [(delay, [0, 9], [0, 9]), (0.8, [0, 9], [174, 9])]),
+                   'controls': [{'text': tech_text(text, anchor_from='left_middle', anchor_to='left_middle')}]}}
+
+TRANSIT_PANEL = [{'transit': {'type': 'image', 'texture': f'{UI}/hud_board', 'size': ['100%', 64], 'clips_children': True, 'controls': [
+    {'scan': {'type': 'image', 'texture': f'{TECH}/scanlines', 'size': ['100% - 2px', '100% - 2px'], 'tiled': True, 'layer': 1}},
+    {'header': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 8], 'anchor_from': 'top_left',
+                'anchor_to': 'top_left', 'offset': [8, 4], 'layer': 4, 'controls': [
+        {'tag': tech_text('MINE-OS')}, {'gap': {'type': 'panel', 'size': [4, 1]}},
+        {'mode': tech_text('// TRANSIT', color=[0.32, 0.62, 0.68])}]}},
+    {'radar': {'type': 'image', 'texture': f'{UI}/hud_radar', 'size': [9, 9], 'uv_size': [9, 9], 'layer': 4,
+               'uv': flip('mining_tycoon_transit_radar', 8, 9, 8, True), 'disable_anim_fast_forward': True,
+               'anchor_from': 'top_right', 'anchor_to': 'top_right', 'offset': [-10, 3]}},
+    {'led': {'type': 'image', 'texture': f'{UI}/hud_led', 'size': [3, 3], 'layer': 4, 'anchor_from': 'top_right', 'anchor_to': 'top_right',
+             'offset': [-4, 6], 'alpha': chain('mining_tycoon_transit_led', 'alpha', [(0.25, 1, 1), (0.25, 0.2, 0.2)])}},
+    {'rule': {'type': 'image', 'texture': f'{TECH}/line', 'size': ['100% - 12px', 1], 'keep_ratio': False, 'alpha': 0.75, 'layer': 3,
+              'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [7, 14]}},
+    {'bar': {'type': 'image', 'texture': f'{TRANSIT}/load_frame', 'size': [BAR_W + 2, 7], 'layer': 3,
+             'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [8, 19], 'controls': [
+        {'fill': {'type': 'panel', 'size': seq('mining_tycoon_transit_fill', 'size', FILL), 'clips_children': True, 'layer': 1,
+                  'anchor_from': 'left_middle', 'anchor_to': 'left_middle', 'offset': [1, 0], 'controls': [
+            {'segments': {'type': 'image', 'texture': f'{TRANSIT}/load_fill', 'size': [BAR_W, 5], 'tiled': True,
+                          'anchor_from': 'left_middle', 'anchor_to': 'left_middle'}},
+            {'glint': {'type': 'image', 'texture': f'{TECH}/streak', 'size': [16, 5], 'keep_ratio': False, 'layer': 1,
+                       'anchor_from': 'left_middle', 'anchor_to': 'left_middle',
+                       'offset': chain('mining_tycoon_transit_glint', 'offset', [(0.9, [-20, 0], [BAR_W, 0], 'in_out_sine'), (0.4, [BAR_W, 0], [BAR_W, 0])])}},
+        ]}},
+    ]}},
+    {'percent': {'type': 'image', 'texture': f'{TRANSIT}/percent', 'size': [PERCENT_W, PERCENT_H], 'uv_size': [PERCENT_W, PERCENT_H],
+                 'uv': '@server_form.mining_tycoon_pct_a', 'disable_anim_fast_forward': True, 'layer': 4,
+                 'anchor_from': 'top_right', 'anchor_to': 'top_right', 'offset': [-6, 19]}},
+    transit_line('line_1', '> LIFT LINK ............... OK', 0.5, 30),
+    transit_line('line_2', '> MAPPING STRATA .......... OK', 1.3, 39),
+    transit_line('line_3', '> STABILIZING SHAFT ...', 2.1, 48),
+]}}]
+
 GLITCH = [(4.4, 0, 0), (0.05, 0, 0.8), (0.04, 0.8, 0.2), (0.05, 0.2, 0.85), (0.08, 0.85, 0)]
 def ghost(name, color, sign):
     """A tinted copy of the logo that flashes out of place now and then (RGB split glitch)."""
@@ -355,6 +409,9 @@ for key, (tag, root) in FORMS.items():
                          'offset': anim(f'mining_tycoon_content_in_{key}', 'offset', 0.35, [0, 14], [0, 0], easing='out_cubic'),
                          **({'propagate_alpha': True, 'alpha': seq('mining_tycoon_start_flicker', 'alpha',
                              [(0.35, 0, 0), (0.05, 0, 1), (0.05, 1, 0.25), (0.08, 0.25, 1)])} if key == 'start' else {}),
+                         # the loading screen lights up once the doors are shut
+                         **({'propagate_alpha': True, 'alpha': seq('mining_tycoon_transit_on', 'alpha',
+                             [(0.4, 0, 0), (0.04, 0, 1), (0.04, 1, 0.3), (0.08, 0.3, 1)])} if key == 'loading' else {}),
                          'controls': [
                 {'logo_row': {'type': 'panel', 'size': ['100%', 56], 'controls': [
                     {'logo': {**({'type': 'image', 'texture': f'{UI}/logo'} if HAS_LOGO else
@@ -367,7 +424,7 @@ for key, (tag, root) in FORMS.items():
                 {'body': label('#form_text', [0.95, 0.95, 0.95], bindings=[{'binding_name': '#form_text'}])},
                 {'body_gap': {'type': 'panel', 'size': ['100%', 10]}},
                 *rows,
-                *(LOADER if key == 'loading' else []),
+                *(TRANSIT_PANEL if key == 'loading' else []),
             ]}},
         ]}})
 ui['mining_tycoon_long_form'] = {'type': 'panel', 'size': ['100%', '100%'], 'controls': screens}

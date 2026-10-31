@@ -164,6 +164,88 @@
     ],
     "next": "@hud.mining_tycoon_note_hud_avatar_beam_0"
   },
+  "mining_tycoon_note_arrive_doors_shake_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.1,
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ]
+  },
+  "mining_tycoon_note_arrive_door_left_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.14,
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "next": "@hud.mining_tycoon_note_arrive_door_left_1"
+  },
+  "mining_tycoon_note_arrive_door_left_1": {
+    "anim_type": "offset",
+    "easing": "in_back",
+    "duration": 0.5,
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      "-50%",
+      0
+    ]
+  },
+  "mining_tycoon_note_arrive_door_right_0": {
+    "anim_type": "offset",
+    "easing": "linear",
+    "duration": 0.14,
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      0,
+      0
+    ],
+    "next": "@hud.mining_tycoon_note_arrive_door_right_1"
+  },
+  "mining_tycoon_note_arrive_door_right_1": {
+    "anim_type": "offset",
+    "easing": "in_back",
+    "duration": 0.5,
+    "from": [
+      0,
+      0
+    ],
+    "to": [
+      "50%",
+      0
+    ]
+  },
+  "mining_tycoon_note_arrive_door_flash_0": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 0.04,
+    "from": 0,
+    "to": 0.9,
+    "next": "@hud.mining_tycoon_note_arrive_door_flash_1"
+  },
+  "mining_tycoon_note_arrive_door_flash_1": {
+    "anim_type": "alpha",
+    "easing": "out_quad",
+    "duration": 0.3,
+    "from": 0.9,
+    "to": 0
+  },
   "hud_title_text": {
     "size": [
       "100%",
@@ -392,7 +474,7 @@
                                           },
                                           {
                                             "binding_type": "view",
-                                            "source_property_name": "(#hud_title_text_string - '§h§u§1' - '§q§q§0' - '§q§q§1' - '§q§q§2' - '§q§q§3' - '§q§q§4' - '§q§q§5' - '§q§q§6' - '§q§q§7' - '§q§q§8' - '§q§q§9' - '§q§q§a')",
+                                            "source_property_name": "(#hud_title_text_string - '§d§o§r' - '§h§u§1' - '§q§q§0' - '§q§q§1' - '§q§q§2' - '§q§q§3' - '§q§q§4' - '§q§q§5' - '§q§q§6' - '§q§q§7' - '§q§q§8' - '§q§q§9' - '§q§q§a')",
                                             "target_property_name": "#text"
                                           }
                                         ]
@@ -1804,7 +1886,7 @@
                                           },
                                           {
                                             "binding_type": "view",
-                                            "source_property_name": "(#hud_title_text_string - '§h§u§2' - '§q§q§0' - '§q§q§1' - '§q§q§2' - '§q§q§3' - '§q§q§4' - '§q§q§5' - '§q§q§6' - '§q§q§7' - '§q§q§8' - '§q§q§9' - '§q§q§a')",
+                                            "source_property_name": "(#hud_title_text_string - '§d§o§r' - '§h§u§2' - '§q§q§0' - '§q§q§1' - '§q§q§2' - '§q§q§3' - '§q§q§4' - '§q§q§5' - '§q§q§6' - '§q§q§7' - '§q§q§8' - '§q§q§9' - '§q§q§a')",
                                             "target_property_name": "#text"
                                           }
                                         ]
@@ -3096,6 +3178,217 @@
                                 }
                               }
                             ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "doors": {
+                "type": "panel",
+                "size": [
+                  "100%",
+                  "100%"
+                ],
+                "layer": 40,
+                "bindings": [
+                  {
+                    "binding_name": "#hud_title_text_string"
+                  },
+                  {
+                    "binding_type": "view",
+                    "source_property_name": "(not ((#hud_title_text_string - '§d§o§r') = #hud_title_text_string))",
+                    "target_property_name": "#visible"
+                  }
+                ],
+                "controls": [
+                  {
+                    "doors": {
+                      "type": "panel",
+                      "size": [
+                        "100%",
+                        "100%"
+                      ],
+                      "offset": "@hud.mining_tycoon_note_arrive_doors_shake_0",
+                      "controls": [
+                        {
+                          "door_left": {
+                            "type": "panel",
+                            "size": [
+                              "50%",
+                              "100%"
+                            ],
+                            "anchor_from": "left_middle",
+                            "anchor_to": "left_middle",
+                            "offset": "@hud.mining_tycoon_note_arrive_door_left_0",
+                            "controls": [
+                              {
+                                "plate": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/door",
+                                  "size": [
+                                    "100%",
+                                    "100%"
+                                  ],
+                                  "layer": 1
+                                }
+                              },
+                              {
+                                "grid": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/door_grid",
+                                  "size": [
+                                    "100% - 4px",
+                                    "100% - 4px"
+                                  ],
+                                  "tiled": true,
+                                  "layer": 2
+                                }
+                              },
+                              {
+                                "hazard": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/hazard",
+                                  "size": [
+                                    8,
+                                    "100%"
+                                  ],
+                                  "tiled": true,
+                                  "layer": 3,
+                                  "anchor_from": "right_middle",
+                                  "anchor_to": "right_middle",
+                                  "offset": [
+                                    -4,
+                                    0
+                                  ]
+                                }
+                              },
+                              {
+                                "seam": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/seam",
+                                  "size": [
+                                    3,
+                                    "100%"
+                                  ],
+                                  "keep_ratio": false,
+                                  "layer": 4,
+                                  "anchor_from": "right_middle",
+                                  "anchor_to": "right_middle"
+                                }
+                              },
+                              {
+                                "emblem": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/emblem_l",
+                                  "size": [
+                                    24,
+                                    48
+                                  ],
+                                  "layer": 5,
+                                  "anchor_from": "right_middle",
+                                  "anchor_to": "right_middle"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "door_right": {
+                            "type": "panel",
+                            "size": [
+                              "50%",
+                              "100%"
+                            ],
+                            "anchor_from": "right_middle",
+                            "anchor_to": "right_middle",
+                            "offset": "@hud.mining_tycoon_note_arrive_door_right_0",
+                            "controls": [
+                              {
+                                "plate": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/door",
+                                  "size": [
+                                    "100%",
+                                    "100%"
+                                  ],
+                                  "layer": 1
+                                }
+                              },
+                              {
+                                "grid": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/door_grid",
+                                  "size": [
+                                    "100% - 4px",
+                                    "100% - 4px"
+                                  ],
+                                  "tiled": true,
+                                  "layer": 2
+                                }
+                              },
+                              {
+                                "hazard": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/hazard",
+                                  "size": [
+                                    8,
+                                    "100%"
+                                  ],
+                                  "tiled": true,
+                                  "layer": 3,
+                                  "anchor_from": "left_middle",
+                                  "anchor_to": "left_middle",
+                                  "offset": [
+                                    4,
+                                    0
+                                  ]
+                                }
+                              },
+                              {
+                                "seam": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/seam",
+                                  "size": [
+                                    3,
+                                    "100%"
+                                  ],
+                                  "keep_ratio": false,
+                                  "layer": 4,
+                                  "anchor_from": "left_middle",
+                                  "anchor_to": "left_middle"
+                                }
+                              },
+                              {
+                                "emblem": {
+                                  "type": "image",
+                                  "texture": "textures/mining_tycoon/ui/transit/emblem_r",
+                                  "size": [
+                                    24,
+                                    48
+                                  ],
+                                  "layer": 5,
+                                  "anchor_from": "left_middle",
+                                  "anchor_to": "left_middle"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "flash": {
+                            "type": "image",
+                            "texture": "textures/mining_tycoon/ui/transit/flash",
+                            "size": [
+                              14,
+                              "100%"
+                            ],
+                            "keep_ratio": false,
+                            "layer": 8,
+                            "alpha": "@hud.mining_tycoon_note_arrive_door_flash_0"
                           }
                         }
                       ]

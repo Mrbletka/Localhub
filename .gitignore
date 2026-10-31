@@ -7,3 +7,4 @@ projects/.trash/
 projects/*/.studio/
 # Older layout
 workspace/
+__pycache__/
