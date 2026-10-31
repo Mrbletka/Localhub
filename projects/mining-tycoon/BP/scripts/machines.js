@@ -9,7 +9,7 @@ import { activeSession, sessionKey, sessionsOf, plotAt, plotCenter, onSessionEnt
 import { stat, addStat, machineTimeFactor } from './economy.js';
 import { eachPlayer } from './lib/safe.js';
 import { record } from './progress.js';
-import { toast } from './hud.js';
+import { toast, notify } from './hud.js';
 import { fullScreenMenu, icon } from './menu.js';
 
 const GOODS = new Map([...CONFIG.resources, ...CONFIG.products].map((g) => [g.id, g]));
@@ -178,13 +178,13 @@ function loadPlan(player, m, s) {
 function build(player, slot, m) {
   const machines = machinesOf(player, slot);
   if (machines[m.id] || activeSession(player) !== slot) return;
-  if (stat(player, 'money') < m.cost) return player.sendMessage(`§cThe ${m.name} costs §a$${formatNumber(m.cost)}§c (you have $${formatNumber(stat(player, 'money'))}).`);
+  if (stat(player, 'money') < m.cost) return toast(player, '§cNot enough money', `The ${m.name} costs $${formatNumber(m.cost)} - you have $${formatNumber(stat(player, 'money'))}.`);
   addStat(player, 'money', -m.cost);
   machines[m.id] = { level: 1, in: {}, out: {}, fuel: 0, work: 0 };
   save(player, slot);
   syncBays(player, slot, plotCenter(sessionsOf(player.id)[slot].index));
   player.playSound('random.anvil_use');
-  player.sendMessage(`§aYour ${m.name} is ready! Tap it to load it.`);
+  toast(player, `${m.name} built!`, 'Tap it to load it.');
 }
 
 function load(player, slot, m) {
@@ -201,7 +201,7 @@ function load(player, slot, m) {
   s.idle = undefined;
   save(player, slot);
   player.playSound('random.pop');
-  if (loaded) player.sendMessage(`§aLoaded ${loaded} into the ${m.name}: done in about ${clock(timeLeft(m, s, machineTimeFactor(player)))}.`);
+  if (loaded) toast(player, `${m.name} loaded: ${loaded} item${loaded > 1 ? 's' : ''}`, `Done in about ${clock(timeLeft(m, s, machineTimeFactor(player)))}.`);
 }
 
 function collect(player, slot, m) {
@@ -212,7 +212,7 @@ function collect(player, slot, m) {
   save(player, slot);
   give(player, goods);
   player.playSound('random.orb');
-  player.sendMessage(`§aCollected ${list(goods)}.`);
+  toast(player, 'Collected', list(goods));
   for (const [id, n] of Object.entries(goods)) record(player, `made_${id}`, n);
 }
 
@@ -220,12 +220,12 @@ function upgrade(player, slot, m) {
   const s = machinesOf(player, slot)[m.id];
   if (!s || s.level >= m.seconds.length || activeSession(player) !== slot) return;
   const cost = upgradeCost(m, s.level);
-  if (stat(player, 'money') < cost) return player.sendMessage(`§cYou need §a$${formatNumber(cost)}§c (you have $${formatNumber(stat(player, 'money'))}).`);
+  if (stat(player, 'money') < cost) return toast(player, '§cNot enough money', `You need $${formatNumber(cost)} - you have $${formatNumber(stat(player, 'money'))}.`);
   addStat(player, 'money', -cost);
   s.level += 1;
   save(player, slot);
   player.playSound('random.levelup');
-  player.sendMessage(`§a${m.name} level ${s.level}: ${secondsText(m.seconds[s.level - 1])} per item.`);
+  toast(player, `${m.name} level ${s.level}`, `${secondsText(m.seconds[s.level - 1])} per item.`);
 }
 
 function showBuild(player, slot, m) {
@@ -267,7 +267,7 @@ function showMachine(player, slot, m) {
 function openBay(player, dimensionId, location) {
   const m = bayAt(player, dimensionId, location);
   const slot = activeSession(player);
-  if (!m) return player.sendMessage('§cUse the machines in your own mine.');
+  if (!m) return notify(player, '§cUse the machines in your own mine.');
   if (machinesOf(player, slot)[m.id]) showMachine(player, slot, m);
   else showBuild(player, slot, m);
 }

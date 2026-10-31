@@ -20,15 +20,16 @@ dark carved stone, warm gold, crisp pixel art, short friendly words, and the scr
 Light always comes from the top-left: lighter rim top/left, darker bottom/right.
 
 ## Pieces
-- **Panels** (`ui/hud_panel`, nine-slice 4): dark see-through stone, 1 px gold rim, outline. HUD boxes.
+- **HUD board** (`ui/hud_board`, nine-slice 4): MINE-OS glass with a `MINE-OS // MODE` header, mini radar, status
+  LED, gold accent strip, icons (turning coin, hologram target, lantern, backpack) and 10-segment cyan bars.
 - **Notification card** (`ui/hud_note`, nine-slice 4; the action bar, `tools/gen_hud.py`): the MINE-OS accent in the
   HUD. Dark cyan glass, chamfered corners with bright ticks, gold accent strip, pulsing hologram icon, scanlines. It
   slides up above the hotbar with a flicker, flash and ping, wipes its text in, sweeps a light streak and drains a
   timer line. Toasts: gold first line, white second line; pickups and refusals: one line. No titles, ever.
 - **Buttons** (`ui/button`, `button_hover`, `button_pressed`): stone & gold, gold text, icon on the left that bobs when
   selected, up to 2 lines (second line grey detail). Menus are full screen with the cave background and the logo.
-- **Icons**: 16 x 16, bold shapes, 1 px dark outline, 3-4 shades per material, shown at 10-16 px. Gold = money, red flag
-  = goal, lantern = light/expedition, backpack = haul.
+- **Icons**: 16 x 16, bold shapes, 1 px dark outline, 3-4 shades per material, shown at 10-16 px. Gold coin = money, cyan
+  target = goal, lantern = light/expedition, backpack = haul.
 - **Models**: chunky blocky furniture (`tools/gen_models.py`), one shared 16 x 16-tile atlas; "picture" tiles (furnace
   mouth, blades, signs) drawn whole, material tiles (bricks, planks, steel) cropped so texels stay one size. Things
   that work, move: animated `_on` blocks (fire, rollers, blades).
@@ -36,7 +37,7 @@ Light always comes from the top-left: lighter rim top/left, darker bottom/right.
   Full bright, fade out, never block the view.
 
 ## Accent: MINE-OS (tech)
-For what should feel like advanced technology (the welcome menu, the notification card): dark glass over the world, cyan
+For what should feel like advanced technology (the welcome menu, the HUD board, the notification card): dark glass over the world, cyan
 `#5ff6ff` light with the studio gold kept for titles and selection, scanlines, a vignette, chamfered glass panels,
 corner brackets, typed monospace-style boot lines, holograms and radars rendered as frame strips (`tools/gen_tech.py`),
 a CRT power-on, and a rare RGB-split glitch. Use it sparingly: it is the "wow" moment, the rest stays stone & gold.
@@ -47,6 +48,7 @@ a CRT power-on, and a rare RGB-split glitch. Use it sparingly: it is the "wow" m
 - Every screen answers "what next?": the HUD goal line, the quest, the marker, the tablet.
 
 ## Behaviour
+- No chat lines: every message is a notification card, every lasting fact is on the HUD board or the tablet.
 - Never leave the player guessing: a marker over the next place, a toast for every reward, a reason for every refusal.
 - Menus: at most 4 buttons plus Close on one page (they must fit a phone); sub-pages switch inside the form.
 - Nothing may break the game: every loop isolates players (`lib/safe.js`), refusals instead of lost items, migrations

@@ -13,7 +13,7 @@ import { syncPick, rerollField } from './mining.js';
 import { hasMachine } from './machines.js';
 import { ownedDrills, giveDrill } from './drills.js';
 import { fullScreenMenu, icon } from './menu.js';
-import { toast } from './hud.js';
+import { toast, notify } from './hud.js';
 import { record } from './progress.js';
 
 const W = CONFIG.workshop;
@@ -66,9 +66,6 @@ export function nextGoal(player) {
   return step && describe(step);
 }
 
-/** "Copper Pick at the Pickaxe Station: Copper Bar 1/4, $150" */
-export const goalText = (player, goal) => `§e${goal.name}§7 at the ${goal.where}: ${progressText(player, goal.needs)}`;
-
 function crafted(player, text) {
   player.playSound('random.anvil_use');
   player.playSound('random.levelup');
@@ -79,8 +76,6 @@ function crafted(player, text) {
     // particle not available
   }
   record(player, 'crafted');
-  const goal = nextGoal(player);
-  player.sendMessage(`§a${text}${goal ? `\n§7Next: ${goalText(player, goal)}` : ''}`);
 }
 
 // ---- stations -----------------------------------------------------------------------------------------------------
@@ -97,7 +92,7 @@ function craftPick(player) {
 
 function buildDrill(player, tier) {
   const slot = activeSession(player);
-  if (ownedDrills(player.id, slot).length >= CONFIG.drills.max) return player.sendMessage(`§cYou have the most drills you can place (${CONFIG.drills.max}).`);
+  if (ownedDrills(player.id, slot).length >= CONFIG.drills.max) return toast(player, '§cDrill limit reached', `You have the most drills you can place (${CONFIG.drills.max}).`);
   if (!pay(player, tier.needs)) return;
   giveDrill(player, tier);
   crafted(player, `${tier.name}: place it on a drill pad (the light tiles on the west side).`);
@@ -166,7 +161,7 @@ const SHOW = { picks: showPickStation, gear: showGearBench, cart: showCart };
 
 function openStation(player, dimensionId, location, station) {
   const plot = plotAt(dimensionId, location);
-  if (!plot || plot.owner !== player.id || plot.slot !== activeSession(player)) return player.sendMessage('§cUse the workshop in your own mine.');
+  if (!plot || plot.owner !== player.id || plot.slot !== activeSession(player)) return notify(player, '§cUse the workshop in your own mine.');
   SHOW[station.id](player, station);
 }
 

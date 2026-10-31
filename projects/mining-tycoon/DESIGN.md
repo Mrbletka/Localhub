@@ -85,7 +85,7 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   - **Pickaxe Station**: craft the next pick (shows what it mines); build the best drill your pick unlocks.
   - **Gear Bench**: next lantern level, next backpack level.
   - **Mine Cart**: unlock the next cave level (with its description).
-  - Crafting: sound, "Crafted!" notification card, chat line with the next goal. `nextGoal()` = the first unfinished step of
+  - Crafting: sound, "Crafted!" notification card; the HUD shows the next goal. `nextGoal()` = the first unfinished step of
     `ROUTE`; shown in the tablet and in the home HUD (`Next: Copper Pick at the Pickaxe Station`).
 - **Machines** (`BP/scripts/machines.js`): bays west of the tunnel (x -6, -4, -2 at z 11). Empty bay = Machine Bay frame
   (tap: build). Built machine menu (at most 4 buttons): **Collect N items**, **Load N** (everything it accepts + just
@@ -150,7 +150,7 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   mine 5 Coal ($25) -> sell at the Ore Trader ($25) -> Stone Pick ($50) -> mine 8 Copper ($50) -> build the Smelter
   ($75) -> smelt and collect 4 Copper Bars ($100) -> Copper Pick ($150) -> ride the lift ($50) -> extract a haul ($250).
   Count quests use the session records; pick / machine quests are checked every second. Done quests pay at once with a
-  toast, a gold burst and a chat line naming the next one. Sessions already on their way (Copper Pick, Smelter or a
+  toast naming the next one and a gold burst. Sessions already on their way (Copper Pick, Smelter or a
   rebirth) skip the tutorial. After it, the workshop route (`nextGoal`) takes over.
 - **Guide marker**: every second gold sparkles (`mining_tycoon:guide`, only that player sees them) float over the place
   of the current quest or goal: the vein, the trader's stall, a station or bay, the lift - in a cave, the cave lift.
@@ -163,10 +163,18 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
   `(not ((#s - 'code') = #s))`: on the phone the negated form and compound `(not (A or B))` tests came out true when
   they should not (`tools/check_ui.py` rejects them). The light bar gets one mark per lit segment, drawn over an
   always-visible empty segment.
-  - Home (top-left): coin + money (and sell bonus), flag + the quest (`Quest 3/9: ...`, progress and reward) or the next
-    goal (`Next: Copper Pick at the Pickaxe Station`, then what you have / need in green and red).
-  - Expedition (top-left; the top centre is under the phone's buttons): lantern + a 10-segment light bar (last 3 segments red), time left, backpack + haul
-    `12/48`, the cave level.
+  - **The board** (top-left, below the hearts phones show there; the top centre is under the phone's buttons): MINE-OS
+    glass (cyan rim, chamfered corners with bright ticks, scanlines, gold accent strip), a header `MINE-OS // MINE
+    CONTROL` (or `// EXPEDITION`) with a turning mini radar and a blinking status LED (green at home, red in a cave),
+    a glowing rule under it, a scan beam running down and a light sheen across now and then. The board may be rebuilt
+    with every new title (every second in a cave), so its loops last a second (coin, radar, LED) and the slow effects
+    wait over a second before they first play.
+  - Home: a turning gold coin + money (and sell bonus), a hologram target + the quest (`Quest 3/9: ...`, progress and
+    reward) or the next goal (`Next: Copper Pick at the Pickaxe Station`, then what you have / need in green and red),
+    and a 10-segment cyan progress bar (quest count, or how much of the goal's goods and money you have:
+    `guideLines()` -> `progressRatio()`), one mark per 10 % like the light bar.
+  - Expedition: lantern + a 10-segment light bar (last 3 segments red), time left, backpack + haul `12/48`, the cave
+    level.
   - **Notifications** = the action bar, drawn as a MINE-OS card above the hotbar (`hud_actionbar_text` replaced): dark
     cyan glass with chamfered corners, a gold accent strip, a pulsing hologram icon. Every card slides up with a
     flicker, a flash and a sonar ping, wipes its text in, sweeps a light streak over the glass and drains a timer line,
@@ -175,6 +183,8 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
     refusals. `hud.js` queues them: a toast stays at least 2 s before the next toast (1.5 s before a small card), at
     most two toasts wait (a newer one pushes out the oldest), small cards keep 0.7 s apart (only the latest shows) and
     a toast cuts a small card short.
+  - **No chat**: every message is a card (refusals, results, warnings, rebirths of other players); scripts never
+    write to chat (the sim fails a suite on any chat line).
 - **Records** (`BP/scripts/progress.js`, `s<slot>:records`, survive rebirth): mined per resource, ores, sold, earned,
   made per product, crafted, expeditions, extracts, deaths, best haul, deepest level.
 - **Rebirth stars and perks** (config `perks`): one star per rebirth; tablet > **Perks & records** shows the records

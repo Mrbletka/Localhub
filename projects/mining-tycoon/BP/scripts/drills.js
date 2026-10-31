@@ -9,7 +9,7 @@ import { activeSession, sessionKey, inActivePlot, onSessionDelete, onMineRebuild
 import { padBlockId } from './mine_builder.js';
 import { giveGoods, goodIcon, goodName } from './goods.js';
 import { fullScreenMenu, icon } from './menu.js';
-import { toast } from './hud.js';
+import { toast, notify } from './hud.js';
 
 const D = CONFIG.drills;
 const LEGACY_KEY = `${CONFIG.namespace}:generators`; // all drills in one world property (older versions)
@@ -99,7 +99,7 @@ function collect(player, slot) {
   saveBin(player, slot, bin);
   giveGoods(player, items);
   player.playSound('random.orb');
-  player.sendMessage(`§aCollected ${list(items)} from your drills.`);
+  toast(player, 'Collected from your drills', list(items));
 }
 
 function showBin(player) {
@@ -129,11 +129,11 @@ world.afterEvents.playerPlaceBlock.subscribe(({ player, block, dimension }) => {
   const refuse = (message) => {
     block.setType('minecraft:air');
     giveItem(player, tier.block);
-    player.sendMessage(message);
+    toast(player, '§cCan\'t place that here', message);
   };
-  if (!inActivePlot(player, dimension.id, block.location)) return refuse('§cDrills only work in the mine of the session you are playing.');
-  if (block.below()?.typeId !== padBlockId()) return refuse('§cPlace drills on the drill pads: the light tiles on the west side of your mine.');
-  if (ownedDrills(player.id, slot).length >= D.max) return refuse(`§cDrill limit reached (${D.max}).`);
+  if (!inActivePlot(player, dimension.id, block.location)) return refuse('Drills only work in the mine of the session you are playing.');
+  if (block.below()?.typeId !== padBlockId()) return refuse('Place drills on the drill pads: the light tiles on the west side of your mine.');
+  if (ownedDrills(player.id, slot).length >= D.max) return refuse(`You have the most drills a session can place (${D.max}).`);
   drills[locKey(dimension.id, block.location)] = { owner: player.id, slot, block: block.typeId };
   save(player);
   toast(player, `${tier.name} placed`, 'It digs into your drill bin - tap a drill to collect');
@@ -147,7 +147,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
   const player = event.player;
   if (!event.isFirstEvent) return;
   system.run(() => {
-    if (record.owner !== player.id || (record.slot ?? 0) !== activeSession(player)) return player.sendMessage('§cThat drill is not part of the session you are playing.');
+    if (record.owner !== player.id || (record.slot ?? 0) !== activeSession(player)) return notify(player, '§cThat drill is not part of the session you are playing.');
     showBin(player);
   });
 });
@@ -159,10 +159,10 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const player = event.player;
   if (record.owner !== player.id) {
     event.cancel = true;
-    system.run(() => player.sendMessage('§cThat drill belongs to someone else.'));
+    system.run(() => notify(player, '§cThat drill belongs to someone else.'));
   } else if ((record.slot ?? 0) !== activeSession(player)) {
     event.cancel = true;
-    system.run(() => player.sendMessage('§cThat drill belongs to your other session.'));
+    system.run(() => notify(player, '§cThat drill belongs to your other session.'));
   }
 });
 
@@ -185,7 +185,7 @@ onMineRebuild((player, slot) => {
   }
   if (mine.length) {
     save(player);
-    player.sendMessage(`§eYour mine was rebuilt: your ${mine.length} drill${mine.length > 1 ? 's are' : ' is'} back in your inventory. Place them on the drill pads (west side).`);
+    toast(player, `${mine.length} drill${mine.length > 1 ? 's' : ''} back in your inventory`, 'Your mine was rebuilt: place them on the drill pads (west side)', 6);
   }
 });
 

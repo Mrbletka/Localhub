@@ -7,7 +7,7 @@ import { formatNumber, setNumber } from './lib/util.js';
 import { eachPlayer } from './lib/safe.js';
 import { activeSession, sessionKey, plotAt, plotCenter } from './sessions.js';
 import { stat, addStat, pickTier } from './economy.js';
-import { progressText } from './goods.js';
+import { progressText, progressRatio } from './goods.js';
 import { hasMachine } from './machines.js';
 import { nextGoal } from './workshop.js';
 import { records, onRecord } from './progress.js';
@@ -59,7 +59,6 @@ function check(player) {
     }
     const next = QUESTS[index];
     toast(player, `Quest ${index}/${QUESTS.length} done! +$${formatNumber(q.reward)}`, next ? `Next: ${next.text}` : 'Tutorial complete - follow the tablet goals!', 4);
-    player.sendMessage(`§aQuest done: ${q.text} §e+$${formatNumber(q.reward)}${next ? `\n§7Next: §f${next.text}` : '\n§6Tutorial complete! Your Miner\'s Tablet and the HUD show the next goal.'}`);
   }
 }
 
@@ -67,10 +66,15 @@ function check(player) {
 export function guideLines(player) {
   const index = questIndex(player);
   const q = QUESTS[index];
-  if (q) return [`§bQuest ${index + 1}/${QUESTS.length}: §f${q.text}`, q.count ? `§7Progress ${progress(player, q)}/${q.goal} - reward $${formatNumber(q.reward)}` : `§7Reward $${formatNumber(q.reward)}`];
   const goal = nextGoal(player);
-  if (!goal) return ['§aEverything is crafted.', '§7Rebirth from the tablet for a sell bonus and a star.'];
-  return [`§7Next: §f${goal.name}§7 at the ${goal.where}`, progressText(player, goal.needs)];
+  if (q) {
+    // How far along (0..1, the HUD's progress bar): counted quests by their count, craft / build quests by what the
+    // matching workshop goal still needs.
+    const ratio = q.count ? progress(player, q) / q.goal : goal?.target === q.target ? progressRatio(player, goal.needs) : 0;
+    return [`§bQuest ${index + 1}/${QUESTS.length}: §f${q.text}`, q.count ? `§7Progress ${progress(player, q)}/${q.goal} - reward $${formatNumber(q.reward)}` : `§7Reward $${formatNumber(q.reward)}`, ratio];
+  }
+  if (!goal) return ['§aEverything is crafted.', '§7Rebirth from the tablet for a sell bonus and a star.', 1];
+  return [`§7Next: §f${goal.name}§7 at the ${goal.where}`, progressText(player, goal.needs), progressRatio(player, goal.needs)];
 }
 
 /** Where the marker goes: relative to the plot centre, or 'cave_lift' for the lift room of the player's cave. */

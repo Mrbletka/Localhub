@@ -39,7 +39,7 @@ function buyPerk(player, perk) {
   const level = owned[perk.id] ?? 0;
   const cost = perk.costs[level];
   if (cost === undefined) return;
-  if (freeStars(player) < cost) return player.sendMessage(`§c${perk.name} needs ${cost} star${cost > 1 ? 's' : ''}: you get one with every rebirth.`);
+  if (freeStars(player) < cost) return toast(player, `§c${perk.name} needs ${cost} star${cost > 1 ? 's' : ''}`, 'You get one with every rebirth.');
   owned[perk.id] = level + 1;
   setJson(player, sessionKey(slot, 'perks'), owned);
   player.playSound('random.levelup');

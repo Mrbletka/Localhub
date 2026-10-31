@@ -3,6 +3,7 @@
 import { CONFIG } from './config.js';
 import { formatNumber, giveItem } from './lib/util.js';
 import { stat, addStat } from './economy.js';
+import { toast } from './hud.js';
 
 export const GOODS = new Map([...CONFIG.resources, ...CONFIG.products].map((g) => [g.id, g]));
 export const GOOD_BY_ITEM = new Map([...GOODS.values()].map((g) => [g.item, g]));
@@ -67,6 +68,13 @@ export function progressText(player, needs) {
   return list.join('§7, ') || '§afree';
 }
 
+/** How far the player is towards needs, 0..1 (each good and the money count the same). */
+export function progressRatio(player, needs) {
+  const shares = parts(needs).map(([id, n]) => Math.min(1, countGood(player, id) / n));
+  if (needs.money) shares.push(Math.min(1, stat(player, 'money') / needs.money));
+  return shares.length ? shares.reduce((a, b) => a + b, 0) / shares.length : 1;
+}
+
 /** What is still missing, e.g. ["2 Copper Bar", "$40"]; empty when the player can pay. */
 export function missing(player, needs) {
   const out = parts(needs).filter(([id, n]) => countGood(player, id) < n).map(([id, n]) => `${n - countGood(player, id)} ${goodName(id)}`);
@@ -79,7 +87,7 @@ export function missing(player, needs) {
 export function pay(player, needs) {
   const short = missing(player, needs);
   if (short.length) {
-    player.sendMessage(`§cYou still need ${short.join(', ')}.`);
+    toast(player, '§cNot enough yet', `You still need ${short.join(', ')}.`);
     return false;
   }
   for (const [id, n] of parts(needs)) takeGood(player, id, n);

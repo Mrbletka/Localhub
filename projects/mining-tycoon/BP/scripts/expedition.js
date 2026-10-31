@@ -10,7 +10,7 @@ import { activeSession, sessionsOf, plotAt, playSession } from './sessions.js';
 import { buildCave, planCave, safetyFloor, caveArrival, caveLookAt, caveBounds, shape } from './cave_builder.js';
 import { pickTier, valueMultiplier, lightSeconds, backpackSize, cartLevel } from './economy.js';
 import { pickProblem, popup } from './mining.js';
-import { showHud, toast, forgetHud, pickup } from './hud.js';
+import { showHud, toast, notify, forgetHud, pickup } from './hud.js';
 import { record, records } from './progress.js';
 import { fullScreenMenu, icon, travel } from './menu.js';
 
@@ -123,6 +123,12 @@ function lose(player, run, reason) {
   return `§c${reason}§r\n${haulCount(run.haul) ? `You lost ${haulText(run.haul)}.` : 'You had not mined anything yet.'}`;
 }
 
+/** A lost run told on a card: lose() gives "reason\nwhat was lost". */
+function lostToast(player, text) {
+  const [title, line] = text.split('\n');
+  toast(player, title.replace('§r', ''), line, 6);
+}
+
 /** A full-screen message with an OK button. */
 function notice(player, body) {
   fullScreenMenu(player, { form: 'notice', body, buttons: [{ list: 'notice', text: 'OK', icon: icon('back'), run: () => {} }] });
@@ -174,7 +180,7 @@ function descend(player, level) {
     if (!ok) {
       end(player);
       player.removeEffect('slow_falling');
-      player.sendMessage('§cThe cave could not be loaded. Try the lift again.');
+      toast(player, '§cThe cave could not be loaded', 'Try the lift again.', 5);
       return travel(player, 'Back to your mine...', (done) => playSession(player, slot, done), () => {});
     }
     run.phase = 'active';
@@ -183,7 +189,7 @@ function descend(player, level) {
     player.playSound('ambient.cave');
     toast(player, E.levels[level].name, `Your light lasts ${clock(run.light)}${run.easy ? ' - a quiet first trip' : ''}`, 4);
     record(player, 'expeditions');
-    player.sendMessage('§eMine what you can and get back to the lift before your light runs out. Die down here and your haul is lost.');
+    if (run.easy) toast(player, 'Get back to the lift in time', 'Before your light runs out - die down here and your haul is lost.', 4);
   });
 }
 
@@ -362,7 +368,7 @@ function useLift(player, dimensionId, location) {
   }
   const plot = plotAt(dimensionId, location);
   if (!plot || run) return;
-  if (plot.owner !== player.id || plot.slot !== activeSession(player)) return player.sendMessage('§cUse the lift in your own mine.');
+  if (plot.owner !== player.id || plot.slot !== activeSession(player)) return notify(player, '§cUse the lift in your own mine.');
   showDescend(player);
 }
 
@@ -460,7 +466,7 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
   // Left the game during an expedition: the haul is lost, and they are out of the dark at once (the start menu
   // shows over it).
   runs.delete(player.id);
-  player.sendMessage(lose(player, stored, 'You left the game during an expedition.').replace('\n', ' '));
+  lostToast(player, lose(player, stored, 'You left the game during an expedition.'));
   if (caveAt(player.dimension.id, player.location) !== undefined) playSession(player, stored.slot);
 });
 
@@ -486,7 +492,7 @@ world.afterEvents.worldLoad.subscribe(() => {
       playSession(player, stored.slot);
     } else if (stored?.phase === 'active') {
       if (caveAt(player.dimension.id, player.location) === stored.cave) resume(player, stored);
-      else player.sendMessage(lose(player, stored, 'Your expedition ended.').replace('\n', ' '));
+      else lostToast(player, lose(player, stored, 'Your expedition ended.'));
     }
   }
   system.runInterval(() => {

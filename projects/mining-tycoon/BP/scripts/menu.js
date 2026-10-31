@@ -147,11 +147,10 @@ function enter(player, slot) {
   const fresh = !sessionsOf(player.id)[slot];
   const go = (done) => (fresh ? createSession(player, slot, done) : playSession(player, slot, done));
   travel(player, fresh ? 'Building your mine...' : `Heading into Session ${slot + 1}...`, go, (ok) => {
-    if (!ok) return player.sendMessage('§cYour mine is not loaded yet. Tablet > Main menu > Play to try again.');
-    if (!fresh) return player.sendMessage(`§aWelcome back to Session ${slot + 1}!`);
+    if (!ok) return toast(player, '§cYour mine is not loaded yet', 'Tablet > Main menu > Play to try again.', 5);
+    if (!fresh) return toast(player, `Session ${slot + 1}`, 'Welcome back!');
     player.playSound('random.levelup');
     toast(player, `Session ${slot + 1}`, 'Follow the quests at the top left - the gold sparkles show the way', 6);
-    player.sendMessage("§aYour mine is ready! Mine coal at the vein (north wall) and sell it at the Ore Trader (the stall on the east side). Then craft a Stone Pick at the Pickaxe Station - the workshop by the tunnel. Your Miner's Tablet always shows the next goal.");
   });
 }
 
@@ -166,13 +165,13 @@ function exit(player) {
   } catch {
     // The host of a local world cannot be kicked.
     uncover(player);
-    player.sendMessage('§7You are hosting this world: leave it from the pause menu.');
+    toast(player, 'You are hosting this world', 'Leave it from the pause menu.');
   }
 }
 
 function remove(player, slot) {
   deleteSession(player, slot);
-  player.sendMessage(`§cSession ${slot + 1} deleted.`);
+  toast(player, `§cSession ${slot + 1} deleted`);
   showStartMenu(player);
 }
 

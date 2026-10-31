@@ -26,7 +26,7 @@ function rebirth(player, slot) {
   if (activeSession(player) !== slot) return;
   const rebirths = stat(player, 'rebirths');
   const cost = rebirthCost(rebirths);
-  if (stat(player, 'money') < cost) return player.sendMessage(`§cRebirth costs §a$${formatNumber(cost)}§c (you have $${formatNumber(stat(player, 'money'))}).`);
+  if (stat(player, 'money') < cost) return toast(player, '§cNot enough money', `Rebirth costs $${formatNumber(cost)} - you have $${formatNumber(stat(player, 'money'))}.`);
   resetDrills(player, slot);
   resetMachines(player, slot);
   setStat(player, 'money', CONFIG.startingMoney);
@@ -36,7 +36,9 @@ function rebirth(player, slot) {
   rerollField(player);
   player.playSound('random.totem');
   toast(player, `Rebirth ${rebirths + 1}!`, `Sell bonus x${+valueMultiplier(player).toFixed(2)} and a star for a perk (tablet > Perks & records)`, 6);
-  world.sendMessage(`§d${player.name} reached rebirth ${rebirths + 1}! Everything sells for x${+valueMultiplier(player).toFixed(2)} now.`);
+  for (const other of world.getAllPlayers()) {
+    if (other.id !== player.id) toast(other, `§d${player.name} reached rebirth ${rebirths + 1}!`, `Everything they sell is worth x${+valueMultiplier(player).toFixed(2)} now.`, 4);
+  }
 }
 
 /** Miner's Tablet: where you stand, the next goal, How to play (a page in the UI) and Rebirth (with a confirm page). */
@@ -87,8 +89,9 @@ world.afterEvents.worldLoad.subscribe(() => {
     eachPlayer('hud', (player) => {
       if (activeSession(player) === undefined || onExpedition(player)) return;
       const rebirths = stat(player, 'rebirths');
-      const [quest, detail] = guideLines(player);
-      showHud(player, 'home', `§6$${formatNumber(stat(player, 'money'))}${rebirths ? ` §7- sell x${+valueMultiplier(player).toFixed(2)}` : ''}\n${quest}\n${detail}`);
+      const [quest, detail, ratio] = guideLines(player);
+      const money = `§6$${formatNumber(stat(player, 'money'))}${rebirths ? ` §7- sell x${+valueMultiplier(player).toFixed(2)}` : ''}`;
+      showHud(player, 'home', `${money}\n${quest}\n${detail}`, Math.floor(ratio * 10)); // bar: one segment per 10 %
     });
   }, 20);
 });

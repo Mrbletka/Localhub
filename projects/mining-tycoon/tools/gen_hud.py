@@ -1,33 +1,42 @@
-# Generates the studio HUD: RP/ui/hud_screen.json and its art (stone & gold panels, light bar segments, icons).
+# Generates the studio HUD: RP/ui/hud_screen.json and its art (the MINE-OS board, light bar, progress bar, icons, the
+# notification card).
 # Run after changing the HUD:  python3 projects/mining-tycoon/tools/gen_hud.py
 #
 # How it works: BP/scripts/hud.js puts what the HUD shows in the title text behind an invisible prefix (formatting
-# codes) and keeps such a title up all the time. The game's title control (hud_title_text) is replaced by our panels,
-# which read the title text (a global UI binding), so no title is ever shown as a title.
+# codes) and keeps such a title up all the time. The game's title control (hud_title_text) is replaced by our board,
+# which reads the title text (a global UI binding), so no title is ever shown as a title.
+# - home: "§h§u§1" + one mark "§q§q§<1-9a>" per lit progress segment + lines (money, quest or goal, progress)
+# - run:  "§h§u§2" + one mark per lit light segment + lines (time, haul, cave level)
 # Notifications (hud.js notify/toast) use the action bar: its control (hud_actionbar_text) becomes a MINE-OS card above
 # the hotbar that slides up with a flicker, pings, sweeps a light streak over the glass, wipes its text in and drains
 # a timer line before it fades.
-# - home: "§h§u§1" + lines (money, next goal, where)              -> top-left panel with a coin and a flag
-# - run:  "§h§u§2" + one mark "§q§q§<1-9a>" per lit segment + lines (time, haul) -> top-left panel with a light bar
 #
 # Every visibility test has the one form that is reliable in the HUD on the phone: "contains" = (not ((#s - 'code') =
 # #s)). The negated form ((#s - 'code') = #s) and compound tests (not (A or B)) came out true when they should not
 # (a plain-title fallback showed the HUD text big in the middle), so the HUD never needs "does not contain".
+#
+# The board may be rebuilt with every new title (every second in a cave): its loops last a second (coin, radar, LED)
+# so a restart doesn't show, and the slow effects (scan beam, sheen) wait over a second before they first play.
 import json
+import math
 import pathlib
 from PIL import Image
 
 PROJECT = pathlib.Path(__file__).resolve().parent.parent
 RP = PROJECT / 'RP'
 UI = 'textures/mining_tycoon/ui'
+TECH = f'{UI}/tech'
 ART = RP / UI
 HOME, RUN = '§h§u§1', '§h§u§2'
 LEVELS = '0123456789a'
 mark = lambda n: f'§q§q§{LEVELS[n]}'
+MARKS = [mark(n) for n in range(11)]
 
 # ---- art ----------------------------------------------------------------------------------------------------------
 GOLD_HI, GOLD, GOLD_LO, OUTLINE = '#ffe08a', '#d9a640', '#8a6420', '#120d08'
 CYAN = (95, 246, 255)  # MINE-OS light
+CYAN_TEXT = [0.55, 0.97, 1.0]
+CYAN_DIM = [0.32, 0.62, 0.68]
 
 
 def hexc(h, a=255):
@@ -46,69 +55,7 @@ def paint(size, fn):
     return im
 
 
-def frame(width, fill_alpha):
-    """16x16 nine-slice: dark stone fill (see-through), a gold rim lit from the top-left, rivets in the corners."""
-    def c(x, y):
-        edge = min(x, y, 15 - x, 15 - y)
-        if edge == 0:
-            return OUTLINE
-        if edge <= width:
-            if (x, y) in ((2, 2), (13, 2), (2, 13), (13, 13)) and width > 1:
-                return '#fff3c0'
-            return GOLD_HI if x + y < 15 and (x <= width or y <= width) else GOLD if x + y < 22 else GOLD_LO
-        n = (x * 7 + y * 13) % 5
-        return hexc('#2a211a' if n else '#30261d', fill_alpha)
-    return paint((16, 16), c)
-
-
-def seg(colors):
-    top, mid, low = colors
-    return paint((4, 8), lambda x, y: OUTLINE if x in (0, 3) and False else (top if y < 2 else mid if y < 6 else low))
-
-
-def icon_goal():
-    rows = ['................',
-            '...kk...........',
-            '...kpkkkkkkk....',
-            '...kpyyyyyyyk...',
-            '...kpyYYYYyyk...',
-            '...kpyyyyyyk....',
-            '...kpYyyyyyyk...',
-            '...kpyyyyyyyyk..',
-            '...kpkkkkkkkk...',
-            '...kpk..........',
-            '...kpk..........',
-            '...kpk..........',
-            '..kkpkk.........',
-            '.kbbbbbk........',
-            '.kkkkkkk........',
-            '................']
-    pal = {'k': OUTLINE, 'p': '#8a6238', 'y': '#e04a3a', 'Y': '#ff8a6a', 'b': '#6e7682'}
-    return paint((16, 16), lambda x, y: pal.get(rows[y][x]))
-
-
-def icon_backpack():
-    rows = ['................',
-            '.....kkkkkk.....',
-            '....kbbbbbbk....',
-            '....kb....bk....',
-            '..kkkkkkkkkkkk..',
-            '.kLLLLLLLLLLLmk.',
-            '.kLllllllllllmk.',
-            '.kLlkkkkkkkklmk.',
-            '.kLlkyyyyyyklmk.',
-            '.kLlkkkYYkkklmk.',
-            '.kLlllllllllmmk.',
-            '.kLllllllllllmk.',
-            '.kmmmmmmmmmmmmk.',
-            '..kkkkkkkkkkkk..',
-            '................',
-            '................']
-    pal = {'k': OUTLINE, 'b': '#7a4c20', 'L': '#c98a4a', 'l': '#a86a30', 'm': '#7a4c20', 'y': '#5a3818', 'Y': GOLD}
-    return paint((16, 16), lambda x, y: pal.get(rows[y][x]))
-
-
-def note_card():
+def glass(fill_alpha):
     """16x16 nine-slice: dark cyan glass, chamfered corners with bright corner ticks, a thin cyan rim."""
     def c(x, y):
         cx, cy = min(x, 15 - x), min(y, 15 - y)
@@ -119,9 +66,78 @@ def note_card():
         if cx == 0 or cy == 0:
             return CYAN + (200 if y == 0 else 120,)
         if y == 1:
-            return (40, 120, 140, 230)  # glass highlight under the top rim
-        return (6, 22, 30, 222) if y < 8 else (4, 15, 22, 228)
+            return (40, 120, 140, min(255, fill_alpha + 10))  # glass highlight under the top rim
+        return (6, 22, 30, fill_alpha) if y < 8 else (4, 15, 22, min(255, fill_alpha + 6))
     return paint((16, 16), c)
+
+
+def strip_of(frames):
+    out = Image.new('RGBA', (sum(f.width for f in frames), frames[0].height))
+    x = 0
+    for f in frames:
+        out.paste(f, (x, 0))
+        x += f.width
+    return out
+
+
+def coin_frame(k, n=8):
+    """10x10 gold coin turning around its upright axis (frame k of n)."""
+    cos = math.cos(2 * math.pi * k / n)
+    half = max(0.6, 4.5 * abs(cos))
+    face = GOLD if cos >= 0 else '#c08a2e'
+
+    def c(x, y):
+        dx, dy = (x - 4.5) / half, (y - 4.5) / 4.6
+        d = dx * dx + dy * dy
+        if d > 1:
+            return None
+        if half < 1.5:
+            return '#b8862c'  # edge on
+        if d > 0.55:
+            return GOLD_LO if x > 4.5 or y > 5 else '#b8862c'
+        if x < 4.5 - half * 0.2 and y < 4:
+            return GOLD_HI
+        return face
+    return paint((10, 10), c)
+
+
+def radar_frame(k, n=8):
+    """9x9 mini radar: a ring, a sweeping line with a fading trail, a blip lit as the sweep passes."""
+    def c(x, y):
+        dx, dy = x - 4, y - 4
+        r = math.hypot(dx, dy)
+        if r > 4.4:
+            return None
+        if r >= 3.6:
+            return CYAN + (150,)
+        if r < 0.5:
+            return CYAN + (255,)
+        a = math.atan2(dy, dx) % (2 * math.pi)
+        sweep = 2 * math.pi * k / n
+        behind = (sweep - a) % (2 * math.pi)
+        if behind < 0.45:
+            return (210, 255, 255, 255)
+        if behind < 1.3:
+            return CYAN + (int(150 * (1 - behind / 1.3)) + 30,)
+        if (x, y) == (6, 2):
+            return (120, 255, 140, 255 if k in (1, 2) else 120 if k == 3 else 60)  # blip
+        return (8, 40, 50, 120)
+    return paint((9, 9), c)
+
+
+def icon_target():
+    rows = ['....CC....',
+            '...C..C...',
+            '..C....C..',
+            '.C..ww..C.',
+            'C..wWWw..C',
+            'C..wWWw..C',
+            '.C..ww..C.',
+            '..C....C..',
+            '...C..C...',
+            '....CC....']
+    pal = {'C': CYAN + (255,), 'w': (120, 230, 240, 255), 'W': (255, 255, 255, 255)}
+    return paint((10, 10), lambda x, y: pal.get(rows[y][x]))
 
 
 def icon_notify():
@@ -145,25 +161,44 @@ def ring():
     return paint((16, 16), lambda x, y: CYAN + (255,) if 5.9 <= ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5 < 7.1 else None)
 
 
+def bar(size, colors):
+    top, mid, low = colors
+    w, h = size
+    return paint(size, lambda x, y: hexc(top) if y < h // 4 else hexc(mid) if y < h - h // 4 else hexc(low))
+
+
+def led(core, edge):
+    return paint((3, 3), lambda x, y: hexc(core) if (x, y) == (1, 1) else hexc(edge, 200) if x == 1 or y == 1 else hexc(edge, 90))
+
+
 def write_art():
-    frame(1, 215).save(ART / 'hud_panel.png')
-    note_card().save(ART / 'hud_note.png')
-    for name in ('hud_panel', 'hud_note'):
+    glass(200).save(ART / 'hud_board.png')
+    glass(222).save(ART / 'hud_note.png')
+    for name in ('hud_board', 'hud_note'):
         (ART / f'{name}.json').write_text(json.dumps({'nineslice_size': 4, 'base_size': [16, 16]}, indent=2) + '\n')
     paint((2, 16), lambda x, y: GOLD_HI if y < 5 else GOLD if y < 11 else GOLD_LO).save(ART / 'hud_note_accent.png')
     paint((4, 1), lambda x, y: CYAN + (230,)).save(ART / 'hud_note_timer.png')
     paint((4, 4), lambda x, y: (210, 255, 255, 255)).save(ART / 'hud_note_flash.png')
     ring().save(ART / 'hud_note_ping.png')
     icon_notify().save(ART / 'icons/notify.png')
-    seg(('#fff3b0', '#ffc844', '#d98a1c')).save(ART / 'hud_seg_on.png')
-    seg(('#ffb08a', '#ff5a3a', '#b02a1a')).save(ART / 'hud_seg_low.png')
-    seg(('#3a3230', '#2a2422', '#1e1a18')).save(ART / 'hud_seg_off.png')
-    icon_goal().save(ART / 'icons/goal.png')
-    icon_backpack().save(ART / 'icons/backpack.png')
+    # the board
+    strip_of([coin_frame(k) for k in range(8)]).save(ART / 'hud_coin.png')
+    strip_of([radar_frame(k) for k in range(8)]).save(ART / 'hud_radar.png')
+    icon_target().save(ART / 'icons/target.png')
+    led('#c8ffc0', '#2bd12b').save(ART / 'hud_led.png')
+    led('#ffd0c8', '#e02a2a').save(ART / 'hud_led_red.png')
+    paint((16, 3), lambda x, y: (200, 255, 255, 170) if y == 1 else CYAN + (45,)).save(ART / 'hud_beam.png')
+    bar((6, 4), ('#d8feff', '#5ff6ff', '#1a9fb0')).save(ART / 'hud_prog_on.png')
+    paint((6, 4), lambda x, y: CYAN + (80,) if x in (0, 5) or y in (0, 3) else (6, 30, 40, 200)).save(ART / 'hud_prog_off.png')
+    bar((4, 8), ('#d8feff', '#5ff6ff', '#1a9fb0')).save(ART / 'hud_seg_on.png')
+    bar((4, 8), ('#ffb08a', '#ff5a3a', '#b02a1a')).save(ART / 'hud_seg_low.png')
+    paint((4, 8), lambda x, y: CYAN + (70,) if x in (0, 3) or y in (0, 7) else (6, 30, 40, 210)).save(ART / 'hud_seg_off.png')
 
 
 # ---- hud_screen.json ----------------------------------------------------------------------------------------------
+ui = {'namespace': 'hud'}
 GLOBAL_TITLE = {'binding_name': '#hud_title_text_string'}
+TITLE = '#hud_title_text_string'
 
 
 def view(expr, target='#visible'):
@@ -191,62 +226,15 @@ def image(texture, size, **extra):
     return d
 
 
-ui = {'namespace': 'hud'}
-ICON = 10  # icon size in the HUD (16x16 art, drawn smaller)
-LINE = 10  # label line height
-
-home = {
-    'type': 'image', 'texture': f'{UI}/hud_panel', 'size': ['100%c + 10px', '100%c + 8px'], 'layer': 1,
-    'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [4, 4],
-    'bindings': [GLOBAL_TITLE, view(has('#hud_title_text_string', HOME))],
-    'controls': [{'row': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', '100%cm'], 'controls': [
-        {'icons': {'type': 'stack_panel', 'orientation': 'vertical', 'size': [ICON, '100%c'], 'controls': [
-            {'coin': image(f'{UI}/icons/coin', [ICON, LINE])},
-            {'goal': image(f'{UI}/icons/goal', [ICON, LINE])},
-        ]}},
-        {'gap': {'type': 'panel', 'size': [4, 1]}},
-        {'text': label(strip('#hud_title_text_string', HOME), GLOBAL_TITLE)},
-    ]}}],
-}
-
-segments = []
-for k in range(1, 11):  # an empty segment, and over it the lit one when its own mark is in the title
-    tex = 'hud_seg_low' if k <= 3 else 'hud_seg_on'
-    segments.append({f'seg_{k}': {'type': 'panel', 'size': [5, 8], 'controls': [
-        {'off': image(f'{UI}/hud_seg_off', [4, 8])},
-        {'on': image(f'{UI}/{tex}', [4, 8], layer=3, bindings=[GLOBAL_TITLE, view(has('#hud_title_text_string', mark(k)))])},
-    ]}})
-run = {
-    'type': 'image', 'texture': f'{UI}/hud_panel', 'size': ['100%c + 12px', '100%c + 8px'], 'layer': 1,
-    'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [4, 4],  # (top centre is under the phone's buttons)
-    'bindings': [GLOBAL_TITLE, view(has('#hud_title_text_string', RUN))],
-    'controls': [{'col': {'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%cm', '100%c'], 'controls': [
-        {'light': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 10], 'controls': [
-            {'lantern': image(f'{UI}/icons/expedition', [ICON, ICON])},
-            {'gap': {'type': 'panel', 'size': [3, 1]}},
-            {'bar': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 8], 'offset': [0, 1], 'controls': segments}},
-        ]}},
-        {'row_gap': {'type': 'panel', 'size': [1, 2]}},
-        {'haul': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', '100%cm'], 'controls': [
-            {'pack': image(f'{UI}/icons/backpack', [ICON, ICON])},
-            {'gap': {'type': 'panel', 'size': [3, 1]}},
-            {'text': label(strip('#hud_title_text_string', RUN, *[mark(n) for n in range(11)]), GLOBAL_TITLE)},
-        ]}},
-    ]}}],
-}
-# The game shows a title with this control (made by the title factory, replaced by every new title, gone when the
-# title has run out). It becomes the studio HUD: hud.js keeps a HUD title up all the time, so there is no plain
-# title to hide. Titles from elsewhere (other add-ons, /title) are not shown while the HUD owns the title.
-ui['hud_title_text'] = {
-    'size': ['100%', '100%'], 'offset': [0, 0],
-    'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [{'home': home}, {'run': run}]}}],
-}
+def tech_text(text, color=CYAN_TEXT, **extra):
+    d = {'type': 'label', 'text': text, 'color': color, 'shadow': False, 'font_scale_factor': 0.8, 'layer': 4,
+         'size': ['default', 'default'], 'localize': False}
+    d.update(extra)
+    return d
 
 
-# ---- notifications: the action bar as a MINE-OS card --------------------------------------------------------------
-# The action bar factory makes a new hud_actionbar_text for every message (variable $actionbar_text) and the control
-# destroys itself when its alpha animation ends. Every animation here is one-shot except the icon pulse.
-TECH = f'{UI}/tech'
+def gap(w, h):
+    return {'type': 'panel', 'size': [w, h]}
 
 
 def anim(name, kind, duration, frm, to, nxt=None, easing='linear', **extra):
@@ -274,6 +262,120 @@ def loop(prefix, kind, steps):
     return f'@hud.{names[0]}'
 
 
+def flip(name, frames, step, fps):
+    ui[name] = {'anim_type': 'flip_book', 'initial_uv': [0, 0], 'frame_count': frames, 'frame_step': step, 'fps': fps,
+                'next': f'@hud.{name}'}
+    return f'@hud.{name}'
+
+
+ICON = 10  # icon size in the HUD
+LINE = 10  # label line height
+COIN = flip('mining_tycoon_hud_coin', 8, 10, 8)  # one turn a second
+RADAR = flip('mining_tycoon_hud_radar', 8, 9, 8)
+BLINK = loop('hud_led', 'alpha', [(0.5, 1, 1), (0.5, 0.2, 0.2)])
+BEAM = loop('hud_beam', 'offset', [(1.4, [0, -4], [0, -4]), (0.9, [0, -4], [0, '100%'], 'in_out_sine'), (2.6, [0, '100%'], [0, '100%'])])
+SHEEN = loop('hud_sheen', 'offset', [(2.2, [-30, 0], [-30, 0]), (0.8, [-30, 0], ['100%', 0], 'in_out_sine'), (3.4, ['100%', 0], ['100%', 0])])
+
+
+def header(mode):
+    """MINE-OS // MODE, with room on the right for the radar and the status LED (drawn by the frame)."""
+    return {'header': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 8], 'controls': [
+        {'tag': tech_text('MINE-OS')},
+        {'gap': gap(4, 1)},
+        {'mode': tech_text(f'// {mode}', CYAN_DIM)},
+        {'room': gap(24, 1)},
+    ]}}
+
+
+def board(code, mode, led_texture, content):
+    """A MINE-OS glass board at the top left (below the phone's hearts): sized by its content, with a frame of
+    effects as big as the board (the frame's only sibling is the content, so '100%sm' is the board's size)."""
+    body = {'type': 'panel', 'size': ['100%c + 13px', '100%c + 9px'], 'controls': [
+        {'col': {'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%cm', '100%c'], 'layer': 3,
+                 'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [8, 4], 'controls': [
+            header(mode), {'rule_gap': gap(1, 5)}, *content]}},
+    ]}
+    frame = {'type': 'panel', 'size': ['100%sm', '100%sm'], 'controls': [
+        {'scan': image(f'{TECH}/scanlines', ['100% - 2px', '100% - 2px'], tiled=True, layer=1)},
+        {'accent': image(f'{UI}/hud_note_accent', [2, '100% - 8px'], keep_ratio=False, layer=2,
+                         anchor_from='left_middle', anchor_to='left_middle', offset=[3, 0])},
+        {'rule': image(f'{TECH}/line', ['100% - 12px', 1], keep_ratio=False, layer=2, alpha=0.75,
+                       anchor_from='top_left', anchor_to='top_left', offset=[7, 14])},
+        {'radar': image(f'{UI}/hud_radar', [9, 9], uv_size=[9, 9], uv=RADAR, layer=4, disable_anim_fast_forward=True,
+                        anchor_from='top_right', anchor_to='top_right', offset=[-10, 3])},
+        {'led': image(f'{UI}/{led_texture}', [3, 3], layer=4, alpha=BLINK, anchor_from='top_right', anchor_to='top_right', offset=[-4, 6])},
+        {'glass': {'type': 'panel', 'size': ['100% - 2px', '100% - 2px'], 'clips_children': True, 'layer': 5, 'controls': [
+            {'beam': image(f'{UI}/hud_beam', ['100%', 3], keep_ratio=False, alpha=0.55, anchor_from='top_middle',
+                           anchor_to='top_middle', offset=BEAM)},
+            {'sheen': image(f'{TECH}/streak', [26, '100%'], keep_ratio=False, alpha=0.8, anchor_from='left_middle',
+                            anchor_to='left_middle', offset=SHEEN)},
+        ]}},
+    ]}
+    return {
+        'type': 'image', 'texture': f'{UI}/hud_board', 'size': ['100%cm', '100%cm'], 'layer': 1,
+        'anchor_from': 'top_left', 'anchor_to': 'top_left', 'offset': [4, 22],  # (hearts are at the top left on phones)
+        'bindings': [GLOBAL_TITLE, view(has(TITLE, code))],
+        'controls': [{'body': body}, {'frame': frame}],
+    }
+
+
+def segments(prefix, on, off, size, low=0, low_texture=None):
+    """10 segments: an empty one, and over it the lit one when its own mark is in the title."""
+    w, h = size
+    out = []
+    for k in range(1, 11):
+        tex = low_texture if k <= low else on
+        out.append({f'{prefix}_{k}': {'type': 'panel', 'size': [w + 1, h], 'controls': [
+            {'off': image(f'{UI}/{off}', [w, h], keep_ratio=False, anchor_from='left_middle', anchor_to='left_middle')},
+            {'on': image(f'{UI}/{tex}', [w, h], keep_ratio=False, layer=3, anchor_from='left_middle', anchor_to='left_middle',
+                         bindings=[GLOBAL_TITLE, view(has(TITLE, mark(k)))])},
+        ]}})
+    return out
+
+
+home = board(HOME, 'MINE CONTROL', 'hud_led', [
+    {'row': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', '100%cm'], 'controls': [
+        {'icons': {'type': 'stack_panel', 'orientation': 'vertical', 'size': [ICON, '100%c'], 'controls': [
+            {'coin': image(f'{UI}/hud_coin', [ICON, LINE], uv_size=[10, 10], uv=COIN, disable_anim_fast_forward=True)},
+            {'goal': image(f'{UI}/icons/target', [ICON, LINE])},
+        ]}},
+        {'gap': gap(4, 1)},
+        {'text': label(strip(TITLE, HOME, *MARKS), GLOBAL_TITLE)},
+    ]}},
+    {'bar_gap': gap(1, 3)},
+    {'progress': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 4], 'controls': [
+        {'indent': gap(14, 1)},
+        *segments('p', 'hud_prog_on', 'hud_prog_off', (6, 4)),
+    ]}},
+])
+
+run = board(RUN, 'EXPEDITION', 'hud_led_red', [
+    {'light': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 10], 'controls': [
+        {'lantern': image(f'{UI}/icons/expedition', [ICON, ICON])},
+        {'gap': gap(4, 1)},
+        {'bar': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 8], 'offset': [0, 1],
+                 'controls': segments('seg', 'hud_seg_on', 'hud_seg_off', (4, 8), low=3, low_texture='hud_seg_low')}},
+    ]}},
+    {'row_gap': gap(1, 3)},
+    {'haul': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', '100%cm'], 'controls': [
+        {'pack': image(f'{UI}/icons/backpack', [ICON, ICON])},
+        {'gap': gap(4, 1)},
+        {'text': label(strip(TITLE, RUN, *MARKS), GLOBAL_TITLE)},
+    ]}},
+])
+
+# The game shows a title with this control (made by the title factory, replaced by every new title, gone when the
+# title has run out). It becomes the studio HUD: hud.js keeps a HUD title up all the time, so there is no plain
+# title to hide. Titles from elsewhere (other add-ons, /title) are not shown while the HUD owns the title.
+ui['hud_title_text'] = {
+    'size': ['100%', '100%'], 'offset': [0, 0],
+    'controls': [{'mining_tycoon_hud': {'type': 'panel', 'size': ['100%', '100%'], 'controls': [{'home': home}, {'run': run}]}}],
+}
+
+
+# ---- notifications: the action bar as a MINE-OS card --------------------------------------------------------------
+# The action bar factory makes a new hud_actionbar_text for every message (variable $actionbar_text) and the control
+# destroys itself when its alpha animation ends. Every animation here is one-shot except the icon pulse.
 SHOW = 3.2  # seconds the card stays fully lit (after 0.18 s in, before 0.35 s out); hud.js READ is a bit less
 ICON_X = 9  # icon's left edge in the card
 body = {'type': 'panel', 'size': ['100%c + 32px', '100%c + 10px'], 'controls': [  # sized by the text
