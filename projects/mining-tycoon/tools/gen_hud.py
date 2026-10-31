@@ -176,10 +176,10 @@ def led(core, edge):
     return paint((3, 3), lambda x, y: hexc(core) if (x, y) == (1, 1) else hexc(edge, 200) if x == 1 or y == 1 else hexc(edge, 90))
 
 
-def avatar_frame():
-    """26x26 holo frame for the player model: dark glass, a faint grid, chamfered cyan rim with bright corners."""
+def avatar_frame(w=24, h=32):
+    """Portrait holo frame for the player model: dark glass, a faint grid, chamfered cyan rim with bright corners."""
     def c(x, y):
-        cx, cy = min(x, 25 - x), min(y, 25 - y)
+        cx, cy = min(x, w - 1 - x), min(y, h - 1 - y)
         if cx + cy < 2:
             return None
         if cx + cy == 2 or (cx + cy <= 4 and min(cx, cy) == 0):
@@ -188,9 +188,9 @@ def avatar_frame():
             return CYAN + (190,)
         if x % 5 == 2 or y % 5 == 2:
             return (16, 66, 80, 238)
-        glow = max(0, 1 - math.hypot(x - 12.5, y - 15) / 14)
+        glow = max(0, 1 - math.hypot(x - (w - 1) / 2, y - h * 0.55) / (h * 0.55))
         return (6 + int(20 * glow), 22 + int(40 * glow), 30 + int(45 * glow), 240)
-    return paint((26, 26), c)
+    return paint((w, h), c)
 
 
 def write_art():
@@ -392,11 +392,18 @@ run = board(RUN, 'EXPEDITION', 'hud_led_red', [
 ])
 
 # The profile: the player's own model (the game's paper doll renderer, without its "only while sprinting" binding)
-# in a holo frame with the rank badge, then name / rank, level, XP and a gold XP bar.
-avatar = {'type': 'panel', 'size': [26, 26], 'controls': [
-    {'frame': image(f'{UI}/hud_avatar', [26, 26], layer=1)},
-    {'model': {'type': 'custom', 'renderer': 'hud_player_renderer', 'size': [24, 24], 'layer': 3}},
-    {'scan': {'type': 'panel', 'size': [24, 24], 'clips_children': True, 'layer': 4, 'controls': [
+# in a portrait holo frame with the rank badge, then name / rank, level, XP and a gold XP bar.
+# The renderer draws the whole body about 1.7x as tall as its control, from the control's top edge (seen on the
+# phone: a 24 px control gave a 41 px figure hanging out of the frame), so the control is 16 px for a ~27 px figure
+# in the 32 px frame; a clipping panel cuts anything that still sticks out.
+AV_W, AV_H, MODEL = 24, 32, 16
+avatar = {'type': 'panel', 'size': [AV_W, AV_H], 'controls': [
+    {'frame': image(f'{UI}/hud_avatar', [AV_W, AV_H], layer=1)},
+    {'window': {'type': 'panel', 'size': [AV_W - 2, AV_H - 2], 'clips_children': True, 'layer': 3, 'controls': [
+        {'model': {'type': 'custom', 'renderer': 'hud_player_renderer', 'size': [MODEL, MODEL], 'layer': 1,
+                   'anchor_from': 'top_middle', 'anchor_to': 'top_middle', 'offset': [0, 1]}},
+    ]}},
+    {'scan': {'type': 'panel', 'size': [AV_W - 2, AV_H - 2], 'clips_children': True, 'layer': 4, 'controls': [
         {'beam': image(f'{UI}/hud_beam', ['100%', 3], keep_ratio=False, alpha=0.6, anchor_from='top_middle', anchor_to='top_middle',
                        offset=loop('hud_avatar_beam', 'offset', [(1.2, [0, -4], [0, -4]), (0.7, [0, -4], [0, '100%'], 'in_out_sine'), (2.1, [0, '100%'], [0, '100%'])]))},
     ]}},
@@ -408,7 +415,7 @@ profile = board(PROFILE, 'PROFILE', 'hud_led', [
         {'avatar': avatar},
         {'gap': gap(6, 1)},
         {'info': {'type': 'stack_panel', 'orientation': 'vertical', 'size': ['100%cm', '100%c'], 'controls': [
-            {'pad': gap(1, 1)},
+            {'pad': gap(1, 4)},
             {'text': label(strip(SUB, PROFILE, *[rank_code(n) for n in range(1, len(RANKS) + 1)], *MARKS), GLOBAL_SUB)},
             {'bar_gap': gap(1, 3)},
             {'xp': {'type': 'stack_panel', 'orientation': 'horizontal', 'size': ['100%c', 4], 'controls':

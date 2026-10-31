@@ -2108,8 +2108,8 @@
                                       "avatar": {
                                         "type": "panel",
                                         "size": [
-                                          26,
-                                          26
+                                          24,
+                                          32
                                         ],
                                         "controls": [
                                           {
@@ -2117,29 +2117,48 @@
                                               "type": "image",
                                               "texture": "textures/mining_tycoon/ui/hud_avatar",
                                               "size": [
-                                                26,
-                                                26
+                                                24,
+                                                32
                                               ],
                                               "layer": 1
                                             }
                                           },
                                           {
-                                            "model": {
-                                              "type": "custom",
-                                              "renderer": "hud_player_renderer",
+                                            "window": {
+                                              "type": "panel",
                                               "size": [
-                                                24,
-                                                24
+                                                22,
+                                                30
                                               ],
-                                              "layer": 3
+                                              "clips_children": true,
+                                              "layer": 3,
+                                              "controls": [
+                                                {
+                                                  "model": {
+                                                    "type": "custom",
+                                                    "renderer": "hud_player_renderer",
+                                                    "size": [
+                                                      16,
+                                                      16
+                                                    ],
+                                                    "layer": 1,
+                                                    "anchor_from": "top_middle",
+                                                    "anchor_to": "top_middle",
+                                                    "offset": [
+                                                      0,
+                                                      1
+                                                    ]
+                                                  }
+                                                }
+                                              ]
                                             }
                                           },
                                           {
                                             "scan": {
                                               "type": "panel",
                                               "size": [
-                                                24,
-                                                24
+                                                22,
+                                                30
                                               ],
                                               "clips_children": true,
                                               "layer": 4,
@@ -2378,7 +2397,7 @@
                                               "type": "panel",
                                               "size": [
                                                 1,
-                                                1
+                                                4
                                               ]
                                             }
                                           },

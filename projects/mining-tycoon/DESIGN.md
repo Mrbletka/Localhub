@@ -185,7 +185,8 @@ Rebirth: $1M x 4^rebirths; +50 % sell price per rebirth.
     a toast cuts a small card short.
   - **Profile** (top right, below the hunger bar phones show there; `BP/scripts/profile.js`, config `profile`): a
     MINE-OS panel `MINE-OS // PROFILE` with the player's own model (the game's paper doll renderer, always on) in a
-    holo frame with a scan beam and the rank badge, the name, `Prospector Lv 12 45/185 XP` and a gold 10-segment XP
+    24 x 32 portrait holo frame (the renderer draws the body ~1.7x as tall as its control, from the control's top: a
+    16 px control, clipped to the frame) with a scan beam and the rank badge, the name, `Prospector Lv 12 45/185 XP` and a gold 10-segment XP
     bar. It rides in the subtitle of the HUD title (`§p§f§1` + rank `§z§z§<n>` + XP marks). XP belongs to the player
     (`mining_tycoon:xp`, all sessions, survives rebirth): every ore mined at home or in a cave gives its pick tier
     (Coal 1 ... Diamond 6). Level L -> L + 1 takes 20 + 15 x (L - 1) XP (Lv 10 at 720 XP, max 99). Ranks: Rookie (1),
